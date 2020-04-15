@@ -1,0 +1,277 @@
+scalar ConstraintString
+scalar ConstraintNumber
+
+directive @constraint(
+  # String constraints
+  minLength: Int
+  maxLength: Int
+  startsWith: String
+  endsWith: String
+  notContains: String
+  pattern: String
+  format: String
+
+  # Number constraints
+  min: Int
+  max: Int
+  exclusiveMin: Int
+  exclusiveMax: Int
+  multipleOf: Int
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+interface ListQuery {
+  asc: Boolean!
+  after: String!
+  limit: Int!
+}
+
+enum TagType {
+  PUBLIC,
+  PRIVATE,
+  PROTECTED,
+  INSTRUMENT,
+}
+
+interface TagBase {
+  munge: String!
+  displayName: String!
+  type: TagType!
+}
+
+type Tag implements TagBase {
+  id: Int!
+  munge: String!
+  displayName: String!
+  createdBy: String!
+  createdAt: String!
+  password: String!
+  type: TagType!
+}
+
+input TagNew {
+  munge: String!
+  displayName: String!
+  type: TagType!
+}
+
+enum TagQueryOrder {
+  DISPLAY_NAME,
+  CREATED_AT,
+}
+
+input TagQuery {
+  displayName: String!
+  type: TagType
+  id: Int
+  order: TagQueryOrder
+  asc: Boolean!
+  after: String!
+  limit: Int!
+}
+
+enum ReactionType {
+  STAR,
+  FLAG,
+}
+
+type Reaction {
+  chartID: Int!
+  userID: Int!
+  reactionType: ReactionType!
+  createdAt: String!
+}
+
+input ReactionNew {
+  chartID: Int!
+  userID: Int!
+  reactionType: ReactionType!
+}
+
+enum ChartType {
+  CHORD,
+  PROGRESSION,
+}
+
+interface ChartBase {
+  audioURL: String!
+  hint: String
+  notes: String
+  abc: String!
+  tags: [Tag!]!
+  public: Boolean!
+  chartType: ChartType!
+  bassNote: String!
+  root: Note!
+  quality: ChartQuality!
+  extensions: [Extension!]
+}
+
+type ReactionCounts {
+  stars: Int!
+  flags: Int!
+}
+
+type Chart implements ChartBase {
+  id: Int!
+  audioURL: String!
+  imageURL: String
+  hint: String
+  notes: String
+  abc: String!
+  tags: [Tag!]!
+  public: Boolean!
+  chartType: ChartType!
+  bassNote: String!
+  root: Note!
+  quality: ChartQuality!
+  extensions: [Extension!]
+  reactionCounts: ReactionCounts!
+  createdAt: String!
+  createdBy: User
+  updatedAt: String
+}
+
+input ChartNew {
+  audioURL: String!
+  imageURL: String
+  hint: String
+  notes: String
+  abc: String!
+  public: Boolean!
+  chartType: ChartType!
+  bassNote: String!
+  root: Note!
+  quality: ChartQuality!
+  extensionIDs: [Int!]
+  tags: [TagNew!]!
+}
+
+enum Note {
+  C, D, E, F, G, A, B,
+  Cb, Db, Eb, Fb, Gb, Ab, Bb,
+  Cs, Ds, Es, Fs, Gs, As, Bs,
+}
+
+enum ChartQuality {
+  MAJOR,
+  MINOR,
+  SUS,
+  DIMINISHED,
+  AUGMENTED,
+}
+
+enum ExtensionType {
+  SUS,
+  SHARP,
+  FLAT,
+  PLAIN,
+}
+
+type Extension {
+  id: Int!
+  extensionType: ExtensionType
+  degree: Int! @constraint(min: 2, max: 13)
+}
+
+input ChartUpdate {
+  id: Int!
+  audioURL: String
+  bassNote: Note
+  root: Note
+  quality: ChartQuality
+  hint: String
+  notes: String
+  abc: String
+  imageURL: String
+  public: Boolean
+}
+
+enum ChartQueryOrder {
+  THUMBS_UP,
+  CREATED_AT,
+}
+
+input ChartQuery {
+  id: Int!
+  tags: [String!]!
+  chartType: ChartType!
+  after: String!
+  order: ChartQueryOrder
+  asc: Boolean!
+  limit: Int!
+}
+
+interface UserBase {
+  username: String!
+}
+
+type User implements UserBase {
+  uid: String!
+  username: String!
+  createdAt: String!
+}
+
+input UserNew {
+  username: String!
+}
+
+input UserUpdate {
+  username: String!
+}
+
+enum UserQueryOrder {
+  CREATED_BY,
+  USERNAME,
+}
+
+input UserQuery {
+  userUID: String!
+  username: String!
+  after: String!
+  order: UserQueryOrder
+  asc: Boolean!
+  limit: Int!
+}
+
+enum ErrorType {
+  # Apollo https://www.apollographql.com/docs/apollo-server/data/errors/#codes
+  UNAUTHENTICATED
+  # custom
+  CHART_NOT_FOUND
+  UNHANDLED
+}
+
+type ErrorException {
+  stacktrace: [String!]
+}
+
+type ErrorExtensions {
+  msgArgs: [String!]
+  code: ErrorType!
+  exception: ErrorException
+}
+
+type Query {
+  users(query: UserQuery!): [User!]!
+  charts(query: ChartQuery!): [Chart!]!
+  tags(query: TagQuery!): [Tag!]!
+  extensions: [Extension!]!
+}
+
+type Empty {
+  empty: Boolean
+}
+
+type Mutation {
+  createAccount(newUser: UserNew!): User
+  updateAccount(userUpdate: UserUpdate!): User
+  deleteAccount(userID: Int!): Empty
+  react(reactionNew: ReactionNew): Chart
+  createChart(chartNew: ChartNew!): Chart
+  updateChart(chartUpdate: ChartUpdate!): Chart
+  deleteChart(chartID: Int!): Empty
+  addExtensions(chartID: Int!, extensionIDs: [Int!]!): Chart
+  removeExtensions(chartID: Int!, extensionIDs: [Int!]!): Chart
+  addTags(chartID: Int!, tags: [TagNew!]!): Chart
+  unTag(chartID: Int!, tagID: String!): Chart
+}

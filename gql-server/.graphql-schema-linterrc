@@ -1,0 +1,6 @@
+
+{
+  "rules": [],
+  "schemaPaths": ["schema/**.graphql"],
+  "customRulePaths": []
+}
