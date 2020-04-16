@@ -257,6 +257,11 @@ export type UserQuery = {
 export enum ErrorType {
   Unauthenticated = 'UNAUTHENTICATED',
   ChartNotFound = 'CHART_NOT_FOUND',
+  InvalidTagQueryScopeError = 'INVALID_TAG_QUERY_SCOPE_ERROR',
+  InvalidTagScopeError = 'INVALID_TAG_SCOPE_ERROR',
+  InvalidChartTagError = 'INVALID_CHART_TAG_ERROR',
+  InvalidChartScope = 'INVALID_CHART_SCOPE',
+  InvalidChartReaction = 'INVALID_CHART_REACTION',
   Unhandled = 'UNHANDLED'
 }
 

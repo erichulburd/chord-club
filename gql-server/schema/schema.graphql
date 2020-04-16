@@ -244,10 +244,15 @@ input UserQuery {
 
 enum ErrorType {
   # Apollo https://www.apollographql.com/docs/apollo-server/data/errors/#codes
-  UNAUTHENTICATED
+  UNAUTHENTICATED,
   # custom
-  CHART_NOT_FOUND
-  UNHANDLED
+  CHART_NOT_FOUND,
+  INVALID_TAG_QUERY_SCOPE_ERROR,
+  INVALID_TAG_SCOPE_ERROR,
+  INVALID_CHART_TAG_ERROR,
+  INVALID_CHART_SCOPE,
+  INVALID_CHART_REACTION,
+  UNHANDLED,
 }
 
 type ErrorException {

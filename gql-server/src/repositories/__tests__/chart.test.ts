@@ -5,7 +5,7 @@ import { ChartNew, ChartUpdate, ChartQuery, ChartType, ChartQueryOrder, BaseScop
 import { makeChartNew, makeTagNew } from '../../../tests/factories';
 import { range } from 'lodash';
 import { insertNewTags, addTagsForChart } from '../tag';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError, ApolloError } from 'apollo-server-express';
 
 describe('chart repository', () => {
   const pool = makeDBPool();
@@ -54,7 +54,7 @@ describe('chart repository', () => {
 
     test('create fails if scope is invalid', async () => {
       const chartNew: ChartNew = makeChartNew({ scope: 'uid2' });
-      expect(insertNewChart(chartNew, 'uid', client)).rejects.toThrow(UserInputError);
+      expect(insertNewChart(chartNew, 'uid', client)).rejects.toThrow(ApolloError);
     });
 
     test('delete charts for user', async () => {

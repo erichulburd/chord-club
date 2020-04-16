@@ -4,7 +4,7 @@ import { TagNew, ChartNew, ChartType, BaseScopes, TagQuery, Tag, TagType } from 
 import { makeTagNew, makeChartNew } from '../../../tests/factories';
 import { insertNewTags, deleteTag, addTagsForChart, findTagsForCharts, unTag, executeTagQuery } from '../tag';
 import { insertNewChart } from '../chart';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError, ApolloError } from 'apollo-server-express';
 
 describe('tag repository', () => {
   const pool = makeDBPool();
@@ -78,7 +78,7 @@ describe('tag repository', () => {
         const chart = await insertNewChart(chartNew, 'uid', client);
         expect(
           addTagsForChart(chart, [makeTagNew({ scope: BaseScopes.Public })], 'uid', client)
-        ).rejects.toThrowError(UserInputError);
+        ).rejects.toThrowError(ApolloError);
       });
     });
     describe('unTag', () => {
