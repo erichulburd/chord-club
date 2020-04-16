@@ -2,7 +2,7 @@ import { makeDBPool, TestDBClientManager, DBTxManager } from '../db';
 import { PoolClient } from 'pg';
 import { insertNewChart } from '../chart';
 import { makeChartNew, makeUserNew } from '../../../tests/factories';
-import { insertReactionNew, countReactions } from '../reaction';
+import { insertReactionNew, countReactions, findReactionsByChartID } from '../reaction';
 import { insertUserNew } from '../user';
 import { ReactionNew, ReactionType } from '../../types';
 import { ApolloError } from 'apollo-server-express';
@@ -61,6 +61,18 @@ describe('reaction repository', () => {
       expect(counts[1].flags).toEqual(0);
       expect(counts[2].stars).toEqual(1);
       expect(counts[2].flags).toEqual(2);
+
+      let reactions =
+        await findReactionsByChartID([chart1.id, chart2.id, chart3.id], 'uid', client);
+      expect(reactions[0]).toEqual(ReactionType.Star);
+      expect(reactions[1]).toEqual(undefined);
+      expect(reactions[2]).toEqual(ReactionType.Star);
+
+      reactions =
+        await findReactionsByChartID([chart1.id, chart2.id, chart3.id], 'uid1', client);
+      expect(reactions[0]).toEqual(ReactionType.Star);
+      expect(reactions[1]).toEqual(undefined);
+      expect(reactions[2]).toEqual(ReactionType.Flag);
     });
 
     test('insert duplicate reaction', async () => {

@@ -25,7 +25,6 @@ export const insertReactionNew = async (reaction: ReactionNew, client: PoolClien
   }
 };
 
-
 export const deleteReactionNew = async (chartID: number, uid: string, client: PoolClient) => {
   await client.query(`
     DELETE FROM reaction WHERE chart_id = $1 AND created_by = $2
@@ -57,4 +56,32 @@ export const countReactions = async (
     return chartIDs.map((chartID) => makeReactionCounts(countsByChartID[chartID] || []));
   }
   return chartIDs.map((chartID) => makeReactionCounts(countsByChartID[chartID] || []));
+};
+
+interface ReactionRow {
+  chart_id: number;
+  reaction_type: ReactionType;
+}
+
+const getReactionForChartIDs = (groups: { [key: number]: (ReactionRow | undefined)[] }) =>
+  (chartID: number): ReactionType | undefined => {
+    const chartReactions = groups[chartID];
+    const chartReaction = chartReactions?.length > 0 ? chartReactions[0] : undefined;
+    return chartReaction?.reaction_type;
+  };
+
+export const findReactionsByChartID = async (
+  chartIDs: readonly number [] | number[], uid: string, client: PoolClient): Promise<(ReactionType | undefined)[]> => {
+  const result = await client.query(`
+    SELECT chart_id, reaction_type
+      FROM reaction
+      WHERE chart_id = ANY ($1) AND created_by = $2
+  `, [chartIDs, uid]);
+  const reactions: ReactionRow[] = result.rows;
+  const groups: { [key: number]: (ReactionRow | undefined)[] } = groupBy(reactions, 'chart_id');
+  const mapper = getReactionForChartIDs(groups);
+  if (Array.isArray(chartIDs)) {
+    return chartIDs.map(mapper);
+  }
+  return chartIDs.map(mapper);
 };

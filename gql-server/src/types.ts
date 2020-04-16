@@ -121,6 +121,7 @@ export type Chart = ChartBase & {
   quality: ChartQuality;
   extensions?: Maybe<Array<Extension>>;
   reactionCounts: ReactionCounts;
+  userReactionType?: Maybe<ReactionType>;
   createdAt: Scalars['String'];
   createdBy?: Maybe<User>;
   updatedAt?: Maybe<Scalars['String']>;

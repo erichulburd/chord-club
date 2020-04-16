@@ -11,6 +11,7 @@ export type Resolver<T, U, V = TopLevelRootValue> =
 export const wrapTopLevelOp =
   <T, U>(fn: Resolver<T, U>): Resolver<T, U> =>
   async (obj: TopLevelRootValue, args: T, context: Context) => {
+    console.error('WRAP TOP LEVEL OP');
   const start = Date.now();
   let logger = context.logger.child({
     start,
@@ -32,7 +33,7 @@ export const wrapTopLevelOp =
       ms: Date.now() - start,
       success: false,
       errorCode: (err instanceof ApolloError ?
-        err.extensions.code : ErrorType.Unhandled.toUpperCase()),
+        err.code : ErrorType.Unhandled),
     });
     logger.error(err);
     try {
@@ -40,7 +41,7 @@ export const wrapTopLevelOp =
         await context.txManager.rollbackTx(tx);
       }
     } catch(txErr) {
-      logger.warn('database rollback failed');
+      logger.error('database rollback failed');
     }
     throw err;
   } finally {

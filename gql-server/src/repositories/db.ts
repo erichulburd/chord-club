@@ -19,7 +19,7 @@ export class DBTxManager {
     if (this.savepoint === 0) {
       await this.client.query('BEGIN');
     } else {
-      await this.client.query(`ROLLBACK TO SAVEPOINT sp${this.savepoint}`);
+      await this.client.query(`SAVEPOINT sp${this.savepoint}`);
     }
     const txNumber = this.savepoint;
     this.savepoint += 1;
@@ -64,8 +64,8 @@ export class DBClientManager {
 }
 
 export class TestDBClientManager extends DBClientManager {
-  private clients: PoolClient[] = [];
-  private txManagers: DBTxManager[] = [];
+  private client: PoolClient | undefined;
+  private txManager: DBTxManager | undefined;
 
   public releaseClient(_client: PoolClient) {
     // do not release clients during testing, so we can roll the
@@ -73,17 +73,25 @@ export class TestDBClientManager extends DBClientManager {
   }
 
   public async newConnection(): Promise<[PoolClient, DBTxManager]> {
-    const client = await this.pool.connect();
-    this.clients.push(client);
-    const txManager = new DBTxManager(client);
-    await txManager.begin();
-    this.txManagers.push(txManager);
-    return [client, txManager];
+    if (this.client === undefined) {
+      const client = await this.pool.connect();
+      this.client = client;
+    }
+    if (this.txManager == undefined) {
+      const txManager = new DBTxManager(this.client);
+      await txManager.begin();
+      this.txManager = txManager;
+    }
+    return [this.client, this.txManager];
   }
 
   public async rollbackAndRelease() {
-    await Promise.all(this.txManagers.map((txManager) => txManager.rollbackTx(0)));
-    this.clients.forEach((client) => client.release());
+    if (this.txManager !== undefined) {
+      this.txManager.rollbackTx(0);
+    }
+    if (this.client !== undefined) {
+      this.client.release();
+    }
   }
 }
 

@@ -2,12 +2,13 @@ import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import { config } from './config';
 
-
 const client = jwksClient({
   jwksUri: `https://${config.AUTH0_DOMAIN}/.well-known/jwks.json`
 });
 
-const getKey: jwt.GetPublicKeyOrSecret = (header: jwt.JwtHeader, cb: (err: Error | null, pk: string | undefined) => void) => {
+
+export const auth0GetKey: jwt.GetPublicKeyOrSecret =
+  (header: jwt.JwtHeader, cb: (err: Error | null, pk: string | undefined) => void) => {
   client.getSigningKey(header.kid || '', function(err, key) {
     if (err) {
       cb(err, undefined);
@@ -22,11 +23,11 @@ const options: jwt.VerifyOptions = {
   algorithms: ['RS256']
 };
 
-interface Claims {
+export interface Claims {
   uid: string;
 }
 
-const bearerRegex = /^Bearer (\w+)/;
+const bearerRegex = /^Bearer (.+)$/;
 
 export const getBearerToken = (authorization: string) => {
   const match = authorization.match(bearerRegex);
@@ -36,7 +37,7 @@ export const getBearerToken = (authorization: string) => {
   return undefined;
 };
 
-export const parseAuthorization = (token: string): Promise<Claims> => {
+export const parseAuthorization = (token: string, getKey: jwt.GetPublicKeyOrSecret): Promise<Claims> => {
   return new Promise((resolve, reject) => {
     const cb: jwt.VerifyCallback = (err, decoded) => {
       if(err) {

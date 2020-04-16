@@ -1,13 +1,13 @@
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
-import { parseAuthorization, getBearerToken } from './auth';
+import { parseAuthorization, getBearerToken, Claims } from './auth';
 import { v4 as uuidv4 } from 'uuid';
 import { makeLoaders, Loaders } from '../repositories/loaders';
 import { PoolClient } from 'pg';
 import pino from 'pino';
 import { DBClientManager, DBTxManager } from '../repositories/db';
+import { GetPublicKeyOrSecret } from 'jsonwebtoken';
 
-const logger = pino();
-
+const baseLogger = pino();
 
 export interface Context {
   uid: string;
@@ -19,22 +19,32 @@ export interface Context {
   logger: pino.Logger;
 }
 
-export const makeRequestContext = (dbClientManager: DBClientManager) => async (ctx: ExpressContext): Promise<Context> => {
-  const token = getBearerToken(ctx.req.headers.authorization || '');
-  const claims = (token && await parseAuthorization(token)) || undefined;
-  const uid = claims && claims.uid;
-  const [db, txManager] = await dbClientManager.newConnection();
+export const makeRequestContext = (dbClientManager: DBClientManager, getKey: GetPublicKeyOrSecret) =>
+async (ctx: ExpressContext): Promise<Context> => {
   const requestID = uuidv4();
+  let logger = baseLogger.child({
+    requestID,
+  });
+  const token = getBearerToken(ctx.req.headers.authorization || '');
+  let claims: Claims | undefined = undefined;
+  try {
+    claims = (token && await parseAuthorization(token, getKey)) || undefined;
+  } catch (err) {
+    logger.error(err);
+  }
+  const uid = claims && claims.uid;
+  logger = logger.child({
+    uid,
+  });
+  const [db, txManager] = await dbClientManager.newConnection();
+  const loaders = makeLoaders(db, uid);
   return {
     uid: uid || '',
     dbClientManager,
     db,
     txManager,
     requestID,
-    logger: logger.child({
-      requestID,
-      uid,
-    }),
-    loaders: makeLoaders(db, uid),
+    logger,
+    loaders,
   };
 };

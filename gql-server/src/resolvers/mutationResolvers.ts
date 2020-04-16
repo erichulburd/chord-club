@@ -67,7 +67,7 @@ interface MutationResolvers {
   createChart: Resolver<CreateChartArgs, Chart>;
   updateChart: Resolver<UpdateChartArgs, Chart>;
   deleteChart: Resolver<DeleteChartArgs, void>;
-  addTag: Resolver<AddTagArgs, Chart>;
+  addTags: Resolver<AddTagArgs, Chart>;
   unTag: Resolver<UnTagArgs, Chart>;
   addExtensions: Resolver<AddRemoveExtensionsArgs, Chart>;
   removeExtensions: Resolver<AddRemoveExtensionsArgs, Chart>;
@@ -121,7 +121,7 @@ M.deleteChart = wrapTopLevelOp(async (
   await deleteChart(args.chartID, context.uid, context.db);
 });
 
-M.addTag = wrapTopLevelOp(async (
+M.addTags = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: AddTagArgs, context: Context,
 ): Promise<Chart> => {
   const chart = await findChartByID(args.chartID, context.uid, context.db);

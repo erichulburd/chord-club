@@ -130,6 +130,7 @@ type Chart implements ChartBase {
   quality: ChartQuality!
   extensions: [Extension!]
   reactionCounts: ReactionCounts!
+  userReactionType: ReactionType
   createdAt: String!
   createdBy: User
   updatedAt: String
