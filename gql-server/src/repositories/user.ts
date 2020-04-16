@@ -1,111 +1,124 @@
 import { UserQuery, UserQueryOrder, User, UserNew, UserUpdate } from '../types';
 import { PoolClient } from 'pg';
-import { snakeCase } from 'lodash';
+import { makeDBFields, makeSelectFields, makeDBDataToObject } from './db';
 
-const selectFields = [
-  'uid', 'createdAt', 'displayName',
-].map((field) => `${snakeCase(field)} AS ${field}`).join(', ');
+const attrs = [
+  'uid', 'createdAt', 'username',
+];
+const dbFields = makeDBFields(attrs);
+const selectFields = makeSelectFields(dbFields, 'u');
+const dbDataToUser = makeDBDataToObject(attrs);
 
-export const executeUserQuery = async (query: UserQuery, client: PoolClient) => {
-  if (query.userUID) {
-    return findUserByUID(query.userUID, client);
+interface UserSQLQuery {
+  orderBy: string;
+  direction: 'ASC' | 'DESC';
+  limit: number;
+}
+
+export const executeUserQuery = async (rawQuery: UserQuery, client: PoolClient) => {
+  if (rawQuery.uid) {
+    const user = await findUserByUID(rawQuery.uid, client);
+    if (!user) return [];
+    return [user];
   }
-  if (query.username) {
-    return findUserByUsername(query.username, client);
+  if (rawQuery.username) {
+    const user = await findUserByUsername(rawQuery.username, client);
+    if (!user) return [];
+    return [user];
   }
 
-  const order = (query.order || UserQueryOrder.CreatedBy).toLowerCase();
-  const direction = (query.asc === undefined ? false : query.asc) ? 'ASC' : 'DESC';
+  const order = (rawQuery.order || UserQueryOrder.CreatedBy).toLowerCase();
+  const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
   const orderBy = `${order} ${direction}`;
-  const limit = Math.min(100, query.limit || 50);
-  if (query.after) {
-    return findUsersAfter(query.after, orderBy, limit, client);
+  const limit = Math.min(100, rawQuery.limit || 50);
+  const query: UserSQLQuery = { orderBy, direction, limit };
+  if (rawQuery.after) {
+    return findUsersAfter(rawQuery.after, query, client);
   }
-  return findUsers(orderBy, limit, client);
+  return findUsers(query, client);
 };
 
-const findUserByUID = async (uid: string, client: PoolClient) => {
+export const findUserByUID = async (uid: string, client: PoolClient) => {
   const result = await client.query(`
     SELECT
       ${selectFields}
-      FROM userr
-      WHERE uid = $1
+      FROM userr u
+      WHERE u.uid = $1
   `, [uid]);
   if (result.rows.length < 1) {
     return undefined;
   }
-  return result.rows as User[];
+  return dbDataToUser(result.rows[0]) as User;
 };
 
-const findUserByUsername = async (username: string, client: PoolClient) => {
+export const findUserByUsername = async (username: string, client: PoolClient) => {
   const result = await client.query(`
     SELECT
       ${selectFields}
-      FROM userr
-      WHERE username = $1
-  `, [username]);
+      FROM userr u
+      WHERE LOWER(u.username) = $1
+  `, [username.toLowerCase()]);
   if (result.rows.length < 1) {
     return undefined;
   }
-  return result.rows as User[];
+  return dbDataToUser(result.rows[0]) as User;
 };
 
 
-const findUsers = async (orderBy: string, limit: number, client: PoolClient) => {
+const findUsers = async (query: UserSQLQuery, client: PoolClient) => {
   const result = await client.query(`
   SELECT
     ${selectFields}
-  FROM userr
-  ORDER BY $1, uid ASC
+  FROM userr u
+  ORDER BY $1, u.uid ${query.direction}
   LIMIT $2
-  `, [orderBy, limit]);
+  `, [query.orderBy, query.limit]);
   return result.rows as User[];
 };
 
 const findUsersAfter = async (
-  after: string, orderBy: string,
-  limit: number, client: PoolClient) => {
+  after: string, query: UserSQLQuery, client: PoolClient) => {
 
   const result = await client.query(`
   WITH ranks AS (
     SELECT
       ${selectFields},
       RANK() OVER (
-        $1, uid ASC
+        ORDER BY $1, u.uid ${query.direction}
       ) rank_number
-    FROM userr
+    FROM userr u
   )
   SELECT
     uid, username, created_at
   FROM ranks
   WHERE rank_number > (SELECT rank_number FROM ranks WHERE uid = $2)
-  ORDER BY $1, uid ASC
+  ORDER BY $1, uid ${query.direction}
   LIMIT $3
-  `, [orderBy, after, limit]);
-  return result.rows as User[];
+  `, [query.orderBy, after, query.limit]);
+  return result.rows.map(dbDataToUser) as User[];
 };
 
-export const createUser = async (
-  newUser: UserNew, userUID: string, client: PoolClient) => {
+export const insertUserNew = async (
+  newUser: UserNew, uid: string, client: PoolClient) => {
     const result = await client.query(`
       INSERT INTO
         userr (uid, username)
         VALUES ($1, $2)
-        RETURNING ${selectFields}
-    `, [userUID, newUser.username]);
-    return result.rows[0] as User;
+        RETURNING ${dbFields.join(', ')}
+    `, [uid, newUser.username]);
+    return dbDataToUser(result.rows[0]) as User;
 };
 
 export const updateUser = async (
-  update: UserUpdate, userUID: string, client: PoolClient) => {
+  update: UserUpdate, uid: string, client: PoolClient) => {
     const result = await client.query(`
       UPDATE
         userr
         SET username = $1
         WHERE uid = $2
-        RETURNING ${selectFields}
-    `, [update.username, userUID]);
-    return result.rows[0] as User;
+        RETURNING ${dbFields.join(', ')}
+    `, [update.username, uid]);
+    return dbDataToUser(result.rows[0]) as User;
 };
 
 export const deleteUser = async (

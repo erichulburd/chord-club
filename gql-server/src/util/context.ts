@@ -35,6 +35,6 @@ export const makeRequestContext = (dbClientManager: DBClientManager) => async (c
       requestID,
       uid,
     }),
-    loaders: makeLoaders(db),
+    loaders: makeLoaders(db, uid),
   };
 };

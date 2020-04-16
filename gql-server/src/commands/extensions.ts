@@ -1,9 +1,9 @@
 import { Command } from '@oclif/command';
-import { ExtensionType, Extension } from '../types';
-import { makePool } from '../repositories/db';
+import { ExtensionType, ExtensionNew } from '../types';
+import { makeDBPool } from '../repositories/db';
 import { insertExtensions } from '../repositories/extensions';
 
-const defaultBaseExtensions: Extension[] = [
+const defaultBaseExtensions: ExtensionNew[] = [
   [2, ExtensionType.Sus],
   [9, ExtensionType.Flat],
   [9, ExtensionType.Plain],
@@ -13,13 +13,14 @@ const defaultBaseExtensions: Extension[] = [
   [11, ExtensionType.Sharp],
   [5, ExtensionType.Flat],
   [5, ExtensionType.Sharp],
+  [6, ExtensionType.Plain],
   [13, ExtensionType.Flat],
   [13, ExtensionType.Plain],
   [7, ExtensionType.Flat],
   [7, ExtensionType.Plain],
 ].map(([degree, extensionType]) => ({
   degree, extensionType,
-} as Extension));
+} as ExtensionNew));
 
 export class ExtensionsCommand extends Command {
 
@@ -33,7 +34,7 @@ export class ExtensionsCommand extends Command {
   ];
 
   async run() {
-    const pool = makePool();
+    const pool = makeDBPool();
     const client = await pool.connect();
     await client.query('BEGIN');
     try {
@@ -41,7 +42,7 @@ export class ExtensionsCommand extends Command {
       await client.query('COMMIT');
     } catch (err) {
       await client.query('ROLLBACK');
-      console.error(err);
+      this.error(err);
     }
   }
 }

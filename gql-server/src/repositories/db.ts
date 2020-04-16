@@ -136,3 +136,27 @@ export const prepareDBUpdate = (values: DBUpdate) => {
   const pgValues = dbColumns.map((c) => dbValues[c]);
   return { prep, values: pgValues };
 };
+
+export interface DBFieldsToAttr {
+  [key: string]: string;
+}
+
+export const makeDBFields = (attrs: string[]) => attrs.map((attr) => snakeCase(attr));
+export const makeSelectFields = (dbFields: string[], table: string) =>
+  dbFields.map((field) => `${table}.${field}`).join(', ');
+
+const makeDBFieldsToAttr = (attrs: string[]): DBFieldsToAttr =>
+  attrs.reduce((prev, attr) => ({
+    ...prev,
+    [snakeCase(attr)]: attr,
+  }), {});
+
+export const makeDBDataToObject = <U>(attrs: string[]) => {
+  const dbFieldsToAttr: DBFieldsToAttr = makeDBFieldsToAttr(attrs);
+  return (row: {[key: string]: any}): U => {
+    return Object.keys(row).reduce((prev, dbField) => ({
+      ...prev,
+      [dbFieldsToAttr[dbField]]: row[dbField],
+    }), {}) as U;
+  };
+};

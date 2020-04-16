@@ -26,16 +26,14 @@ interface ListQuery {
 }
 
 enum TagType {
-  PUBLIC,
-  PRIVATE,
-  PROTECTED,
-  INSTRUMENT,
+  DESCRIPTOR,
+  LIST,
 }
 
 interface TagBase {
-  munge: String!
   displayName: String!
-  type: TagType!
+  scope: String!
+  tagType: TagType!
 }
 
 type Tag implements TagBase {
@@ -44,14 +42,19 @@ type Tag implements TagBase {
   displayName: String!
   createdBy: String!
   createdAt: String!
+  scope: String!
   password: String!
-  type: TagType!
+  tagType: TagType!
 }
 
 input TagNew {
-  munge: String!
   displayName: String!
-  type: TagType!
+  tagType: TagType!
+  scope: String!
+}
+
+enum BaseScopes {
+  PUBLIC,
 }
 
 enum TagQueryOrder {
@@ -60,13 +63,14 @@ enum TagQueryOrder {
 }
 
 input TagQuery {
-  displayName: String!
-  type: TagType
+  displayName: String
   id: Int
+  tagTypes: [TagType!]!
+  scopes: [String!]!
   order: TagQueryOrder
-  asc: Boolean!
-  after: String!
-  limit: Int!
+  asc: Boolean
+  after: Int
+  limit: Int
 }
 
 enum ReactionType {
@@ -76,14 +80,14 @@ enum ReactionType {
 
 type Reaction {
   chartID: Int!
-  userID: Int!
   reactionType: ReactionType!
+  createdBy: String!
   createdAt: String!
 }
 
 input ReactionNew {
   chartID: Int!
-  userID: Int!
+  uid: String!
   reactionType: ReactionType!
 }
 
@@ -98,7 +102,7 @@ interface ChartBase {
   notes: String
   abc: String!
   tags: [Tag!]!
-  public: Boolean!
+  scope: String!
   chartType: ChartType!
   bassNote: String!
   root: Note!
@@ -119,7 +123,7 @@ type Chart implements ChartBase {
   notes: String
   abc: String!
   tags: [Tag!]!
-  public: Boolean!
+  scope: String!
   chartType: ChartType!
   bassNote: String!
   root: Note!
@@ -137,7 +141,7 @@ input ChartNew {
   hint: String
   notes: String
   abc: String!
-  public: Boolean!
+  scope: String!
   chartType: ChartType!
   bassNote: String!
   root: Note!
@@ -167,9 +171,14 @@ enum ExtensionType {
   PLAIN,
 }
 
+type ExtensionNew {
+  extensionType: ExtensionType!
+  degree: Int! @constraint(min: 2, max: 13)
+}
+
 type Extension {
   id: Int!
-  extensionType: ExtensionType
+  extensionType: ExtensionType!
   degree: Int! @constraint(min: 2, max: 13)
 }
 
@@ -183,7 +192,7 @@ input ChartUpdate {
   notes: String
   abc: String
   imageURL: String
-  public: Boolean
+  scope: String
 }
 
 enum ChartQueryOrder {
@@ -192,13 +201,13 @@ enum ChartQueryOrder {
 }
 
 input ChartQuery {
-  id: Int!
-  tags: [String!]!
-  chartType: ChartType!
-  after: String!
+  id: Int
+  tagIDs: [Int!]
+  chartTypes: [ChartType!]!
+  after: Int
   order: ChartQueryOrder
-  asc: Boolean!
-  limit: Int!
+  asc: Boolean
+  limit: Int
 }
 
 interface UserBase {
@@ -225,12 +234,12 @@ enum UserQueryOrder {
 }
 
 input UserQuery {
-  userUID: String!
-  username: String!
-  after: String!
+  uid: String
+  username: String
+  after: String
   order: UserQueryOrder
-  asc: Boolean!
-  limit: Int!
+  asc: Boolean
+  limit: Int
 }
 
 enum ErrorType {
@@ -272,6 +281,8 @@ type Mutation {
   deleteChart(chartID: Int!): Empty
   addExtensions(chartID: Int!, extensionIDs: [Int!]!): Chart
   removeExtensions(chartID: Int!, extensionIDs: [Int!]!): Chart
+  createTags(tagNews: [TagNew!]!): [Tag!]!
+  deleteTag(tagID: Int!): Empty
   addTags(chartID: Int!, tags: [TagNew!]!): Chart
   unTag(chartID: Int!, tagID: String!): Chart
 }

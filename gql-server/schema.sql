@@ -16,14 +16,14 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: citext; Type: EXTENSION; Schema: -; Owner:
+-- Name: citext; Type: EXTENSION; Schema: -; Owner: 
 --
 
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner:
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: 
 --
 
 COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
@@ -34,8 +34,8 @@ COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings
 --
 
 CREATE TYPE public.chart_type AS ENUM (
-    'chord',
-    'progression'
+    'CHORD',
+    'PROGRESSION'
 );
 
 
@@ -46,8 +46,8 @@ ALTER TYPE public.chart_type OWNER TO developer;
 --
 
 CREATE TYPE public.reaction_type AS ENUM (
-    'star',
-    'flag'
+    'STAR',
+    'FLAG'
 );
 
 
@@ -80,13 +80,13 @@ CREATE TABLE public.chart (
     notes text,
     abc text,
     chart_type public.chart_type NOT NULL,
-    public boolean DEFAULT false,
     bass_note character varying(180),
     root character varying(180),
     quality character varying(180),
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone,
-    created_by character varying(180) NOT NULL
+    created_by character varying(180) NOT NULL,
+    scope character varying(180) NOT NULL
 );
 
 
@@ -225,9 +225,10 @@ ALTER SEQUENCE public.extension_id_seq OWNED BY public.extension.id;
 
 CREATE TABLE public.reaction (
     id integer NOT NULL,
-    userr_uid character varying(180) NOT NULL,
     chart_id integer NOT NULL,
-    reaction_type public.reaction_type NOT NULL
+    reaction_type public.reaction_type NOT NULL,
+    created_by character varying(180) NOT NULL,
+    created_at timestamp with time zone DEFAULT now()
 );
 
 
@@ -262,10 +263,11 @@ ALTER SEQUENCE public.reaction_id_seq OWNED BY public.reaction.id;
 CREATE TABLE public.tag (
     id integer NOT NULL,
     munge character varying(180) NOT NULL,
-    display_name character varying(180) NOT NULL,
+    display_name public.citext NOT NULL,
     tag_type character varying(180) NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     created_by character varying(180) NOT NULL,
+    scope character varying(180) NOT NULL,
     password character varying(180)
 );
 
@@ -414,19 +416,35 @@ ALTER TABLE ONLY public.reaction
 
 
 --
+-- Name: reaction reaction_unique; Type: CONSTRAINT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.reaction
+    ADD CONSTRAINT reaction_unique UNIQUE (created_by, chart_id);
+
+
+--
+-- Name: tag tag_display_name_unique; Type: CONSTRAINT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.tag
+    ADD CONSTRAINT tag_display_name_unique UNIQUE (display_name, scope);
+
+
+--
+-- Name: tag tag_munge_unique; Type: CONSTRAINT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.tag
+    ADD CONSTRAINT tag_munge_unique UNIQUE (munge, scope);
+
+
+--
 -- Name: tag tag_pkey; Type: CONSTRAINT; Schema: public; Owner: developer
 --
 
 ALTER TABLE ONLY public.tag
     ADD CONSTRAINT tag_pkey PRIMARY KEY (id);
-
-
---
--- Name: reaction thumb_unique; Type: CONSTRAINT; Schema: public; Owner: developer
---
-
-ALTER TABLE ONLY public.reaction
-    ADD CONSTRAINT thumb_unique UNIQUE (userr_uid, chart_id);
 
 
 --
@@ -486,11 +504,11 @@ ALTER TABLE ONLY public.reaction
 
 
 --
--- Name: reaction reaction_userr_uid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: developer
+-- Name: reaction reaction_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: developer
 --
 
 ALTER TABLE ONLY public.reaction
-    ADD CONSTRAINT reaction_userr_uid_fkey FOREIGN KEY (userr_uid) REFERENCES public.userr(uid) ON DELETE CASCADE;
+    ADD CONSTRAINT reaction_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.userr(uid) ON DELETE CASCADE;
 
 
 --

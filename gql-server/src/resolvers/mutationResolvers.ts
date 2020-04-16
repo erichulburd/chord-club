@@ -1,13 +1,13 @@
 import {
   User, Chart,
-  UserNew, UserUpdate, ChartNew, ChartUpdate, TagNew, ReactionNew,
+  UserNew, UserUpdate, ChartNew, ChartUpdate, TagNew, ReactionNew, Tag,
 } from '../types';
-import { createUser, updateUser, deleteUser } from '../repositories/user';
+import { insertUserNew, updateUser, deleteUser } from '../repositories/user';
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
-import { deleteChartsForUser, findChartByID, createNewChart, updateChart, deleteChart } from '../repositories/chart';
-import { createReaction } from '../repositories/reaction';
-import { addTagsForChart, unTag } from '../repositories/tag';
+import { deleteChartsForUser, findChartByID, insertNewChart, updateChart, deleteChart } from '../repositories/chart';
+import { insertReactionNew } from '../repositories/reaction';
+import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes } from '../repositories/tag';
 import { wrapTopLevelOp, Resolver } from './resolverUtils';
 import { addExtensionsForChart, removeExtensionsForChart } from '../repositories/extensions';
 import { chartNotFoundError } from '../util/errors';
@@ -51,6 +51,14 @@ interface AddRemoveExtensionsArgs {
   extensionIDs: number[];
 }
 
+interface CreateTagArgs {
+  tagNews: TagNew[];
+}
+
+interface DeleteTagArgs {
+  tagID: number;
+}
+
 interface MutationResolvers {
   createAccount: Resolver<CreateAccountArgs, User>;
   updateAccount: Resolver<UpdateAccountArgs, User>;
@@ -63,13 +71,15 @@ interface MutationResolvers {
   unTag: Resolver<UnTagArgs, Chart>;
   addExtensions: Resolver<AddRemoveExtensionsArgs, Chart>;
   removeExtensions: Resolver<AddRemoveExtensionsArgs, Chart>;
+  createTags: Resolver<CreateTagArgs, Tag[]>;
+  deleteTag: Resolver<DeleteTagArgs, void>;
 }
 
 const M: Partial<MutationResolvers> = {};
 
 M.createAccount = wrapTopLevelOp(
   async (_obj: TopLevelRootValue, args: CreateAccountArgs, context: Context): Promise<User> => {
-  return createUser(args.newUser, context.uid, context.db);
+  return insertUserNew(args.newUser, context.uid, context.db);
 });
 
 M.updateAccount = wrapTopLevelOp(async (
@@ -84,16 +94,16 @@ M.deleteAccount = wrapTopLevelOp(
 });
 
 M.react = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: ReactArgs, context: Context): Promise<Chart> => {
-  await createReaction(args.reactionNew, context.db);
+  await insertReactionNew(args.reactionNew, context.db);
   const chart = await findChartByID(args.reactionNew.chartID, context.uid, context.db);
   return chart as Chart;
 });
 
 M.createChart = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: CreateChartArgs, context: Context) => {
-    const chart = await createNewChart(args.chartNew, context.uid, context.db);
+    const chart = await insertNewChart(args.chartNew, context.uid, context.db);
     if (args.chartNew.tags) {
-      await addTagsForChart(chart.id, args.chartNew.tags, context.uid, context.db);
+      await addTagsForChart(chart, args.chartNew.tags, context.uid, context.db);
     }
     if (args.chartNew.extensionIDs) {
       await addExtensionsForChart(chart.id, args.chartNew.extensionIDs, context.db);
@@ -118,7 +128,7 @@ M.addTag = wrapTopLevelOp(async (
   if (!chart) {
     throw chartNotFoundError(args.chartID);
   }
-  await addTagsForChart(chart.id, args.tags, context.uid, context.db);
+  await addTagsForChart(chart, args.tags, context.uid, context.db);
   return chart;
 });
 
@@ -151,6 +161,18 @@ M.removeExtensions = wrapTopLevelOp(async (
   }
   await removeExtensionsForChart(args.chartID, args.extensionIDs, context.db);
   return chart;
+});
+
+M.createTags = wrapTopLevelOp(async (
+  _obj: TopLevelRootValue, args: CreateTagArgs, context: Context,
+): Promise<Tag[]> => {
+  const { uid, db } = context;
+  return insertNewTags(validateNewTagsScopes(args.tagNews, uid), uid, db);
+});
+
+M.deleteTag = wrapTopLevelOp(async (
+  _obj: TopLevelRootValue, args: DeleteTagArgs, context: Context): Promise<void> => {
+  await deleteTag(args.tagID, context.uid, context.db);
 });
 
 export default M;

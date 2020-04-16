@@ -11,11 +11,13 @@ export interface Loaders {
   reactionCountsByChartID: DataLoader<number, ReactionCounts>;
 }
 
-export const makeLoaders = (client: PoolClient): Loaders => ({
+export const makeLoaders = (
+  client: PoolClient, uid: string | undefined,
+): Loaders => ({
   extensionsByChartID:
     new DataLoader((chartIDs) => findExtensionsForCharts(chartIDs, client)),
   tagsByChartID:
-    new DataLoader((chartIDs) => findTagsForCharts(chartIDs, client)),
+    new DataLoader((chartIDs) => findTagsForCharts(chartIDs, uid, client)),
   reactionCountsByChartID:
     new DataLoader((chartIDs) => countReactions(chartIDs, client)),
 });

@@ -13,16 +13,14 @@ export type Scalars = {
 
 
 export enum TagType {
-  Public = 'PUBLIC',
-  Private = 'PRIVATE',
-  Protected = 'PROTECTED',
-  Instrument = 'INSTRUMENT'
+  Descriptor = 'DESCRIPTOR',
+  List = 'LIST'
 }
 
 export type TagBase = {
-  munge: Scalars['String'];
   displayName: Scalars['String'];
-  type: TagType;
+  scope: Scalars['String'];
+  tagType: TagType;
 };
 
 export type Tag = TagBase & {
@@ -32,15 +30,20 @@ export type Tag = TagBase & {
   displayName: Scalars['String'];
   createdBy: Scalars['String'];
   createdAt: Scalars['String'];
+  scope: Scalars['String'];
   password: Scalars['String'];
-  type: TagType;
+  tagType: TagType;
 };
 
 export type TagNew = {
-  munge: Scalars['String'];
   displayName: Scalars['String'];
-  type: TagType;
+  tagType: TagType;
+  scope: Scalars['String'];
 };
+
+export enum BaseScopes {
+  Public = 'PUBLIC'
+}
 
 export enum TagQueryOrder {
   DisplayName = 'DISPLAY_NAME',
@@ -48,13 +51,14 @@ export enum TagQueryOrder {
 }
 
 export type TagQuery = {
-  displayName: Scalars['String'];
-  type?: Maybe<TagType>;
+  displayName?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
+  tagTypes: Array<TagType>;
+  scopes: Array<Scalars['String']>;
   order?: Maybe<TagQueryOrder>;
-  asc: Scalars['Boolean'];
-  after: Scalars['String'];
-  limit: Scalars['Int'];
+  asc?: Maybe<Scalars['Boolean']>;
+  after?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
 };
 
 export enum ReactionType {
@@ -65,14 +69,14 @@ export enum ReactionType {
 export type Reaction = {
    __typename?: 'Reaction';
   chartID: Scalars['Int'];
-  userID: Scalars['Int'];
   reactionType: ReactionType;
+  createdBy: Scalars['String'];
   createdAt: Scalars['String'];
 };
 
 export type ReactionNew = {
   chartID: Scalars['Int'];
-  userID: Scalars['Int'];
+  uid: Scalars['String'];
   reactionType: ReactionType;
 };
 
@@ -87,7 +91,7 @@ export type ChartBase = {
   notes?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
-  public: Scalars['Boolean'];
+  scope: Scalars['String'];
   chartType: ChartType;
   bassNote: Scalars['String'];
   root: Note;
@@ -110,7 +114,7 @@ export type Chart = ChartBase & {
   notes?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
-  public: Scalars['Boolean'];
+  scope: Scalars['String'];
   chartType: ChartType;
   bassNote: Scalars['String'];
   root: Note;
@@ -128,7 +132,7 @@ export type ChartNew = {
   hint?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
-  public: Scalars['Boolean'];
+  scope: Scalars['String'];
   chartType: ChartType;
   bassNote: Scalars['String'];
   root: Note;
@@ -176,10 +180,16 @@ export enum ExtensionType {
   Plain = 'PLAIN'
 }
 
+export type ExtensionNew = {
+   __typename?: 'ExtensionNew';
+  extensionType: ExtensionType;
+  degree: Scalars['Int'];
+};
+
 export type Extension = {
    __typename?: 'Extension';
   id: Scalars['Int'];
-  extensionType?: Maybe<ExtensionType>;
+  extensionType: ExtensionType;
   degree: Scalars['Int'];
 };
 
@@ -193,7 +203,7 @@ export type ChartUpdate = {
   notes?: Maybe<Scalars['String']>;
   abc?: Maybe<Scalars['String']>;
   imageURL?: Maybe<Scalars['String']>;
-  public?: Maybe<Scalars['Boolean']>;
+  scope?: Maybe<Scalars['String']>;
 };
 
 export enum ChartQueryOrder {
@@ -202,13 +212,13 @@ export enum ChartQueryOrder {
 }
 
 export type ChartQuery = {
-  id: Scalars['Int'];
-  tags: Array<Scalars['String']>;
-  chartType: ChartType;
-  after: Scalars['String'];
+  id?: Maybe<Scalars['Int']>;
+  tagIDs?: Maybe<Array<Scalars['Int']>>;
+  chartTypes: Array<ChartType>;
+  after?: Maybe<Scalars['Int']>;
   order?: Maybe<ChartQueryOrder>;
-  asc: Scalars['Boolean'];
-  limit: Scalars['Int'];
+  asc?: Maybe<Scalars['Boolean']>;
+  limit?: Maybe<Scalars['Int']>;
 };
 
 export type UserBase = {
@@ -236,12 +246,12 @@ export enum UserQueryOrder {
 }
 
 export type UserQuery = {
-  userUID: Scalars['String'];
-  username: Scalars['String'];
-  after: Scalars['String'];
+  uid?: Maybe<Scalars['String']>;
+  username?: Maybe<Scalars['String']>;
+  after?: Maybe<Scalars['String']>;
   order?: Maybe<UserQueryOrder>;
-  asc: Scalars['Boolean'];
-  limit: Scalars['Int'];
+  asc?: Maybe<Scalars['Boolean']>;
+  limit?: Maybe<Scalars['Int']>;
 };
 
 export enum ErrorType {
@@ -301,6 +311,8 @@ export type Mutation = {
   deleteChart?: Maybe<Empty>;
   addExtensions?: Maybe<Chart>;
   removeExtensions?: Maybe<Chart>;
+  createTags: Array<Tag>;
+  deleteTag?: Maybe<Empty>;
   addTags?: Maybe<Chart>;
   unTag?: Maybe<Chart>;
 };
@@ -350,6 +362,16 @@ export type MutationAddExtensionsArgs = {
 export type MutationRemoveExtensionsArgs = {
   chartID: Scalars['Int'];
   extensionIDs: Array<Scalars['Int']>;
+};
+
+
+export type MutationCreateTagsArgs = {
+  tagNews: Array<TagNew>;
+};
+
+
+export type MutationDeleteTagArgs = {
+  tagID: Scalars['Int'];
 };
 
 

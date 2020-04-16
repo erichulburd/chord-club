@@ -12,11 +12,15 @@ CREATE TABLE userr (
 CREATE TABLE tag (
   id SERIAL PRIMARY KEY,
   munge VARCHAR(180) NOT NULL,
-  display_name VARCHAR(180) NOT NULL,
+  display_name citext NOT NULL,
   tag_type VARCHAR(180) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_by VARCHAR(180) NOT NULL,
-  password VARCHAR(180)
+  scope VARCHAR(180) NOT NULL,
+  password VARCHAR(180),
+
+  CONSTRAINT tag_munge_unique UNIQUE(munge, scope),
+  CONSTRAINT tag_display_name_unique UNIQUE(display_name, scope)
 );
 
 CREATE TABLE extension (
@@ -27,7 +31,7 @@ CREATE TABLE extension (
   CONSTRAINT extension_type_degree_unique UNIQUE(extension_type, degree)
 );
 
-CREATE TYPE chart_type AS ENUM ('chord', 'progression');
+CREATE TYPE chart_type AS ENUM ('CHORD', 'PROGRESSION');
 
 CREATE TABLE chart (
   id SERIAL PRIMARY KEY,
@@ -37,13 +41,13 @@ CREATE TABLE chart (
   notes TEXT,
   abc TEXT,
   chart_type chart_type NOT NULL,
-  public BOOLEAN DEFAULT FALSE,
   bass_note VARCHAR(180),
   root VARCHAR(180),
   quality VARCHAR(180),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE,
-  created_by VARCHAR(180) NOT NULL
+  created_by VARCHAR(180) NOT NULL,
+  scope VARCHAR(180) NOT NULL
 );
 
 CREATE TABLE chart_tag (
@@ -62,13 +66,14 @@ CREATE TABLE chart_extension (
   CONSTRAINT chart_extension_unique UNIQUE(chart_id, extension_id)
 );
 
-CREATE TYPE reaction_type AS ENUM ('star', 'flag');
+CREATE TYPE reaction_type AS ENUM ('STAR', 'FLAG');
 
 CREATE TABLE reaction (
   id SERIAL PRIMARY KEY,
-  userr_uid VARCHAR(180) REFERENCES userr(uid) ON DELETE CASCADE NOT NULL,
   chart_id INTEGER REFERENCES chart(id) ON DELETE CASCADE NOT NULL,
   reaction_type reaction_type NOT NULL,
+  created_by VARCHAR(180) REFERENCES userr(uid) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
-  CONSTRAINT thumb_unique UNIQUE(userr_uid, chart_id)
+  CONSTRAINT reaction_unique UNIQUE(created_by, chart_id)
 );
