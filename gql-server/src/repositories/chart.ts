@@ -6,7 +6,7 @@ import { invalidChartScope } from '../util/errors';
 
 const attrs = [
   'id', 'audioURL', 'imageURL', 'hint', 'notes', 'abc',
-  'scope', 'chartType', 'bassNote', 'quality', 'createdAt', 'createdBy',
+  'scope', 'chartType', 'bassNote', 'root', 'quality', 'createdAt', 'createdBy',
   'updatedAt',
 ];
 const dbFields = attrs.map((attr) => snakeCase(attr));
@@ -210,12 +210,15 @@ export const updateChart = async (
     validateChartScope(update.scope, uid);
   }
   const { prep, values } = prepareDBUpdate(omit(update, 'id'));
-
   const result = await client.query(`
     UPDATE chart
       SET ${prep}
       WHERE id = $${values.length + 1} AND created_by = $${values.length + 2}
+      RETURNING ${dbFields.join(', ')}
   `, [...values, update.id, uid]);
+  if (result.rows.length === 0) {
+    return undefined;
+  }
   return dbDataToChart(result.rows[0]) as Chart;
 };
 

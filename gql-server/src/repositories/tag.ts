@@ -1,27 +1,15 @@
 import { PoolClient } from 'pg';
 import { snakeCase, kebabCase, groupBy, has } from 'lodash';
 import { TagQuery, Tag, TagQueryOrder, TagNew, Chart, BaseScopes, TagBase, TagType } from '../types';
-import { prepareDBInsert } from './db';
+import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBInsert } from './db';
 import {  invalidChartTagError, invalidTagQueryScopeError, invalidNewTagsScopeError } from '../util/errors';
 
 const attrs = [
   'id', 'munge', 'displayName', 'createdBy', 'createdAt', 'scope', 'tagType',
 ];
-const dbFields = attrs.map((attr) => snakeCase(attr));
-const selectFields = dbFields.map((field) => `t.${field}`).join(', ');
-const dbFieldsToAttr: {[key: string]: string} = attrs.reduce((prev, attr) => ({
-  ...prev,
-  [snakeCase(attr)]: attr,
-}), {});
-const dbDataToTag = (row: {[key: string]: any} | undefined): Tag | undefined => {
-  if (row === undefined) {
-    return;
-  }
-  return Object.keys(row).reduce((prev, dbField) => ({
-    ...prev,
-    [dbFieldsToAttr[dbField]]: row[dbField],
-  }), {}) as Tag;
-};
+const dbFields = makeDBFields(attrs);
+const selectFields = makeSelectFields(dbFields, 't');
+const dbDataToTag = makeDBDataToObject<Tag>(attrs);
 
 interface BaseTagQuery {
   orderBy: string;
@@ -120,6 +108,9 @@ const findTagsAfter = async (query: BaseTagQueryAfter, client: PoolClient) => {
 
 export const findExistingTags =
   async (tags: TagNew[], client: PoolClient): Promise<Tag[]> => {
+  if (!tags || tags.length === 0) {
+    return [];
+  }
   const values: any[] = [];
   const prep: string[] = [];
   tags.forEach((tag, i) => {
@@ -131,7 +122,7 @@ export const findExistingTags =
     SELECT ${selectFields} FROM tag t
       WHERE ${prep.join(' OR ')}
   `, values);
-  return result.rows;
+  return result.rows.map(dbDataToTag);
 };
 
 export const insertNewTags = async (newTags: TagNew[], uid: string, client: PoolClient) => {
@@ -154,6 +145,9 @@ export const deleteTag = async (tagID: number, uid: string, client: PoolClient) 
 };
 
 export const addTagsForChart = async (chart: Chart, tags: TagNew[], uid: string, client: PoolClient) => {
+  if (!tags || tags.length === 0) {
+    return;
+  }
   const validatedTags = validateTagScopesForChart(tags, chart, uid);
   const existingTags = await findExistingTags(validatedTags, client);
   let savedTags = [...existingTags];

@@ -5,7 +5,7 @@ import { ChartNew, ChartUpdate, ChartQuery, ChartType, ChartQueryOrder, BaseScop
 import { makeChartNew, makeTagNew } from '../../../tests/factories';
 import { range } from 'lodash';
 import { insertNewTags, addTagsForChart } from '../tag';
-import { UserInputError, ApolloError } from 'apollo-server-express';
+import { ApolloError } from 'apollo-server-express';
 
 describe('chart repository', () => {
   const pool = makeDBPool();

@@ -23,7 +23,10 @@ export const insertExtensions = async (
 
 export const addExtensionsForChart = async (
   chartID: number, extensionIDs: number[], client: PoolClient) => {
-    const inserts = extensionIDs.map((extensionID) => ({ chartID, extensionID }));
+  if (!extensionIDs || extensionIDs.length === 0) {
+    return;
+  }
+  const inserts = extensionIDs.map((extensionID) => ({ chartID, extensionID }));
   const { columns, prep, values } = prepareDBInsert(inserts);
   await client.query(`
     INSERT INTO chart_extension (${columns})

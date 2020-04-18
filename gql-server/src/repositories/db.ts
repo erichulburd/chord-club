@@ -9,7 +9,7 @@ export type Tx = number;
 // only safely spawn transactions from the same thread.
 export class DBTxManager {
   public client: PoolClient;
-  private savepoint: number = 0;
+  public savepoint: number = 0;
 
   constructor(client: PoolClient) {
     this.client = client;
@@ -32,7 +32,7 @@ export class DBTxManager {
     } else {
       await this.client.query(`ROLLBACK TO SAVEPOINT sp${savepoint}`);
     }
-    this.savepoint = savepoint - 1;
+    this.savepoint = savepoint;
   }
 
   public async commit(savepoint: Tx) {
@@ -41,7 +41,7 @@ export class DBTxManager {
     } else {
       await this.client.query(`RELEASE SAVEPOINT sp${savepoint}`);
     }
-    this.savepoint = savepoint - 1;
+    this.savepoint = savepoint;
   }
 }
 

@@ -280,7 +280,7 @@ type Empty {
 type Mutation {
   createAccount(newUser: UserNew!): User
   updateAccount(userUpdate: UserUpdate!): User
-  deleteAccount(userID: Int!): Empty
+  deleteAccount(userID: String!): Empty
   react(reactionNew: ReactionNew): Chart
   createChart(chartNew: ChartNew!): Chart
   updateChart(chartUpdate: ChartUpdate!): Chart
@@ -290,5 +290,5 @@ type Mutation {
   createTags(tagNews: [TagNew!]!): [Tag!]!
   deleteTag(tagID: Int!): Empty
   addTags(chartID: Int!, tags: [TagNew!]!): Chart
-  unTag(chartID: Int!, tagID: String!): Chart
+  unTag(chartID: Int!, tagID: Int!): Chart
 }

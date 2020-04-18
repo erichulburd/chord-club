@@ -65,7 +65,7 @@ interface MutationResolvers {
   deleteAccount: Resolver<{}, void>;
   react: Resolver<ReactArgs, Chart>;
   createChart: Resolver<CreateChartArgs, Chart>;
-  updateChart: Resolver<UpdateChartArgs, Chart>;
+  updateChart: Resolver<UpdateChartArgs, Chart | undefined>;
   deleteChart: Resolver<DeleteChartArgs, void>;
   addTags: Resolver<AddTagArgs, Chart>;
   unTag: Resolver<UnTagArgs, Chart>;
@@ -112,7 +112,7 @@ M.createChart = wrapTopLevelOp(async (
 });
 
 M.updateChart = wrapTopLevelOp(async (
-  _obj: TopLevelRootValue, args: UpdateChartArgs, context: Context): Promise<Chart> => {
+  _obj: TopLevelRootValue, args: UpdateChartArgs, context: Context): Promise<Chart | undefined> => {
   return updateChart(args.chartUpdate, context.uid, context.db);
 });
 

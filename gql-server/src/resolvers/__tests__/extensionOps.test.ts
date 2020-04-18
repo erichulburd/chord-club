@@ -3,18 +3,20 @@ import { PoolClient } from 'pg';
 import { initializeApp } from '../../util/app';
 import supertest from 'supertest';
 import { getTestKey, signWithTestKey } from '../../../tests/testingKeys';
-import { makeUserNew } from '../../../tests/factories';
+import { makeUserNew, makeExtension } from '../../../tests/factories';
 import { insertUserNew } from '../../repositories/user';
 import express from 'express';
+import { insertExtensions } from '../../repositories/extensions';
+import { Extension } from '../../types';
 
 
-describe('user repository', () => {
+describe('extension queries', () => {
   const pool = makeDBPool();
   let dbClientManager: TestDBClientManager;
   let app: express.Express;
   let client: PoolClient;
   let txManager: DBTxManager;
-  let graphql: supertest.Test;
+  let graphql: () => supertest.Test;
   const token = signWithTestKey({ uid: 'uid' });
 
   beforeEach(async () => {
@@ -23,7 +25,7 @@ describe('user repository', () => {
     const conn = await dbClientManager.newConnection();
     client = conn[0];
     txManager = conn[1];
-    graphql = supertest(app)
+    graphql = () => supertest(app)
       .post('/graphql')
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${token}`);
@@ -37,15 +39,17 @@ describe('user repository', () => {
     await pool.end();
   });
 
-  test('basic tag operations', async () => {
-    await insertUserNew(makeUserNew(), 'uid1', client);
-    await insertUserNew(makeUserNew(), 'uid2', client);
-    await insertUserNew(makeUserNew(), 'uid3', client);
-    const res = await graphql.send({
+  test('list all extensions', async () => {
+    await insertExtensions([
+      makeExtension({ degree: 9 }),
+      makeExtension({ degree: 6 }),
+      makeExtension({ degree: 7 }),
+    ], client);
+    const res = await graphql().send({
       query: `
         query {
-          users(query: { uid: "uid1" }) {
-            uid username
+          extensions {
+            id extensionType degree
           }
         }
       `,
@@ -53,8 +57,8 @@ describe('user repository', () => {
     }).expect(200);
     const { data, errors } = res.body;
     expect(errors).toEqual(undefined);
-    expect(data.users.length).toEqual(1);
-    expect(data.users[0].uid).toEqual('uid1');
-
+    expect(data.extensions.length).toEqual(3);
+    expect(data.extensions.every((e: Extension) => [6, 7, 9].includes(e.degree)))
+      .toEqual(true);
   });
 });

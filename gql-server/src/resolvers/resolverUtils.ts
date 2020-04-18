@@ -11,7 +11,6 @@ export type Resolver<T, U, V = TopLevelRootValue> =
 export const wrapTopLevelOp =
   <T, U>(fn: Resolver<T, U>): Resolver<T, U> =>
   async (obj: TopLevelRootValue, args: T, context: Context) => {
-    console.error('WRAP TOP LEVEL OP');
   const start = Date.now();
   let logger = context.logger.child({
     start,
