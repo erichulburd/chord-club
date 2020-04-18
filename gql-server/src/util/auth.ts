@@ -48,3 +48,12 @@ export const parseAuthorization = (token: string, getKey: jwt.GetPublicKeyOrSecr
     jwt.verify(token, getKey, options, cb);
   });
 };
+
+export const getUID = async (authHeader: string | undefined, getKey: jwt.GetPublicKeyOrSecret): Promise<string> => {
+  if (!authHeader) return '';
+  const token = getBearerToken(authHeader);
+  if (!token) return '';
+  let uid: string;
+  const claims = await parseAuthorization(token, getKey);
+  return claims?.uid || '';
+}
