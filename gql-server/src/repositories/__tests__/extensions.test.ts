@@ -7,7 +7,7 @@ import { insertNewChart } from '../chart';
 
 describe('extensions repository', () => {
   const pool = makeDBPool();
-  const dbClientManager = new TestDBClientManager(pool);
+  let dbClientManager: TestDBClientManager;
   afterAll(async () => {
     await pool.end();
   });
@@ -17,6 +17,7 @@ describe('extensions repository', () => {
     let txManager: DBTxManager;
 
     beforeEach(async () => {
+      dbClientManager = new TestDBClientManager(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];

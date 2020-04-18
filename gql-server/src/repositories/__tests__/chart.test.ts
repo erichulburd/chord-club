@@ -9,7 +9,7 @@ import { ApolloError } from 'apollo-server-express';
 
 describe('chart repository', () => {
   const pool = makeDBPool();
-  const dbClientManager = new TestDBClientManager(pool);
+  let dbClientManager: TestDBClientManager;
   afterAll(async () => {
     await pool.end();
   });
@@ -19,6 +19,7 @@ describe('chart repository', () => {
     let txManager: DBTxManager;
 
     beforeEach(async () => {
+      dbClientManager = new TestDBClientManager(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];
@@ -84,6 +85,7 @@ describe('chart repository', () => {
     let privateTags: Tag[][] = [];
 
     beforeAll(async () => {
+      dbClientManager = new TestDBClientManager(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];

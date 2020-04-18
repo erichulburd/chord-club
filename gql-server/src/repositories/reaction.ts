@@ -11,11 +11,13 @@ const dbFields = makeDBFields(attrs);
 const _selectFields = makeSelectFields(dbFields, 'u');
 const _dbDataToReaction = makeDBDataToObject<Reaction>(attrs);
 
-export const insertReactionNew = async (reaction: ReactionNew, client: PoolClient) => {
+export const upsertReactionNew = async (reaction: ReactionNew, client: PoolClient) => {
   try {
     await client.query(`
       INSERT INTO reaction (chart_id, created_by, reaction_type)
         VALUES ($1, $2, $3)
+        ON CONFLICT (created_by, chart_id) DO
+        UPDATE SET reaction_type = EXCLUDED.reaction_type
     `, [reaction.chartID, reaction.uid, reaction.reactionType]);
   } catch (err) {
     if (pgReactionUniqueError.test(err.message)) {

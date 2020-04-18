@@ -2,14 +2,14 @@ import { makeDBPool, TestDBClientManager, DBTxManager } from '../db';
 import { PoolClient } from 'pg';
 import { insertNewChart } from '../chart';
 import { makeChartNew, makeUserNew } from '../../../tests/factories';
-import { insertReactionNew, countReactions, findReactionsByChartID } from '../reaction';
+import { upsertReactionNew, countReactions, findReactionsByChartID } from '../reaction';
 import { insertUserNew } from '../user';
 import { ReactionNew, ReactionType } from '../../types';
 import { ApolloError } from 'apollo-server-express';
 
 describe('reaction repository', () => {
   const pool = makeDBPool();
-  const dbClientManager = new TestDBClientManager(pool);
+  let dbClientManager: TestDBClientManager;
   afterAll(async () => {
     await pool.end();
   });
@@ -19,6 +19,7 @@ describe('reaction repository', () => {
     let txManager: DBTxManager;
 
     beforeEach(async () => {
+      dbClientManager = new TestDBClientManager(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];
@@ -39,7 +40,7 @@ describe('reaction repository', () => {
       await insertNewChart(makeChartNew(), 'uid', client);
 
       const reaction: ReactionNew = { uid: 'uid', chartID: chart1.id, reactionType: ReactionType.Star };
-      await insertReactionNew(reaction, client);
+      await upsertReactionNew(reaction, client);
       let counts = await countReactions([chart1.id, chart2.id, chart3.id], client);
       expect(counts[0].stars).toEqual(1);
       expect(counts[0].flags).toEqual(0);
@@ -48,11 +49,11 @@ describe('reaction repository', () => {
       expect(counts[2].stars).toEqual(0);
       expect(counts[2].flags).toEqual(0);
 
-      await insertReactionNew({ uid: 'uid1', chartID: chart1.id, reactionType: ReactionType.Star }, client);
-      await insertReactionNew({ uid: 'uid2', chartID: chart1.id, reactionType: ReactionType.Star }, client);
-      await insertReactionNew({ uid: 'uid', chartID: chart3.id, reactionType: ReactionType.Star }, client);
-      await insertReactionNew({ uid: 'uid1', chartID: chart3.id, reactionType: ReactionType.Flag }, client);
-      await insertReactionNew({ uid: 'uid2', chartID: chart3.id, reactionType: ReactionType.Flag }, client);
+      await upsertReactionNew({ uid: 'uid1', chartID: chart1.id, reactionType: ReactionType.Star }, client);
+      await upsertReactionNew({ uid: 'uid2', chartID: chart1.id, reactionType: ReactionType.Star }, client);
+      await upsertReactionNew({ uid: 'uid', chartID: chart3.id, reactionType: ReactionType.Star }, client);
+      await upsertReactionNew({ uid: 'uid1', chartID: chart3.id, reactionType: ReactionType.Flag }, client);
+      await upsertReactionNew({ uid: 'uid2', chartID: chart3.id, reactionType: ReactionType.Flag }, client);
 
       counts = await countReactions([chart1.id, chart2.id, chart3.id], client);
       expect(counts[0].stars).toEqual(3);
@@ -75,15 +76,15 @@ describe('reaction repository', () => {
       expect(reactions[2]).toEqual(ReactionType.Flag);
     });
 
-    test('insert duplicate reaction', async () => {
+    test('upsert existing reaction', async () => {
       await insertUserNew(makeUserNew(), 'uid', client);
       const chart1 = await insertNewChart(makeChartNew(), 'uid', client);
       const reaction: ReactionNew = { uid: 'uid', chartID: chart1.id, reactionType: ReactionType.Star };
-      await insertReactionNew(reaction, client);
+      await upsertReactionNew(reaction, client);
       reaction.reactionType = ReactionType.Flag;
-      expect(
-        insertReactionNew(reaction, client)
-      ).rejects.toThrowError(ApolloError);
+      await upsertReactionNew(reaction, client)
+      const rxns = await findReactionsByChartID([chart1.id], 'uid', client);
+      expect(rxns[0]).toEqual(ReactionType.Flag);
     });
   });
 });

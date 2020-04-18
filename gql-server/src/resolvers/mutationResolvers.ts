@@ -6,7 +6,7 @@ import { insertUserNew, updateUser, deleteUser } from '../repositories/user';
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
 import { deleteChartsForUser, findChartByID, insertNewChart, updateChart, deleteChart } from '../repositories/chart';
-import { insertReactionNew } from '../repositories/reaction';
+import { upsertReactionNew } from '../repositories/reaction';
 import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes } from '../repositories/tag';
 import { wrapTopLevelOp, Resolver } from './resolverUtils';
 import { addExtensionsForChart, removeExtensionsForChart } from '../repositories/extensions';
@@ -94,7 +94,7 @@ M.deleteAccount = wrapTopLevelOp(
 });
 
 M.react = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: ReactArgs, context: Context): Promise<Chart> => {
-  await insertReactionNew(args.reactionNew, context.db);
+  await upsertReactionNew(args.reactionNew, context.db);
   const chart = await findChartByID(args.reactionNew.chartID, context.uid, context.db);
   return chart as Chart;
 });

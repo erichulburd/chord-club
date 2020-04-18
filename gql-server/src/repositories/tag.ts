@@ -60,7 +60,7 @@ const searchForTag = async (displayName: string, query: BaseTagQuery, client: Po
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
-const findTagByID = async (id: number, scopes: string[], client: PoolClient) => {
+export const findTagByID = async (id: number, scopes: string[], client: PoolClient) => {
   const result = await client.query(`
     SELECT
       ${selectFields}

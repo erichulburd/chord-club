@@ -4,11 +4,11 @@ import { TagNew, ChartNew, ChartType, BaseScopes, TagQuery, Tag, TagType } from 
 import { makeTagNew, makeChartNew } from '../../../tests/factories';
 import { insertNewTags, deleteTag, addTagsForChart, findTagsForCharts, unTag, executeTagQuery } from '../tag';
 import { insertNewChart } from '../chart';
-import { UserInputError, ApolloError } from 'apollo-server-express';
+import { ApolloError } from 'apollo-server-express';
 
 describe('tag repository', () => {
   const pool = makeDBPool();
-  const dbClientManager = new TestDBClientManager(pool);
+  let dbClientManager: TestDBClientManager;
   afterAll(async () => {
     await pool.end();
   });
@@ -18,6 +18,7 @@ describe('tag repository', () => {
     let txManager: DBTxManager;
 
     beforeEach(async () => {
+      dbClientManager = new TestDBClientManager(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];
@@ -129,6 +130,7 @@ describe('tag repository', () => {
     let privateTags: Tag[][] = [];
 
     beforeAll(async () => {
+      dbClientManager = new TestDBClientManager(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];
