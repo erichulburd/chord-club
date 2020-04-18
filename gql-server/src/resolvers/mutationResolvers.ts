@@ -10,7 +10,7 @@ import { upsertReactionNew } from '../repositories/reaction';
 import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes } from '../repositories/tag';
 import { wrapTopLevelOp, Resolver } from './resolverUtils';
 import { addExtensionsForChart, removeExtensionsForChart } from '../repositories/extensions';
-import { chartNotFoundError } from '../util/errors';
+import { chartNotFoundError, forbiddenResourceOpError } from '../util/errors';
 
 interface CreateAccountArgs {
   newUser: UserNew;
@@ -60,9 +60,9 @@ interface DeleteTagArgs {
 }
 
 interface MutationResolvers {
-  createAccount: Resolver<CreateAccountArgs, User>;
-  updateAccount: Resolver<UpdateAccountArgs, User>;
-  deleteAccount: Resolver<{}, void>;
+  createUser: Resolver<CreateAccountArgs, User>;
+  updateUser: Resolver<UpdateAccountArgs, User>;
+  deleteUser: Resolver<{}, void>;
   react: Resolver<ReactArgs, Chart>;
   createChart: Resolver<CreateChartArgs, Chart>;
   updateChart: Resolver<UpdateChartArgs, Chart | undefined>;
@@ -77,25 +77,31 @@ interface MutationResolvers {
 
 const M: Partial<MutationResolvers> = {};
 
-M.createAccount = wrapTopLevelOp(
+M.createUser = wrapTopLevelOp(
   async (_obj: TopLevelRootValue, args: CreateAccountArgs, context: Context): Promise<User> => {
   return insertUserNew(args.newUser, context.uid, context.db);
 });
 
-M.updateAccount = wrapTopLevelOp(async (
+M.updateUser = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: UpdateAccountArgs, context: Context): Promise<User> => {
   return updateUser(args.userUpdate, context.uid, context.db);
 });
 
-M.deleteAccount = wrapTopLevelOp(
+M.deleteUser = wrapTopLevelOp(
   async (_obj: TopLevelRootValue, _args: {}, context: Context): Promise<void> => {
   await deleteChartsForUser(context.uid, context.db);
   await deleteUser(context.uid, context.db);
 });
 
 M.react = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: ReactArgs, context: Context): Promise<Chart> => {
-  await upsertReactionNew(args.reactionNew, context.db);
+  if (args.reactionNew.uid !== context.uid) {
+    throw forbiddenResourceOpError();
+  }
   const chart = await findChartByID(args.reactionNew.chartID, context.uid, context.db);
+  if (!chart) {
+    throw chartNotFoundError(args.reactionNew.chartID);
+  }
+  await upsertReactionNew(args.reactionNew, context.db);
   return chart as Chart;
 });
 
@@ -113,11 +119,19 @@ M.createChart = wrapTopLevelOp(async (
 
 M.updateChart = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: UpdateChartArgs, context: Context): Promise<Chart | undefined> => {
+  const chart = await findChartByID(args.chartUpdate.id, context.uid, context.db);
+  if (!chart) {
+    throw chartNotFoundError(args.chartUpdate.id);
+  }
   return updateChart(args.chartUpdate, context.uid, context.db);
 });
 
 M.deleteChart = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: DeleteChartArgs, context: Context): Promise<void> => {
+  const chart = await findChartByID(args.chartID, context.uid, context.db);
+  if (!chart) {
+    throw chartNotFoundError(args.chartID);
+  }
   await deleteChart(args.chartID, context.uid, context.db);
 });
 

@@ -254,6 +254,7 @@ enum ErrorType {
   INVALID_CHART_SCOPE,
   INVALID_CHART_REACTION,
   UNHANDLED,
+  FORBIDDEN_RESOURCE_OPERATION,
 }
 
 type ErrorException {
@@ -278,9 +279,9 @@ type Empty {
 }
 
 type Mutation {
-  createAccount(newUser: UserNew!): User
-  updateAccount(userUpdate: UserUpdate!): User
-  deleteAccount(userID: String!): Empty
+  createUser(newUser: UserNew!): User
+  updateUser(userUpdate: UserUpdate!): User
+  deleteUser(userID: String!): Empty
   react(reactionNew: ReactionNew): Chart
   createChart(chartNew: ChartNew!): Chart
   updateChart(chartUpdate: ChartUpdate!): Chart

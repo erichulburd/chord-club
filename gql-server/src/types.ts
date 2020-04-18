@@ -263,7 +263,8 @@ export enum ErrorType {
   InvalidChartTagError = 'INVALID_CHART_TAG_ERROR',
   InvalidChartScope = 'INVALID_CHART_SCOPE',
   InvalidChartReaction = 'INVALID_CHART_REACTION',
-  Unhandled = 'UNHANDLED'
+  Unhandled = 'UNHANDLED',
+  ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION'
 }
 
 export type ErrorException = {
@@ -308,9 +309,9 @@ export type Empty = {
 
 export type Mutation = {
    __typename?: 'Mutation';
-  createAccount?: Maybe<User>;
-  updateAccount?: Maybe<User>;
-  deleteAccount?: Maybe<Empty>;
+  createUser?: Maybe<User>;
+  updateUser?: Maybe<User>;
+  deleteUser?: Maybe<Empty>;
   react?: Maybe<Chart>;
   createChart?: Maybe<Chart>;
   updateChart?: Maybe<Chart>;

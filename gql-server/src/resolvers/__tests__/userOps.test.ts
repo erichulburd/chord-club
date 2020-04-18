@@ -96,7 +96,7 @@ describe('user queries', () => {
     const res1 = await graphql().send({
       query: `
         mutation ($newUser: UserNew!) {
-          createAccount(newUser: $newUser) {
+          createUser(newUser: $newUser) {
             uid username
           }
         }
@@ -107,13 +107,13 @@ describe('user queries', () => {
     }).expect(200);
     const { data, errors } = res1.body;
     expect(errors).toEqual(undefined);
-    expect(data.createAccount.uid).toEqual('uid');
-    expect(data.createAccount.username).toEqual('yada');
+    expect(data.createUser.uid).toEqual('uid');
+    expect(data.createUser.username).toEqual('yada');
 
     const res2 = await graphql().send({
       query: `
         mutation ($userUpdate: UserUpdate!) {
-          updateAccount(userUpdate: $userUpdate) {
+          updateUser(userUpdate: $userUpdate) {
             uid username
           }
         }
@@ -124,13 +124,13 @@ describe('user queries', () => {
     }).expect(200);
     const body2 = res2.body;
     expect(body2.errors).toEqual(undefined);
-    expect(body2.data.updateAccount.uid).toEqual('uid');
-    expect(body2.data.updateAccount.username).toEqual('yada2');
+    expect(body2.data.updateUser.uid).toEqual('uid');
+    expect(body2.data.updateUser.username).toEqual('yada2');
 
     const res3 = await graphql().send({
       query: `
         mutation ($uid: String!) {
-          deleteAccount(userID: $uid) { empty }
+          deleteUser(userID: $uid) { empty }
         }
       `,
       variables: {

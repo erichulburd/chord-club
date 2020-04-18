@@ -31,3 +31,6 @@ export const pgReactionUniqueError = /duplicate key value violates unique constr
 
 export const invalidChartReactionError = (chartID: number) => new ApolloError(
   'You have already reacted to this chart.', ErrorType.InvalidChartTagError, { chartID });
+
+export const forbiddenResourceOpError = () => new ApolloError(
+  'You are not authorized to perform this operation', ErrorType.ForbiddenResourceOperation, {});
