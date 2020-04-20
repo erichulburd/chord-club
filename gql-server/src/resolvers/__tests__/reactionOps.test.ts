@@ -17,7 +17,7 @@ describe('reaction ops', () => {
   let client: PoolClient;
   let txManager: DBTxManager;
   let graphql: (token?: string) => supertest.Test;
-  const token = signWithTestKey({ uid: 'uid' });
+  const token = signWithTestKey({ sub: 'uid' });
 
   beforeEach(async () => {
     dbClientManager = new TestDBClientManager(pool);
@@ -94,7 +94,7 @@ describe('reaction ops', () => {
     expect(chart2.reactionCounts?.flags).toEqual(1);
     expect(chart2.userReactionType).toEqual(ReactionType.Flag);
 
-    const token2 = signWithTestKey({ uid: 'uid2' });
+    const token2 = signWithTestKey({ sub: 'uid2' });
     reaction.uid = 'uid2';
     reaction.chartID = charts[2][0].id
     const res3 = await graphql(token2).send({

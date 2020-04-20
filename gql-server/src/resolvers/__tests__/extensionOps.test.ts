@@ -17,7 +17,7 @@ describe('extension queries', () => {
   let client: PoolClient;
   let txManager: DBTxManager;
   let graphql: () => supertest.Test;
-  const token = signWithTestKey({ uid: 'uid' });
+  const token = signWithTestKey({ sub: 'uid' });
 
   beforeEach(async () => {
     dbClientManager = new TestDBClientManager(pool);

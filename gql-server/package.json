@@ -48,6 +48,7 @@
     "@graphql-codegen/typescript": "^1.13.2",
     "@graphql-codegen/typescript-operations": "^1.13.2",
     "@types/faker": "^4.1.11",
+    "@types/formidable": "^1.0.31",
     "@types/jest": "^25.2.1",
     "@types/jsonwebtoken": "^8.3.9",
     "@types/jwk-to-pem": "^2.0.0",

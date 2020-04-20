@@ -5,7 +5,6 @@ import { makeChartNew, makeUserNew } from '../../../tests/factories';
 import { upsertReactionNew, countReactions, findReactionsByChartID } from '../reaction';
 import { insertUserNew } from '../user';
 import { ReactionNew, ReactionType } from '../../types';
-import { ApolloError } from 'apollo-server-express';
 
 describe('reaction repository', () => {
   const pool = makeDBPool();

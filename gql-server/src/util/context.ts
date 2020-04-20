@@ -1,5 +1,5 @@
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
-import { parseAuthorization, getBearerToken, Claims } from './auth';
+import { parseAuthorization, getBearerToken, AccessTokenClaims } from './auth';
 import { v4 as uuidv4 } from 'uuid';
 import { makeLoaders, Loaders } from '../repositories/loaders';
 import { PoolClient } from 'pg';
@@ -26,13 +26,13 @@ async (ctx: ExpressContext): Promise<Context> => {
     requestID,
   });
   const token = getBearerToken(ctx.req.headers.authorization || '');
-  let claims: Claims | undefined = undefined;
+  let claims: AccessTokenClaims | undefined = undefined;
   try {
     claims = (token && await parseAuthorization(token, getKey)) || undefined;
   } catch (err) {
     logger.error(err);
   }
-  const uid = claims && claims.uid;
+  const uid = claims && claims.sub;
   logger = logger.child({
     uid,
   });

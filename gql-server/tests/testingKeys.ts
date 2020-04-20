@@ -1,6 +1,6 @@
 import jwkToPem from 'jwk-to-pem';
 import jwt from 'jsonwebtoken';
-import { Claims } from '../src/util/auth';
+import { AccessTokenClaims } from '../src/util/auth';
 
 const testPublicKeyJWK: jwkToPem.RSA = {
   kty: 'RSA',
@@ -30,8 +30,11 @@ export const getTestKey: jwt.GetPublicKeyOrSecret =
     cb(null, testPublicKey);
 };
 
-export const signWithTestKey = (claims: Claims): string =>
+export const signWithTestKey = (claims: Partial<AccessTokenClaims>): string =>
   jwt.sign({
     iss: 'https:///',
+    aud: "aud",
+    iat: Date.now(),
+    exp: Date.now() + 3600 * 24,
     ...claims,
   }, testPrivateKey, { algorithm: 'RS256' });

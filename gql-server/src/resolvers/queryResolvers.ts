@@ -3,7 +3,7 @@ import {
   Tag,
   Extension,
 } from '../types';
-import { executeUserQuery } from '../repositories/user';
+import { executeUserQuery, findUserByUID } from '../repositories/user';
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
 import { executeChartQuery } from '../repositories/chart';
@@ -24,6 +24,7 @@ interface TagsArgs {
 }
 
 interface QueryResolvers {
+  me: Resolver<{}, User>;
   users: Resolver<UsersArgs, User[]>;
   charts: Resolver<ChartsArgs, Chart[]>;
   tags: Resolver<TagsArgs, Tag[]>;
@@ -31,6 +32,14 @@ interface QueryResolvers {
 }
 
 const Q: Partial<QueryResolvers> = {};
+
+Q.me = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: {}, context: Context): Promise<User> => {
+  let me = await findUserByUID(context.uid, context.db);
+  if (!me) {
+    me = { uid: context.uid, username: '', createdAt: '' };
+  }
+  return me;
+});
 
 Q.users = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: UsersArgs, context: Context): Promise<User[]> => {
   return (await executeUserQuery(args.query, context.db)) || [];

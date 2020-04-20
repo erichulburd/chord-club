@@ -23,8 +23,22 @@ const options: jwt.VerifyOptions = {
   algorithms: ['RS256']
 };
 
-export interface Claims {
-  uid: string;
+export interface IDTokenClaims {
+  iss: string;
+  sub: string;
+  aud: string;
+  iat: number;
+  exp: number;
+}
+
+export interface AccessTokenClaims {
+  iss: string;
+  sub: string;
+  aud: string[];
+  iat: number;
+  exp: number;
+  azp: string;
+  scope: string;
 }
 
 const bearerRegex = /^Bearer (.+)$/;
@@ -37,13 +51,14 @@ export const getBearerToken = (authorization: string) => {
   return undefined;
 };
 
-export const parseAuthorization = (token: string, getKey: jwt.GetPublicKeyOrSecret): Promise<Claims> => {
+export const parseAuthorization =
+  (token: string, getKey: jwt.GetPublicKeyOrSecret): Promise<AccessTokenClaims> => {
   return new Promise((resolve, reject) => {
     const cb: jwt.VerifyCallback = (err, decoded) => {
       if(err) {
         return reject(err);
       }
-      resolve(decoded as Claims);
+      resolve(decoded as AccessTokenClaims);
     };
     jwt.verify(token, getKey, options, cb);
   });
@@ -55,5 +70,5 @@ export const getUID = async (authHeader: string | undefined, getKey: jwt.GetPubl
   if (!token) return '';
   let uid: string;
   const claims = await parseAuthorization(token, getKey);
-  return claims?.uid || '';
+  return claims?.sub || '';
 }

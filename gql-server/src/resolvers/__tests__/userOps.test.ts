@@ -15,7 +15,7 @@ describe('user queries', () => {
   let client: PoolClient;
   let txManager: DBTxManager;
   let graphql: () => supertest.Test;
-  const token = signWithTestKey({ uid: 'uid' });
+  const token = signWithTestKey({ sub: 'uid' });
 
   beforeEach(async () => {
     dbClientManager = new TestDBClientManager(pool);
@@ -129,13 +129,11 @@ describe('user queries', () => {
 
     const res3 = await graphql().send({
       query: `
-        mutation ($uid: String!) {
-          deleteUser(userID: $uid) { empty }
+        mutation {
+          deleteUser { empty }
         }
       `,
-      variables: {
-        uid: 'uid',
-      },
+      variables: {},
     }).expect(200);
     const body3 = res3.body;
     expect(body3.errors).toEqual(undefined);
