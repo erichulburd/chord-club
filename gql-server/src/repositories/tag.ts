@@ -1,5 +1,5 @@
 import { PoolClient } from 'pg';
-import { snakeCase, kebabCase, groupBy, has } from 'lodash';
+import {  kebabCase, groupBy } from 'lodash';
 import { TagQuery, Tag, TagQueryOrder, TagNew, Chart, BaseScopes, TagBase, TagType } from '../types';
 import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBInsert } from './db';
 import {  invalidChartTagError, invalidTagQueryScopeError, invalidNewTagsScopeError } from '../util/errors';
@@ -9,7 +9,7 @@ const attrs = [
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 't');
-const dbDataToTag = makeDBDataToObject<Tag>(attrs);
+const dbDataToTag = makeDBDataToObject<Tag>(attrs, 'Tag');
 
 interface BaseTagQuery {
   orderBy: string;

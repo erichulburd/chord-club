@@ -9,7 +9,7 @@ const attrs = [
 ];
 const dbFields = makeDBFields(attrs);
 const _selectFields = makeSelectFields(dbFields, 'u');
-const _dbDataToReaction = makeDBDataToObject<Reaction>(attrs);
+const _dbDataToReaction = makeDBDataToObject<Reaction>(attrs, 'Reaction');
 
 export const upsertReactionNew = async (reaction: ReactionNew, client: PoolClient) => {
   try {

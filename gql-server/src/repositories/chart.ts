@@ -1,7 +1,10 @@
-import { BaseScopes, ChartQuery, Chart, ChartQueryOrder, ChartNew, ChartUpdate, ChartType, ChartBase } from '../types';
+import { BaseScopes, ChartQuery, Chart, ChartQueryOrder, ChartNew, ChartUpdate } from '../types';
 import { PoolClient } from 'pg';
-import { snakeCase, omit } from 'lodash';
-import { prepareDBUpdate } from './db';
+import { omit } from 'lodash';
+import {
+  prepareDBUpdate, makeDBFields, makeSelectFields,
+  makeDBDataToObject
+} from './db';
 import { invalidChartScope } from '../util/errors';
 
 const attrs = [
@@ -9,21 +12,9 @@ const attrs = [
   'scope', 'chartType', 'bassNote', 'root', 'quality', 'createdAt', 'createdBy',
   'updatedAt',
 ];
-const dbFields = attrs.map((attr) => snakeCase(attr));
-const selectFields = dbFields.map((field) => `c.${field}`).join(', ');
-const dbFieldsToAttr: {[key: string]: string} = attrs.reduce((prev, attr) => ({
-  ...prev,
-  [snakeCase(attr)]: attr,
-}), {});
-const dbDataToChart = (row: {[key: string]: any} | undefined) => {
-  if (row === undefined) {
-    return;
-  }
-  return Object.keys(row).reduce((prev, dbField) => ({
-    ...prev,
-    [dbFieldsToAttr[dbField]]: row[dbField],
-  }), {});
-};
+const dbFields = makeDBFields(attrs);
+const selectFields = makeSelectFields(dbFields, 'c');
+const dbDataToChart = makeDBDataToObject(attrs, 'Chart');
 
 interface AfterQuery {
   after: number;
@@ -225,11 +216,10 @@ export const updateChart = async (
 export const deleteChart = async (
   chartID: number, uid: string, client: PoolClient) => {
 
-  const result = await client.query(`
+  await client.query(`
     DELETE FROM chart
       WHERE id = $1 AND created_by = $2
   `, [chartID, uid]);
-  return dbDataToChart(result.rows[0]) as Chart;
 };
 
 const validateChartScope = (scope: string, uid: string) => {

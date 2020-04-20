@@ -159,12 +159,16 @@ const makeDBFieldsToAttr = (attrs: string[]): DBFieldsToAttr =>
     [snakeCase(attr)]: attr,
   }), {});
 
-export const makeDBDataToObject = <U>(attrs: string[]) => {
+interface GQLType {
+  __typename?: string;
+}
+
+export const makeDBDataToObject = <U extends GQLType>(attrs: string[], __typename: string) => {
   const dbFieldsToAttr: DBFieldsToAttr = makeDBFieldsToAttr(attrs);
   return (row: {[key: string]: any}): U => {
     return Object.keys(row).reduce((prev, dbField) => ({
       ...prev,
       [dbFieldsToAttr[dbField]]: row[dbField],
-    }), {}) as U;
+    }), { __typename }) as U;
   };
 };

@@ -9,7 +9,7 @@ const attrs = [
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 'e');
-const dbDataToExtension = makeDBDataToObject<Extension>(attrs);
+const dbDataToExtension = makeDBDataToObject<Extension>(attrs, 'Extension');
 
 export const insertExtensions = async (
   extensions: ExtensionNew[], client: PoolClient) => {

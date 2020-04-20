@@ -7,7 +7,7 @@ const attrs = [
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 'u');
-const dbDataToUser = makeDBDataToObject(attrs);
+const dbDataToUser = makeDBDataToObject(attrs, 'User');
 
 interface UserSQLQuery {
   orderBy: string;
