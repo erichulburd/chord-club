@@ -4,17 +4,17 @@ import { setContext } from "apollo-link-context";
 import { RetryLink } from "apollo-link-retry";
 import { ApolloLink } from 'apollo-link';
 import logger from './util/logger';
-import { getToken, sessionExpired } from "./util/auth";
+import auth from "./util/auth";
 import { requestWithoutTokenError } from "./util/errors";
 
 
 const authLink = setContext(async (_request, previousContext) => {
-    const token = getToken();
+    const token = auth.currentState().token;
     if (!token) {
       throw requestWithoutTokenError;
     }
     return {
-      headers: { ...previousContext, authorization: `Bearer ${token}` },
+      headers: { ...previousContext, Authorization: `Bearer ${token}` },
     };
   }
 );
@@ -22,7 +22,7 @@ const authLink = setContext(async (_request, previousContext) => {
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
     if (graphQLErrors.some((err) => err.extensions?.code === 'UNAUTHENTICATED')) {
-      sessionExpired()
+      auth.actions.sessionExpired()
     }
     graphQLErrors.forEach(({ message, locations, path, extensions }) =>
       logger.error(
@@ -46,7 +46,7 @@ const retryLink = new RetryLink({
   }
 });
 
-const GQL_URL = 'http://localhost:4000/graphql';
+export const GQL_URL = 'http://localhost:4000/graphql';
 const httpLink = createHttpLink({ uri: GQL_URL });
 
 export default ApolloLink.from([

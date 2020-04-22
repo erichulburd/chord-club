@@ -1,7 +1,8 @@
 import React from 'react';
-import { StyleSheet, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import { StyleSheet, StyleProp, ViewStyle, TextStyle, ImageProps } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import { IconProps } from '@ui-kitten/components';
+import { IconProps, Icon } from '@ui-kitten/components';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 export const FontAwesome5IconsPack = {
   name: 'fontAwesome5',
@@ -36,3 +37,8 @@ function FontAwesomeIcon({ name, style }: Props) {
     <FontAwesome5 name={name} size={height} color={tintColor} style={iconStyle} />
   );
 }
+
+export const ThemedIcon = (name: string) =>
+(props: Partial<ImageProps> = {}) => (
+  <Icon {...props} name={name} />
+);

@@ -2,6 +2,7 @@ import Auth0 from 'react-native-auth0';
 import AsyncStorage from '@react-native-community/async-storage';
 import Observable from 'zen-observable';
 import logger from './logger';
+import { ObservableState } from './observableState';
 
 export enum AuthEventType {
   INITIALIZED,
@@ -15,6 +16,7 @@ export enum AuthEventType {
 export interface AuthState {
   initialized: boolean;
   token: string | undefined;
+  sessionExpired: boolean;
 }
 
 interface AuthEvent {
@@ -25,13 +27,15 @@ interface AuthEvent {
 const authState: AuthState = {
   initialized: false,
   token: undefined,
+  sessionExpired: false,
 };
 
 const TOKEN_ASYNC_KEY = '@ChordClub:token';
 
-export const initialize = async () => {
+const initialize = async () => {
   try {
     const token = await AsyncStorage.getItem(TOKEN_ASYNC_KEY);
+    logger.info('TOKEN', token);
     if (token) {
       authState.token = token;
     }
@@ -42,19 +46,22 @@ export const initialize = async () => {
   publish({ state: { ...authState }, type: AuthEventType.INITIALIZED });
 };
 
-export const sessionExpired = () => {
+const sessionExpired = () => {
   authState.token = undefined;
-  publish({ state: { ...authState }, type: AuthEventType.SESSION_EXPIRED });
+  publish({
+    state: { sessionExpired: true, ...authState },
+    type: AuthEventType.SESSION_EXPIRED });
 };
 
-export const login = async () => {
+const login = async () => {
   if (Boolean(authState.token)) {
     return;
   }
   try {
     const credentials = await auth0Login();
     authState.token = credentials.accessToken;
-    publish({ state: { ...authState }, type: AuthEventType.USER_LOGIN });
+    logger.info('CREDENTIALS', JSON.stringify(credentials))
+    publish({ state: { sessionExpired: false, ...authState }, type: AuthEventType.USER_LOGIN });
     AsyncStorage.setItem(TOKEN_ASYNC_KEY, authState.token);
   } catch (err) {
     logger.error(err);
@@ -67,14 +74,10 @@ export const logout = async () => {
     return;
   }
   authState.token = undefined;
-  publish({ state: { ...authState }, type: AuthEventType.USER_LOGOUT });
+  publish({ state: { sessionExpired: false, ...authState }, type: AuthEventType.USER_LOGOUT });
   auth0Logout();
   AsyncStorage.removeItem(TOKEN_ASYNC_KEY);
 };
-
-export const isAuthInitialized = (): boolean => authState.initialized;
-export const isLoggedIn = (): boolean => Boolean(authState.token);
-export const getToken = (): string | undefined => authState.token;
 
 const subscribers = new Set<ZenObservable.Observer<AuthEvent>>();
 
@@ -86,7 +89,7 @@ const publish = (event: AuthEvent) => {
   });
 };
 
-export const authStateObservable = new Observable<AuthEvent>(observer => {
+export const observable = new Observable<AuthEvent>(observer => {
   observer.next({
     type: AuthEventType.SUBSCRIBED,
     state: authState,
@@ -98,16 +101,38 @@ export const authStateObservable = new Observable<AuthEvent>(observer => {
 });
 
 const auth0 = new Auth0({
-  // TODO
+  // TODO read these from config
   domain: 'dev-a1418g8w.auth0.com',
   clientId: 'Cpx3C78jx5gtje0EzpiXjgmLWb19Mufv',
 });
 
 interface Auth0Credentials {
   accessToken: string;
+  idToken: string;
 }
 
 const auth0Login = (): Promise<Auth0Credentials> => auth0.webAuth.authorize({
   scope: 'openid',
+  audience: 'https://api.chordclub.app',
 });
 const auth0Logout = () => auth0.webAuth.clearSession({ federated: true });
+
+export interface AuthActions {
+  login: () => void;
+  logout: () => void;
+  initialize: () => void;
+  sessionExpired: () => void;
+}
+
+const observableState: ObservableState<AuthActions, AuthState, AuthEvent> = {
+  observable,
+  currentState: () => authState,
+  actions: {
+    login,
+    logout,
+    initialize,
+    sessionExpired,
+  }
+};
+
+export default observableState
