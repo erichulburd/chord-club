@@ -160,13 +160,13 @@ enum Note {
 enum ChartQuality {
   MAJOR,
   MINOR,
-  SUS,
+  SUS2,
+  SUS4,
   DIMINISHED,
   AUGMENTED,
 }
 
 enum ExtensionType {
-  SUS,
   SHARP,
   FLAT,
   PLAIN,

@@ -3,11 +3,10 @@ import { parseAuthorization, getBearerToken, AccessTokenClaims } from './auth';
 import { v4 as uuidv4 } from 'uuid';
 import { makeLoaders, Loaders } from '../repositories/loaders';
 import { PoolClient } from 'pg';
-import pino from 'pino';
 import { DBClientManager, DBTxManager } from '../repositories/db';
 import { GetPublicKeyOrSecret } from 'jsonwebtoken';
-
-const baseLogger = pino();
+import pino from 'pino';
+import baseLogger from './logger';
 
 export interface Context {
   uid: string;

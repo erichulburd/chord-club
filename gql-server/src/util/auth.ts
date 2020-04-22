@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import { config } from './config';
+import logger from './logger';
 
 const client = jwksClient({
   jwksUri: `https://${config.AUTH0_DOMAIN}/.well-known/jwks.json`
@@ -18,7 +19,7 @@ export const auth0GetKey: jwt.GetPublicKeyOrSecret =
 };
 
 const options: jwt.VerifyOptions = {
-  audience: config.AUTH0_CLIENT_ID,
+  audience: config.AUTH0_AUDIENCE,
   issuer: `https://${config.AUTH0_DOMAIN}/`,
   algorithms: ['RS256']
 };
@@ -56,6 +57,7 @@ export const parseAuthorization =
   return new Promise((resolve, reject) => {
     const cb: jwt.VerifyCallback = (err, decoded) => {
       if(err) {
+        logger.error(err);
         return reject(err);
       }
       resolve(decoded as AccessTokenClaims);

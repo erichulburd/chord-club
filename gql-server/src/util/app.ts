@@ -10,7 +10,7 @@ import { DBClientManager } from '../repositories/db';
 import { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import * as resolvers from '../resolvers';
-import { auth0GetKey, parseAuthorization, getBearerToken, getUID } from './auth';
+import { auth0GetKey, getUID } from './auth';
 import { validUploadTypes, MAX_FILE_SIZE_MB, upload } from './gcStorage';
 
 export type TopLevelRootValue = Maybe<OperationDefinitionNode>;

@@ -281,6 +281,7 @@ export type ErrorExtensions = {
 
 export type Query = {
    __typename?: 'Query';
+  me: User;
   users: Array<User>;
   charts: Array<Chart>;
   tags: Array<Tag>;
@@ -325,18 +326,13 @@ export type Mutation = {
 };
 
 
-export type MutationCreateAccountArgs = {
+export type MutationCreateUserArgs = {
   newUser: UserNew;
 };
 
 
-export type MutationUpdateAccountArgs = {
+export type MutationUpdateUserArgs = {
   userUpdate: UserUpdate;
-};
-
-
-export type MutationDeleteAccountArgs = {
-  userID: Scalars['Int'];
 };
 
 
@@ -390,6 +386,6 @@ export type MutationAddTagsArgs = {
 
 export type MutationUnTagArgs = {
   chartID: Scalars['Int'];
-  tagID: Scalars['String'];
+  tagID: Scalars['Int'];
 };
 

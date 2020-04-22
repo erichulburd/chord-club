@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
-    "graphql-codegen": "graphql-codegen && mv ./src/types.d.ts ./src/types.ts",
+    "graphql-codegen": "graphql-codegen && mv ./src/types.d.ts ./src/types.ts && cp ./src/types.ts ../ChordClub/src",
     "build": "tsc src/index.ts --esModuleInterop",
     "dev": "ts-node-dev --respawn --transpileOnly ./src/index.ts",
     "test": "eslint ./src/**/*.ts && jest",
@@ -36,7 +36,6 @@
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.7.0",
     "lodash": "^4.17.15",
-    "oclif": "^1.15.2",
     "pg": "^8.0.2",
     "pg-cursor": "^2.1.9",
     "pino": "^6.2.0",

@@ -1,3 +1,0 @@
-#!/bin/bash
-
-pg_dump -s $PGDATABASE > schema.sql
