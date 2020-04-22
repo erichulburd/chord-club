@@ -44,6 +44,27 @@ const styles: any = StyleSheet.create({
     height: 5 * ratio,
     width: 0,
   },
+  playTimeAndDuration: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  elapsedText: {
+    width: 80,
+  },
+  elapsed1: {
+    width: 80,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center'
+  },
+  elapsed2: {
+    width: 80,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center'
+  }
 });
 
 interface State {
@@ -76,6 +97,19 @@ export const getRecordingPath = (fileName: string) => Platform.select({
   android: `sdcard/${fileName}.mp4`,
   default: `${fileName}.m4a`
 });
+
+const PlayTimeAndDuration =
+  ({ playTime, duration }: { playTime: string, duration: string}) => (
+  <View style={styles.playTimeAndDuration}>
+    <View style={styles.elapsed1}>
+      <Text>{playTime}</Text>
+    </View>
+    <Text>/</Text>
+    <View style={styles.elapsed2}>
+      <Text>{duration}</Text>
+    </View>
+  </View>
+);
 
 class AudioRecorder extends Component<Props, State> {
   private audioRecorderPlayer: AudioRecorderPlayer;
@@ -142,9 +176,10 @@ class AudioRecorder extends Component<Props, State> {
           </ButtonGroup>
         </Row>
         <Row>
-          <Text>
-            {this.state.playTime} / {this.state.duration}
-          </Text>
+          <PlayTimeAndDuration
+            playTime={this.state.playTime}
+            duration={this.state.duration}
+          />
         </Row>
         <Row>
           <TouchableOpacity
