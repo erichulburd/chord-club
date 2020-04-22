@@ -36,6 +36,7 @@ export const ExtensionPalletteBG = ({ selected, onExtensionUpdate }: Props) => {
   }
   return (
     <ButtonPallette
+      getUniqKey={(e => displayExtension(e))}
       options={data?.extensions || []}
       selected={selected}
       displayValue={displayExtension}

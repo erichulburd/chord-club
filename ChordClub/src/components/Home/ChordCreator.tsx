@@ -9,7 +9,7 @@ import { ChartType, ChartQuality, Extension, Note } from '../../types';
 import { Row } from '../shared/Row';
 import { ButtonPallette } from '../shared/ButtonPallette';
 import { ExtensionPalletteBG } from '../shared/ExtensionPalletteBG';
-// import Recorder from '../shared/Recorder';
+import AudioRecorder, { getRecordingPath } from '../AudioRecorder/index';
 
 interface ManualProps {
   close: () => void;
@@ -20,7 +20,7 @@ interface Props extends ManualProps, AuthConsumerProps {}
 const ChordCreator = ({ close }: Props) => {
   const [newChart, setChart] = useState(makeChartNew('authState.uid'));
   const [extensions, setExtensions] = useState<Extension[]>([]);
-  const [audioFileName, _] = useState<string>(v4());
+  const [audioFilePath, _] = useState<string>(getRecordingPath(v4()));
   const [audioReady, setAudioReady] = useState<boolean>(false);
   const updateChartType = (ct: ChartType) => setChart({ ...newChart, chartType: ct });
   const updateChartQuality = (q: ChartQuality) => setChart({ ...newChart, quality: q });
@@ -41,16 +41,10 @@ const ChordCreator = ({ close }: Props) => {
           <ChartTypeBG chartType={newChart.chartType} onChange={updateChartType} />
         </Row>
         <Row>
-          <Text category="label">Audio</Text>
-        </Row>
-        <Row>
-          {audioReady &&
-            <Text>Ready at {`${audioFileName}.aac`}</Text>
-          }
-          {/*<Recorder
-            fileName={`${audioFileName}.aac`}
-            onFinished={() => setAudioReady(true)}
-          />*/}
+          <AudioRecorder
+            filePath={audioFilePath}
+            onRecordingComplete={() => setAudioReady(true)}
+          />
         </Row>
         <Row>
           <Text category="label">Chord Quality</Text>

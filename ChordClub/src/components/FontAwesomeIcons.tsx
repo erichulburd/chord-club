@@ -1,8 +1,7 @@
 import React from 'react';
-import { StyleSheet, StyleProp, ViewStyle, TextStyle, ImageProps } from 'react-native';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { StyleSheet } from 'react-native';
+import FontAwesome5, { FontAwesome5IconProps } from 'react-native-vector-icons/FontAwesome5';
 import { IconProps, Icon } from '@ui-kitten/components';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 export const FontAwesome5IconsPack = {
   name: 'fontAwesome5',
@@ -17,28 +16,19 @@ function createIconsMap() {
   });
 }
 
-interface FontAwesome5Props extends ViewStyle, TextStyle {
-  height: number;
-  tintColor: string;
-}
-
 const IconProvider = (name: string) => ({
   toReactElement: (props: IconProps) => FontAwesomeIcon({ name, ...props }),
 });
 
-interface Props {
-  name: string;
-  style: StyleProp<FontAwesome5Props>;
-}
 
-function FontAwesomeIcon({ name, style }: Props) {
+function FontAwesomeIcon({ name, style, ...props }: IconProps & FontAwesome5IconProps) {
   const { height, tintColor, ...iconStyle } = StyleSheet.flatten(style);
   return (
-    <FontAwesome5 name={name} size={height} color={tintColor} style={iconStyle} />
+    <FontAwesome5 {...props} name={name} size={height} color={tintColor} style={iconStyle} />
   );
 }
 
 export const ThemedIcon = (name: string) =>
-(props: Partial<ImageProps> = {}) => (
+(props: Partial<IconProps & FontAwesome5IconProps> = {}) => (
   <Icon {...props} name={name} />
 );

@@ -7,6 +7,7 @@ interface Props<T> {
   selected: T[];
   onSelect: (choice: T) => void;
   size?: string;
+  getUniqKey?: (value: T) => string;
   displayValue?: (value: T) => string;
 }
 
@@ -24,14 +25,16 @@ const styles = StyleSheet.create({
 });
 
 export const ButtonPallette = <T extends any>({
-  options, selected, onSelect, size = 'small', displayValue = (val) => val.toString()
+  options, selected, onSelect, size = 'small',
+  getUniqKey = (val) => val.toString(),
+  displayValue = (val) => val.toString()
 }: Props<T>) => {
 
   return (
     <View style={styles.container}>
       {options.map((value) => (
         <Button
-          key={value}
+          key={getUniqKey(value)}
           size={size}
           style={styles.button}
           appearance={selected.indexOf(value) >= 0 ? 'filled' : 'outline'}
