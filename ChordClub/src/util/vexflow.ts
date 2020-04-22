@@ -1,2 +1,0 @@
-import VF from 'vexflow';
-
