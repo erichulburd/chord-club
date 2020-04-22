@@ -16,6 +16,7 @@
     "@react-native-community/masked-view": "^0.1.9",
     "@react-navigation/native": "^5.1.6",
     "@react-navigation/stack": "^5.2.11",
+    "@types/vexflow": "^1.2.33",
     "@ui-kitten/components": "^5.0.0-alpha.1",
     "apollo-cache-inmemory": "^1.6.5",
     "apollo-client": "^2.6.8",
@@ -39,6 +40,7 @@
     "react-native-svg": "^12.1.0",
     "react-native-uuid": "^1.4.9",
     "react-native-vector-icons": "^6.6.0",
+    "vexflow": "^3.0.9",
     "zen-observable": "^0.8.15"
   },
   "devDependencies": {
