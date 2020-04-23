@@ -1,4 +1,4 @@
-package com.chordclub;
+package app.chordclub;
 
 import com.facebook.react.ReactActivity;
 
