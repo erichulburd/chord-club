@@ -1,7 +1,7 @@
 import { ChartNew, ChartType, Note, ChartQuality } from "../types";
 
 
-export const makeChartNew = (uid: string): ChartNew => ({
+export const makeChartNew = (uid: string): Partial<ChartNew> => ({
   chartType: ChartType.Chord,
   audioURL: '',
   imageURL: '',
@@ -10,7 +10,6 @@ export const makeChartNew = (uid: string): ChartNew => ({
   bassNote: '',
   abc: '',
   scope: uid,
-  root: Note.C,
   quality: ChartQuality.Major,
   extensionIDs: [],
   tags: [],

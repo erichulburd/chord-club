@@ -1,26 +1,25 @@
 import React, { useState } from 'react';
-import { Text, Button } from '@ui-kitten/components';
-import { View, Image, Dimensions } from 'react-native';
+import { Text, Button, BottomNavigation, BottomNavigationTab, Input, TopNavigation, TabBar, Tab } from '@ui-kitten/components';
+import { View, Image, StyleSheet } from 'react-native';
 import { v4 } from 'react-native-uuid';
+import { TouchableHighlight, ScrollView } from 'react-native-gesture-handler';
 import { withAuth, AuthConsumerProps } from '../AuthProvider';
 import { makeChartNew } from '../../util/forms';
 import { ChartTypeBG } from '../shared/ChartTypeBG';
 import { ChartType, ChartQuality, Extension, Note } from '../../types';
 import { Row } from '../shared/Row';
-import { ButtonPallette } from '../shared/ButtonPallette';
 import { ExtensionPalletteBG } from '../shared/ExtensionPalletteBG';
 import AudioRecorder, { getRecordingPath } from '../AudioRecorder/index';
 import { ThemedIcon } from '../FontAwesomeIcons';
 import { pickSingleImage, ResizableImage } from '../../util/imagePicker';
-import { TouchableHighlight } from 'react-native-gesture-handler';
 import { ModalImage } from '../shared/ModalImage';
+import { NoteAutocomplete } from '../shared/NoteAutocomplete';
+import { ChartQualityAutocomplete } from '../shared/ChartQualityAutocomplete';
 
 
 interface ManualProps {
   close: () => void;
 }
-
-const WINDOW_WIDTH = Dimensions.get('window').width;
 
 interface Props extends ManualProps, AuthConsumerProps {}
 
@@ -48,11 +47,21 @@ const ChordCreator = ({ close }: Props) => {
   };
 
   return (
-    <View>
-      <Text>Chord Creator</Text>
-      <View>
+    <View style={styles.container}>
+      <TabBar
+        style={styles.tabBar}
+        selectedIndex={newChart.chartType === ChartType.Chord ? 0 : 1}
+        onSelect={index => updateChartType(index === 0 ? ChartType.Chord : ChartType.Progression)}
+      >
+        <Tab title='CHORD'/>
+        <Tab title='PROGRESSION'/>
+      </TabBar>
+      <ScrollView style={{ height: '80%' }}>
         <Row>
-          <ChartTypeBG chartType={newChart.chartType} onChange={updateChartType} />
+          <AudioRecorder
+            filePath={audioFilePath}
+            onRecordingComplete={() => setAudioReady(true)}
+          />
         </Row>
         {image &&
           <Row>
@@ -70,52 +79,55 @@ const ChordCreator = ({ close }: Props) => {
         <Row>
           <Button
             size="small"
-            onPress={updateImagePath}
-            accessoryLeft={ThemedIcon('file-image')}
-          >Chart</Button>
-          <Button
-            size="small"
-            disabled={image === null}
-            status="danger"
-            onPress={() => setResizableImage(null)}
-          >X</Button>
+            appearance="outline"
+            status={image ? 'danger' : 'primary'}
+            onPress={image ? () => setResizableImage(null) : updateImagePath}
+            accessoryLeft={image ? ThemedIcon('times') : ThemedIcon('file-image')}
+          >{image ? 'Remove' : 'Upload Chart'}</Button>
         </Row>
-        <Row>
-          <AudioRecorder
-            filePath={audioFilePath}
-            onRecordingComplete={() => setAudioReady(true)}
+        {newChart.chartType === ChartType.Chord &&
+          <>
+            <Row style={{ flexDirection: 'column', alignItems: 'stretch'}}>
+              <Row>
+                <View
+                  style={styles.chordTone}
+                >
+                  <NoteAutocomplete
+                    placeholder={'Tone'}
+                    onSelect={updateChartRoot}
+                  />
+                </View>
+                <View
+                  style={styles.chordQuality}
+                >
+                  <ChartQualityAutocomplete
+                    placeholder={'Quality'}
+                    onSelect={cq => setChart({ ...newChart, quality: cq })}
+                  />
+                </View>
+              </Row>
+            </Row>
+            <Row>
+              <Text category="label">Extensions</Text>
+            </Row>
+            <Row>
+              <ExtensionPalletteBG
+                selected={Array.from(extensions)}
+                onExtensionUpdate={updateExtensions}
+              />
+            </Row>
+          </>
+        }
+        <Row style={{ flexDirection: 'column', alignSelf: 'stretch' }}>
+          <Input
+            multiline
+            textStyle={styles.input}
+            placeholder='Description'
+            value={newChart.notes || ''}
+            onChangeText={(txt: string) => setChart({ ...newChart, notes: txt })}
           />
         </Row>
-        <Row>
-          <Text category="label">Chord Quality</Text>
-        </Row>
-        <Row>
-          <ButtonPallette
-            options={Object.values(ChartQuality)}
-            selected={[newChart.quality]}
-            onSelect={updateChartQuality}
-          />
-        </Row>
-        <Row>
-          <Text category="label">Root</Text>
-        </Row>
-        <Row>
-          <ButtonPallette
-            options={Object.values(Note).sort()}
-            selected={[newChart.root]}
-            onSelect={updateChartRoot}
-          />
-        </Row>
-        <Row>
-          <Text category="label">Extensions</Text>
-        </Row>
-        <Row>
-          <ExtensionPalletteBG
-            selected={Array.from(extensions)}
-            onExtensionUpdate={updateExtensions}
-          />
-        </Row>
-      </View>
+      </ScrollView>
       <Button onPress={close}>Close</Button>
       {image &&
         <ModalImage
@@ -127,5 +139,20 @@ const ChordCreator = ({ close }: Props) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+  },
+  tabBar: { height: 50 },
+  input: {
+    flex: 1,
+    alignSelf: 'stretch',
+    width: '100%',
+    minHeight: 64,
+  },
+  chordTone: { flex: 1, flexShrink: 1, flexGrow: 1, flexBasis: 1 },
+  chordQuality: { flex: 2, flexShrink: 2, flexGrow: 2, flexBasis: 2 }
+});
 
 export default withAuth<ManualProps>(ChordCreator);

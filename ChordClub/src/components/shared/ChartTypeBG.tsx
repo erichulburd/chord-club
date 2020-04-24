@@ -4,7 +4,7 @@ import { ChartType } from '../../types';
 import { ThemedIcon } from '../FontAwesomeIcons';
 
 interface Props {
-  chartType: ChartType;
+  chartType: ChartType | undefined;
   onChange: (chartType: ChartType) => void;
 }
 

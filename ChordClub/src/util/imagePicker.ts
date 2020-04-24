@@ -12,6 +12,8 @@ export const pickSingleImage = async (opts: Partial<Options> = {}) => {
     multiple: false,
     mediaType: 'photo',
     writeTempFile: true,
+    enableRotationGesture: true,
+    freeStyleCropEnabled: true,
     ...opts,
   });
   if (res instanceof Array) {

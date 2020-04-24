@@ -18,5 +18,5 @@ const styles = StyleSheet.create({
 });
 
 export const Row = ({ style = {}, children }: Props) =>  (
-  <View style={{ ...styles.row, ...style }}>{children}</View>
+  <View style={[styles.row, style]}>{children}</View>
 )
