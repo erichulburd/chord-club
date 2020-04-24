@@ -1,19 +1,11 @@
 import { Storage, UploadOptions } from '@google-cloud/storage';
 import path from 'path';
-import uuid from 'uuid';
+import { v4 } from 'uuid';
 import { File } from 'formidable';
+import mimeTypes from 'mime-types';
 
 export const MAX_FILE_SIZE_MB = 500;
 
-export const validUploadTypes: { [key: string]: string } = {
-  'audio/mpeg3': 'mp3',
-  'audio/x-mpeg-3': 'mp3',
-  'audio/wav': 'wav',
-  'audio/x-wav': 'wav',
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/gif': 'gif',
-};
 
 const storage = new Storage({
   projectId: process.env.GC_PROJECT_ID,
@@ -27,12 +19,12 @@ export const GC_STORAGE_URL_BASE =
 export const upload = async (file: File, uid: string, opts: UploadOptions = {}) => {
   const bucket = storage.bucket(GC_STORAGE_BUCKET_NAME);
   const fileName = path.join(
-    uid,
-    [uuid.v4(), validUploadTypes[file.type]].join('.'));
+    uid.replace('|', '-'),
+    [v4(), mimeTypes.extension(file.type)].join('.'));
 
-  const gcFile = bucket.file(file.name);
-
-  await bucket.upload(file.path, opts)
-  await gcFile.makePublic();
+  await bucket.upload(file.path, {
+    ...opts,
+    destination: fileName,
+  });
   return `${GC_STORAGE_URL_BASE}/${fileName}`;
 };

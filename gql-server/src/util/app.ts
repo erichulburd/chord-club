@@ -11,7 +11,9 @@ import { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import * as resolvers from '../resolvers';
 import { auth0GetKey, getUID } from './auth';
-import { validUploadTypes, MAX_FILE_SIZE_MB, upload } from './gcStorage';
+import { MAX_FILE_SIZE_MB, upload } from './gcStorage';
+import baseLogger from './logger';
+import { ErrorType } from '../types';
 
 export type TopLevelRootValue = Maybe<OperationDefinitionNode>;
 
@@ -30,10 +32,21 @@ export const initializeApp =
   const app = express();
   app.use(bodyParser.json());
 
-  app.post('/api/upload', async (req, res, next) => {
+  app.post('/v1/upload', async (req, res, next) => {
+    const start = Date.now();
     let uid = await getUID(req.headers.authorization || '', getKey);
+    const logger = baseLogger.child({
+      uid,
+      requestID: req.headers['X-REQUEST-ID'],
+      path: req.path,
+    });
     if (!uid) {
       res.status(401);
+      logger.child({
+        success: false, statusCode: 401,
+        ms: Date.now() - start,
+        errorCode: ErrorType.Unauthenticated,
+      }).error('unauthenticated');
       res.end();
       return;
     }
@@ -44,17 +57,27 @@ export const initializeApp =
 
     form.parse(req, async (err, _fields, files) => {
       if (err) {
+        logger.child({
+          success: false, statusCode: 500,
+          ms: Date.now() - start,
+          errorCode: ErrorType.Unhandled,
+        }).error(err);
         next(err);
         return;
       }
-      const file = Object.values(files)[0];
-      if (!validUploadTypes[file.type]) {
-        res.status(400);
-        res.json({ error: `${file.type} uploads not permitted.` });
-        return;
-      }
-      const url = await upload(file, uid);
-      res.json({ url });
+
+      const uploads: { [key: string]: string } = {};
+      await Promise.all(Object.keys(files).map(async (fileName) => {
+        const file = files[fileName];
+        const url = await upload(file, uid);
+        uploads[fileName] = url;
+      }));
+
+
+      logger
+        .child({ success: true, statusCode: 200, ms: Date.now() - start, })
+        .info('success');
+      res.status(200).json(uploads);
     });
   });
 
