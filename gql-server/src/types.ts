@@ -123,7 +123,8 @@ export type Chart = ChartBase & {
   reactionCounts: ReactionCounts;
   userReactionType?: Maybe<ReactionType>;
   createdAt: Scalars['String'];
-  createdBy?: Maybe<User>;
+  createdBy: Scalars['String'];
+  creator?: Maybe<User>;
   updatedAt?: Maybe<Scalars['String']>;
 };
 
@@ -169,13 +170,13 @@ export enum Note {
 export enum ChartQuality {
   Major = 'MAJOR',
   Minor = 'MINOR',
-  Sus = 'SUS',
+  Sus2 = 'SUS2',
+  Sus4 = 'SUS4',
   Diminished = 'DIMINISHED',
   Augmented = 'AUGMENTED'
 }
 
 export enum ExtensionType {
-  Sus = 'SUS',
   Sharp = 'SHARP',
   Flat = 'FLAT',
   Plain = 'PLAIN'

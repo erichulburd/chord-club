@@ -18,32 +18,41 @@ export interface Context {
   logger: pino.Logger;
 }
 
+const getRequestID = (ctx: ExpressContext) => {
+  const { headers } = ctx.req;
+  let requestID = headers['X-REQUEST-ID'] instanceof Array ? headers['X-REQUEST-ID'][0] : headers['X-REQUEST-ID'];
+  if (!requestID) {
+    return uuidv4();
+  }
+  return requestID;
+}
+
 export const makeRequestContext = (dbClientManager: DBClientManager, getKey: GetPublicKeyOrSecret) =>
 async (ctx: ExpressContext): Promise<Context> => {
-  const requestID = uuidv4();
+  const requestID = getRequestID(ctx);
   let logger = baseLogger.child({
     requestID,
   });
-  const token = getBearerToken(ctx.req.headers.authorization || '');
-  let claims: AccessTokenClaims | undefined = undefined;
   try {
-    claims = (token && await parseAuthorization(token, getKey)) || undefined;
+    const token = getBearerToken(ctx.req.headers.authorization || '');
+    let claims: AccessTokenClaims | undefined = (token && await parseAuthorization(token, getKey)) || undefined;
+    const uid = claims && claims.sub;
+    logger = logger.child({
+      uid,
+    });
+    const [db, txManager] = await dbClientManager.newConnection();
+    const loaders = makeLoaders(db, uid);
+    return {
+      uid: uid || '',
+      dbClientManager,
+      db,
+      txManager,
+      requestID,
+      logger,
+      loaders,
+    };
   } catch (err) {
     logger.error(err);
+    throw err;
   }
-  const uid = claims && claims.sub;
-  logger = logger.child({
-    uid,
-  });
-  const [db, txManager] = await dbClientManager.newConnection();
-  const loaders = makeLoaders(db, uid);
-  return {
-    uid: uid || '',
-    dbClientManager,
-    db,
-    txManager,
-    requestID,
-    logger,
-    loaders,
-  };
 };

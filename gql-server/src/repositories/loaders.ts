@@ -1,11 +1,13 @@
 import DataLoader from 'dataloader';
-import { Extension, Tag, ReactionCounts, ReactionType } from '../types';
+import { Extension, Tag, ReactionCounts, ReactionType, User } from '../types';
 import { PoolClient } from 'pg';
 import { findExtensionsForCharts } from './extensions';
 import { findTagsForCharts } from './tag';
 import { countReactions, findReactionsByChartID } from './reaction';
+import { findUsersByUID } from './user';
 
 export interface Loaders {
+  usersByUID: DataLoader<string, User>;
   extensionsByChartID: DataLoader<number, Extension[]>;
   tagsByChartID: DataLoader<number, Tag[]>;
   reactionCountsByChartID: DataLoader<number, ReactionCounts>;
@@ -15,6 +17,8 @@ export interface Loaders {
 export const makeLoaders = (
   client: PoolClient, uid: string | undefined,
 ): Loaders => ({
+  usersByUID:
+    new DataLoader((uids) => findUsersByUID(uids, client)),
   extensionsByChartID:
     new DataLoader((chartIDs) => findExtensionsForCharts(chartIDs, client)),
   tagsByChartID:

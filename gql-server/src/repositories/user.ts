@@ -51,6 +51,16 @@ export const findUserByUID = async (uid: string, client: PoolClient) => {
   return dbDataToUser(result.rows[0]) as User;
 };
 
+export const findUsersByUID = async (uids: readonly string[], client: PoolClient) => {
+  const result = await client.query(`
+    SELECT
+      ${selectFields}
+      FROM userr u
+      WHERE u.uid = ANY ($1)
+  `, [uids]);
+  return result.rows.map(dbDataToUser) as User[];
+};
+
 export const findUserByUsername = async (username: string, client: PoolClient) => {
   const result = await client.query(`
     SELECT

@@ -1,7 +1,13 @@
-import { Chart, Extension, Tag, ReactionCounts, ReactionType } from '../types';
+import { Chart, Extension, Tag, ReactionCounts, ReactionType, User } from '../types';
 import { Context } from '../util/context';
 import { Resolver } from './resolverUtils';
 
+
+export const creator: Resolver<{}, User, Chart> = async (
+  chart: Chart, args: {}, context: Context,
+): Promise<User> => {
+  return context.loaders.usersByUID.load(chart.createdBy || '');
+};
 
 export const extensions: Resolver<{}, Extension[], Chart> = async (
   chart: Chart, args: {}, context: Context,

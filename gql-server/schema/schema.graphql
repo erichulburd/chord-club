@@ -132,7 +132,8 @@ type Chart implements ChartBase {
   reactionCounts: ReactionCounts!
   userReactionType: ReactionType
   createdAt: String!
-  createdBy: User
+  createdBy: String!
+  creator: User
   updatedAt: String
 }
 
