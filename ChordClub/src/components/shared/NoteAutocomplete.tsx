@@ -28,10 +28,7 @@ const filterNotes = (query: string) => {
   return [];
 };
 
-const strToNote: { [k: string]: Note } = Object.keys(Note).reduce((prev, n) => ({
-  ...prev,
-  [n.toString()]: n,
-}), {});
+const strToNote = (n: string) => (sharpRegex.test(n) ? n.replace('#', 's') : n) as Note;
 
 interface Props {
   onSelect: (note: Note) => void;
@@ -64,7 +61,7 @@ export const NoteAutocomplete = ({
   );
 
   const updateSelection = (index: number) => {
-    onSelect(strToNote[notes[index]]);
+    onSelect(strToNote(notes[index]));
     setQuery(notes[index]);
   }
 

@@ -6,6 +6,8 @@ import { ApolloLink } from 'apollo-link';
 import logger from './util/logger';
 import auth from "./util/auth";
 import { requestWithoutTokenError } from "./util/errors";
+import { GQL_URL } from "./util/config";
+import { v4 } from 'react-native-uuid';
 
 
 const authLink = setContext(async (_request, previousContext) => {
@@ -14,7 +16,12 @@ const authLink = setContext(async (_request, previousContext) => {
       throw requestWithoutTokenError;
     }
     return {
-      headers: { ...previousContext, Authorization: `Bearer ${token}` },
+      ...previousContext,
+      headers: {
+        ...previousContext.headers,
+        ['X-REQUEST-iD']: v4(),
+        Authorization: `Bearer ${token}`
+      },
     };
   }
 );
@@ -46,7 +53,7 @@ const retryLink = new RetryLink({
   }
 });
 
-export const GQL_URL = 'http://localhost:4000/graphql';
+
 const httpLink = createHttpLink({ uri: GQL_URL });
 
 export default ApolloLink.from([

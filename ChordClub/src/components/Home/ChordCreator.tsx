@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
-import { Text, Button, BottomNavigation, BottomNavigationTab, Input, TopNavigation, TabBar, Tab } from '@ui-kitten/components';
+import { Text, Button, Input, TabBar, Tab, CheckBox } from '@ui-kitten/components';
 import { View, Image, StyleSheet } from 'react-native';
-import { v4 } from 'react-native-uuid';
 import { TouchableHighlight, ScrollView } from 'react-native-gesture-handler';
 import { withAuth, AuthConsumerProps } from '../AuthProvider';
 import { makeChartNew } from '../../util/forms';
-import { ChartTypeBG } from '../shared/ChartTypeBG';
-import { ChartType, ChartQuality, Extension, Note } from '../../types';
+import { ChartType, ChartQuality, Extension, Note, Chart, BaseScopes, ChartNew } from '../../types';
 import { Row } from '../shared/Row';
 import { ExtensionPalletteBG } from '../shared/ExtensionPalletteBG';
-import AudioRecorder, { getRecordingPath } from '../AudioRecorder/index';
+import AudioRecorder from '../AudioRecorder/index';
 import { ThemedIcon } from '../FontAwesomeIcons';
 import { pickSingleImage, ResizableImage } from '../../util/imagePicker';
 import { ModalImage } from '../shared/ModalImage';
 import { NoteAutocomplete } from '../shared/NoteAutocomplete';
 import { ChartQualityAutocomplete } from '../shared/ChartQualityAutocomplete';
+import { upload, FileUploads } from '../../util/api';
+import auth from '../../util/auth';
+import { useMutation } from '@apollo/react-hooks';
+import { last } from 'lodash';
+import {
+  CREATE_CHART_NEW, CreateChartResponse, CreateChartVariables
+} from '../../gql/chart';
 
 
 interface ManualProps {
@@ -24,9 +29,9 @@ interface ManualProps {
 interface Props extends ManualProps, AuthConsumerProps {}
 
 const ChordCreator = ({ close }: Props) => {
-  const [newChart, setChart] = useState(makeChartNew('authState.uid'));
+  const uid = auth.currentState().uid;
+  const [newChart, setChart] = useState(makeChartNew(uid));
   const updateChartType = (ct: ChartType) => setChart({ ...newChart, chartType: ct });
-  const updateChartQuality = (q: ChartQuality) => setChart({ ...newChart, quality: q });
   const updateChartRoot = (n: Note) => setChart({ ...newChart, root: n });
   const [extensions, setExtensions] = useState<Extension[]>([]);
   const updateExtensions = (e: Extension) => {
@@ -37,10 +42,44 @@ const ChordCreator = ({ close }: Props) => {
     extensions.splice(extensions.indexOf(e), 1);
     setExtensions([...extensions]);
   };
-  const [audioFilePath, _] = useState<string>(getRecordingPath(v4()));
-  const [audioReady, setAudioReady] = useState<boolean>(false);
+  const [audioFilePath, setAudioFilePath] = useState<string | undefined>(undefined);
   const [image, setResizableImage] = useState<ResizableImage | null>(null);
   const [modalImageVisible, setModalImageVisible] = useState<boolean>(false);
+  const [fileUploads, setFileUploads] = useState<FileUploads>({});
+
+  const [createChart, { loading, data, error }] =
+    useMutation<CreateChartResponse, CreateChartVariables>(CREATE_CHART_NEW);
+  const submit = async () => {
+    if (!audioFilePath) return;
+    const payload = {
+      ...newChart,
+      abc: '',
+      extensionIDs: extensions.map(e => e.id),
+    } as ChartNew;
+
+    const uploads: FileUploads = {};
+    payload.audioURL = fileUploads[audioFilePath]
+    if (!payload.audioURL) {
+      uploads.audio = audioFilePath;
+    }
+    payload.imageURL = fileUploads[image?.uri || ''];
+    if (image && !payload.imageURL) {
+      uploads.image = image.uri;
+    }
+    if (Object.keys(uploads).length > 0) {
+      const urls = await upload(uploads);
+      const update = { [audioFilePath]: urls.audio };
+      payload.audioURL = urls.audio;
+      if (image?.uri && urls.image) {
+        update[image.uri] = urls.image
+        payload.imageURL = urls.image;
+      }
+      setFileUploads({ ...fileUploads, ...update });
+    }
+    await createChart({ variables: { chartNew: payload }});
+    close();
+  }
+
   const updateImagePath = async () => {
     const image = await pickSingleImage();
     if (image) await setResizableImage(image);
@@ -59,8 +98,7 @@ const ChordCreator = ({ close }: Props) => {
       <ScrollView style={{ height: '80%' }}>
         <Row>
           <AudioRecorder
-            filePath={audioFilePath}
-            onRecordingComplete={() => setAudioReady(true)}
+            onRecordingComplete={setAudioFilePath}
           />
         </Row>
         {image &&
@@ -84,6 +122,13 @@ const ChordCreator = ({ close }: Props) => {
             onPress={image ? () => setResizableImage(null) : updateImagePath}
             accessoryLeft={image ? ThemedIcon('times') : ThemedIcon('file-image')}
           >{image ? 'Remove' : 'Upload Chart'}</Button>
+        </Row>
+        <Row>
+          <CheckBox
+            checked={newChart.scope === BaseScopes.Public}
+            onChange={checked => setChart({ ...newChart, scope: checked ? BaseScopes.Public : uid })}
+          />
+          <Text category="label"> Share publicly?</Text>
         </Row>
         {newChart.chartType === ChartType.Chord &&
           <>
@@ -128,7 +173,7 @@ const ChordCreator = ({ close }: Props) => {
           />
         </Row>
       </ScrollView>
-      <Button onPress={close}>Close</Button>
+      <Button onPress={submit}>Submit</Button>
       {image &&
         <ModalImage
           visible={modalImageVisible}
@@ -138,6 +183,10 @@ const ChordCreator = ({ close }: Props) => {
       }
     </View>
   );
+};
+
+const submit = async () => {
+
 };
 
 const styles = StyleSheet.create({

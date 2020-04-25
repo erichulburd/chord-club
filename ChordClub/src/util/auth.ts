@@ -2,6 +2,7 @@ import Auth0 from 'react-native-auth0';
 import AsyncStorage from '@react-native-community/async-storage';
 import Observable from 'zen-observable';
 import logger from './logger';
+import { Buffer } from 'buffer';
 import { ObservableState } from './observableState';
 
 export enum AuthEventType {
@@ -17,6 +18,7 @@ export interface AuthState {
   initialized: boolean;
   token: string | undefined;
   sessionExpired: boolean;
+  uid: string;
 }
 
 interface AuthEvent {
@@ -28,6 +30,7 @@ const authState: AuthState = {
   initialized: false,
   token: undefined,
   sessionExpired: false,
+  uid: '',
 };
 
 const TOKEN_ASYNC_KEY = '@ChordClub:token';
@@ -38,6 +41,9 @@ const initialize = async () => {
     logger.info('TOKEN', token);
     if (token) {
       authState.token = token;
+      const claims = parseJWT(token);
+      authState.uid = claims.sub;
+      logger.info('claims', JSON.stringify(claims));
     }
   } catch (err) {
     logger.error(err);
@@ -60,7 +66,9 @@ const login = async () => {
   try {
     const credentials = await auth0Login();
     authState.token = credentials.accessToken;
-    logger.info('CREDENTIALS', JSON.stringify(credentials))
+    const claims = parseJWT(authState.token);
+    logger.info('claims', JSON.stringify(claims));
+    authState.uid = claims.sub;
     publish({ state: { sessionExpired: false, ...authState }, type: AuthEventType.USER_LOGIN });
     AsyncStorage.setItem(TOKEN_ASYNC_KEY, authState.token);
   } catch (err) {
@@ -133,6 +141,12 @@ const observableState: ObservableState<AuthActions, AuthState, AuthEvent> = {
     initialize,
     sessionExpired,
   }
+};
+
+const parseJWT = (token: string) => {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace('-', '+').replace('_', '/');
+  return JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
 };
 
 export default observableState

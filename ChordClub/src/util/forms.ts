@@ -1,4 +1,4 @@
-import { ChartNew, ChartType, Note, ChartQuality } from "../types";
+import { ChartNew, ChartType, ChartQuality } from "../types";
 
 
 export const makeChartNew = (uid: string): Partial<ChartNew> => ({
@@ -14,3 +14,9 @@ export const makeChartNew = (uid: string): Partial<ChartNew> => ({
   extensionIDs: [],
   tags: [],
 });
+
+export interface ChartNewFiles {
+  audioPath: string;
+  imagePath?: string;
+  [key: string]: string | undefined;
+}

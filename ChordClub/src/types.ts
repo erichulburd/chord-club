@@ -123,7 +123,8 @@ export type Chart = ChartBase & {
   reactionCounts: ReactionCounts;
   userReactionType?: Maybe<ReactionType>;
   createdAt: Scalars['String'];
-  createdBy?: Maybe<User>;
+  createdBy: Scalars['String'];
+  creator?: Maybe<User>;
   updatedAt?: Maybe<Scalars['String']>;
 };
 

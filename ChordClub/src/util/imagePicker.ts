@@ -51,10 +51,10 @@ export class ResizableImage {
     }
   }
 
-  static async new(uri: string): Promise<ResizableImage> {
+  static async new(filePath: string): Promise<ResizableImage> {
     return new Promise((resolve, reject) => {
-      Image.getSize(uri, (width, height) => {
-        resolve(new ResizableImage(uri, width, height));
+      Image.getSize(filePath, (width, height) => {
+        resolve(new ResizableImage(`file://${filePath}`, width, height));
       }, reject);
     });
   }

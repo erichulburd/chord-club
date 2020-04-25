@@ -6,6 +6,7 @@ import AudioRecorderPlayer, {
   AudioSet,
   AudioSourceAndroidType,
 } from 'react-native-audio-recorder-player';
+import { v4 } from 'react-native-uuid';
 import {
   Platform,
   StyleSheet,
@@ -78,11 +79,12 @@ interface State {
   currentDurationSec: number;
   playTime: string;
   duration: string;
+  fileName: string;
+  absFilePath: string;
 }
 
 interface Props extends ThemedComponentProps {
-  filePath: string;
-  onRecordingComplete: () => void;
+  onRecordingComplete: (path: string) => void;
 }
 
 const getColors = (theme: Record<string, string>) => ({
@@ -92,11 +94,14 @@ const getColors = (theme: Record<string, string>) => ({
   played: theme['border-primary-color-1'],
 })
 
-export const getRecordingPath = (fileName: string) => Platform.select({
-  ios: `${fileName}.m4a`,
-  android: `sdcard/${fileName}.mp4`,
-  default: `${fileName}.m4a`
-});
+const makeFileName = () => {
+  const uuid = v4() ;
+  return Platform.select({
+    ios: `${uuid}.m4a`,
+    android: `sdcard/${uuid}.mp4`,
+    default: `${uuid}.m4a`
+  });
+};
 
 const PlayTimeAndDuration =
   ({ playTime, duration }: { playTime: string, duration: string}) => (
@@ -127,6 +132,8 @@ class AudioRecorder extends Component<Props, State> {
       currentDurationSec: 0,
       playTime: '00:00:00',
       duration: '00:00:00',
+      fileName: '',
+      absFilePath: '',
     };
 
 
@@ -240,14 +247,16 @@ class AudioRecorder extends Component<Props, State> {
       AVFormatIDKeyIOS: AVEncodingOption.aac,
     };
     console.log('audioSet', audioSet);
+    const fileName = makeFileName();
     this.setState({
       hasRecorded: true,
       isRecording: true,
       playTime: '00:00:00',
       currentPositionSec: 0,
+      fileName,
     });
-    const { filePath } = this.props;
-    const uri = await this.audioRecorderPlayer.startRecorder(filePath, audioSet);
+    const absFilePath = await this.audioRecorderPlayer.startRecorder(fileName, audioSet);
+    this.setState({ absFilePath });
     this.audioRecorderPlayer.addRecordBackListener((e: any) => {
       const recordTime = this.audioRecorderPlayer.mmssss(
         Math.floor(e.current_position),
@@ -257,7 +266,7 @@ class AudioRecorder extends Component<Props, State> {
         recordSecs: e.current_position,
       });
     });
-    console.log(`uri: ${uri}`);
+    console.log(`absFilePath: ${absFilePath}`);
   };
 
   private onStopRecord = async () => {
@@ -269,16 +278,16 @@ class AudioRecorder extends Component<Props, State> {
       currentPositionSec: 0,
       isRecording: false,
     });
+    const { absFilePath } = this.state;
     const { onRecordingComplete } = this.props;
-    onRecordingComplete();
+    onRecordingComplete(absFilePath);
     console.log(result);
   };
 
   private onStartPlay = async () => {
     console.log('onStartPlay');
     this.setState({ isPlaying: true });
-    const { filePath } = this.props;
-    const msg = await this.audioRecorderPlayer.startPlayer(filePath);
+    const msg = await this.audioRecorderPlayer.startPlayer(this.state.fileName);
     this.audioRecorderPlayer.setVolume(1.0);
     console.log(msg);
     this.audioRecorderPlayer.addPlayBackListener((e: any) => {

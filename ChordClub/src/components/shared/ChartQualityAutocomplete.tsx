@@ -16,7 +16,7 @@ const filterQualities = (query: string) => {
 };
 const strToChartQuality: { [k: string]: ChartQuality } = allChartQualities.reduce((prev, cq) => ({
   ...prev,
-  [cq.toString()]: cq,
+  [cq]: cq.toUpperCase(),
 }), {});
 
 interface Props {
