@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { Modal } from '@ui-kitten/components';
-import { ResizableImage } from 'src/util/imagePicker';
+import { ResizableImage } from '../../util/imagePicker';
 
 interface Props {
   visible: boolean;

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Text, Button, Input, TabBar, Tab, CheckBox, ButtonGroup } from '@ui-kitten/components';
+import { Text, Button, Input, TabBar, Tab, CheckBox } from '@ui-kitten/components';
 import { View, Image, StyleSheet } from 'react-native';
 import { TouchableHighlight, ScrollView } from 'react-native-gesture-handler';
 import { withAuth, AuthConsumerProps } from '../AuthProvider';
-import { makeChartNew } from '../../util/forms';
-import { ChartType, ChartQuality, Extension, Note, Chart, BaseScopes, ChartNew } from '../../types';
+import { makeChartNew, ChartURLs } from '../../util/forms';
+import { ChartType, Extension, Note, BaseScopes, ChartNew } from '../../types';
 import { Row } from '../shared/Row';
 import { ExtensionPalletteBG } from '../shared/ExtensionPalletteBG';
 import AudioRecorder from '../AudioRecorder/index';
@@ -13,22 +13,21 @@ import { pickSingleImage, ResizableImage } from '../../util/imagePicker';
 import { ModalImage } from '../shared/ModalImage';
 import { NoteAutocomplete } from '../shared/NoteAutocomplete';
 import { ChartQualityAutocomplete } from '../shared/ChartQualityAutocomplete';
-import { upload, FileUploads } from '../../util/api';
 import auth from '../../util/auth';
 import { useMutation } from '@apollo/react-hooks';
-import { last } from 'lodash';
 import {
   CREATE_CHART_NEW, CreateChartResponse, CreateChartVariables
 } from '../../gql/chart';
-
+import { FileURLCache, uploadFilesIfNecessary } from '../../util/uploads';
+import { withModalContext, ModalContextProps } from '../ModalProvider';
 
 interface ManualProps {
   close: () => void;
 }
 
-interface Props extends ManualProps, AuthConsumerProps {}
+interface Props extends ManualProps, AuthConsumerProps, ModalContextProps {}
 
-const ChordCreator = ({ close }: Props) => {
+const ChordCreator = ({ close, modalCtx }: Props) => {
   const uid = auth.currentState().uid;
   const [newChart, setChart] = useState(makeChartNew(uid));
   const updateChartType = (ct: ChartType) => setChart({ ...newChart, chartType: ct });
@@ -45,39 +44,39 @@ const ChordCreator = ({ close }: Props) => {
   const [audioFilePath, setAudioFilePath] = useState<string | undefined>(undefined);
   const [image, setResizableImage] = useState<ResizableImage | null>(null);
   const [modalImageVisible, setModalImageVisible] = useState<boolean>(false);
-  const [fileUploads, setFileUploads] = useState<FileUploads>({});
+  const [urlCache, setFileURLCache] = useState<FileURLCache>({});
 
-  const [createChart, { loading, data, error }] =
+  const [createChart, {}] =
     useMutation<CreateChartResponse, CreateChartVariables>(CREATE_CHART_NEW);
   const submit = async () => {
-    if (!audioFilePath) return;
+    if (!audioFilePath) {
+      modalCtx.message({ msg: 'You must upload audio.', status: 'danger' });
+      return;
+    };
+    modalCtx.wait();
     const payload = {
       ...newChart,
       abc: '',
       extensionIDs: extensions.map(e => e.id),
     } as ChartNew;
 
-    const uploads: FileUploads = {};
-    payload.audioURL = fileUploads[audioFilePath]
-    if (!payload.audioURL) {
-      uploads.audio = audioFilePath;
+    const filePaths: ChartURLs = {
+      audioURL: audioFilePath,
+      imageURL: image?.uri || '',
+    };
+    try {
+      const { urls, didUpload, cache } =
+      await uploadFilesIfNecessary(filePaths, urlCache);
+      Object.assign(payload, urls);
+      if (didUpload) setFileURLCache(cache);
+
+      await createChart({ variables: { chartNew: payload }});
+      modalCtx.wait(false);
+      close();
+    } catch (err) {
+      modalCtx.wait(false);
+      modalCtx.message({ msg: err.message, status: 'danger' });
     }
-    payload.imageURL = fileUploads[image?.uri || ''];
-    if (image && !payload.imageURL) {
-      uploads.image = image.uri;
-    }
-    if (Object.keys(uploads).length > 0) {
-      const urls = await upload(uploads);
-      const update = { [audioFilePath]: urls.audio };
-      payload.audioURL = urls.audio;
-      if (image?.uri && urls.image) {
-        update[image.uri] = urls.image
-        payload.imageURL = urls.image;
-      }
-      setFileUploads({ ...fileUploads, ...update });
-    }
-    await createChart({ variables: { chartNew: payload }});
-    close();
   }
 
   const updateImagePath = async () => {
@@ -204,10 +203,6 @@ const ChordCreator = ({ close }: Props) => {
   );
 };
 
-const submit = async () => {
-
-};
-
 const styles = StyleSheet.create({
   container: {
     flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
@@ -234,4 +229,5 @@ const styles = StyleSheet.create({
   }
 });
 
-export default withAuth<ManualProps>(ChordCreator);
+export default withModalContext(withAuth<ManualProps>(ChordCreator));
+

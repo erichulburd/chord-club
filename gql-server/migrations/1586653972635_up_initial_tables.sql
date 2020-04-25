@@ -36,7 +36,7 @@ CREATE TYPE chart_type AS ENUM ('CHORD', 'PROGRESSION');
 CREATE TABLE chart (
   id SERIAL PRIMARY KEY,
   audio_url TEXT NOT NULL,
-  image_url TEXT NOT NULL,
+  image_url TEXT,
   hint TEXT,
   notes TEXT,
   abc TEXT,

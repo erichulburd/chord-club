@@ -15,8 +15,7 @@ export const makeChartNew = (uid: string): Partial<ChartNew> => ({
   tags: [],
 });
 
-export interface ChartNewFiles {
-  audioPath: string;
-  imagePath?: string;
-  [key: string]: string | undefined;
+export interface  ChartURLs extends Record<string, string> {
+  imageURL: string;
+  audioURL: string;
 }

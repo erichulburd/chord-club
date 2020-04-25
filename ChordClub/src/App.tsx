@@ -18,6 +18,7 @@ import logger from './util/logger';
 import { FontAwesome5IconsPack } from './components/FontAwesomeIcons';
 import AuthModal from './components/AuthModal';
 import { AuthProvider } from './components/AuthProvider';
+import { ModalProvider } from './components/ModalProvider';
 
 if(__DEV__) {
   import('./util/reactotron').then(() => logger.info('Reactotron Configured'))
@@ -33,7 +34,9 @@ const App = ({}) => {
       <ApolloProvider client={client}>
         <ApplicationProvider {...eva} theme={eva.dark}>
           <AuthProvider>
-            <AppNavigator/>
+            <ModalProvider>
+              <AppNavigator/>
+            </ModalProvider>
             <AuthModal />
           </AuthProvider>
         </ApplicationProvider>
