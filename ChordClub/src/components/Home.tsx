@@ -39,7 +39,8 @@ export const HomeScreen = ({ navigation }: Props) => {
             <View>
               <Button
                 size={'giant'}
-                status={'primary'}
+                appearance={'ghost'}
+                status={'success'}
                 onPress={() => setView(HomeView.ChordCreator)}
               >New chord</Button>
             </View>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, Button, Input, TabBar, Tab, CheckBox } from '@ui-kitten/components';
+import { Text, Button, Input, TabBar, Tab, CheckBox, ButtonGroup } from '@ui-kitten/components';
 import { View, Image, StyleSheet } from 'react-native';
 import { TouchableHighlight, ScrollView } from 'react-native-gesture-handler';
 import { withAuth, AuthConsumerProps } from '../AuthProvider';
@@ -173,7 +173,26 @@ const ChordCreator = ({ close }: Props) => {
           />
         </Row>
       </ScrollView>
-      <Button onPress={submit}>Submit</Button>
+      <View style={styles.formControls}>
+        <>
+          <View style={styles.formControl}>
+            <Button
+              appearance="ghost"
+              size="large"
+              status="success"
+              onPress={submit}
+            >Submit</Button>
+          </View>
+          <View style={styles.formControl}>
+            <Button
+              appearance="ghost"
+              size="large"
+              status="warning"
+              onPress={close}
+            >Cancel</Button>
+          </View>
+        </>
+      </View>
       {image &&
         <ModalImage
           visible={modalImageVisible}
@@ -201,7 +220,18 @@ const styles = StyleSheet.create({
     minHeight: 64,
   },
   chordTone: { flex: 1, flexShrink: 1, flexGrow: 1, flexBasis: 1 },
-  chordQuality: { flex: 2, flexShrink: 2, flexGrow: 2, flexBasis: 2 }
+  chordQuality: { flex: 2, flexShrink: 2, flexGrow: 2, flexBasis: 2 },
+  formControl: {
+    flex: 1, flexShrink: 1, flexGrow: 1, flexBasis: 1,
+    display: 'flex', flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: 'red',
+  },
+  formControls: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  }
 });
 
 export default withAuth<ManualProps>(ChordCreator);
