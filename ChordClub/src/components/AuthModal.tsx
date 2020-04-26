@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Card, Modal, Text, Spinner } from '@ui-kitten/components';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ViewProps, View } from 'react-native';
 import { AuthConsumerProps, withAuth } from './AuthProvider';
 import UsernameModal from './UsernameModal';
 
@@ -20,13 +20,20 @@ const AuthModal = ({ authState, authActions: { login } }: AuthConsumerProps) => 
   if (isLoggedIn) {
     return <UsernameModal />;
   }
+  const Footer = (props?: ViewProps) => (
+    <View {...props}>
+      <Button status="success" onPress={login} appearance="outline">
+        Login or sign up
+      </Button>
+    </View>
+  );
   return (
     <Modal
       visible
       backdropStyle={styles.backdrop}
     >
-      <Card disabled={true}>
-        <Text>Chord Club</Text>
+      <Card disabled={true} status="success" footer={Footer}>
+        <Text category="h6">Chord Club</Text>
         {!initialized &&
           <Spinner size='giant'/>
         }
@@ -37,9 +44,7 @@ const AuthModal = ({ authState, authActions: { login } }: AuthConsumerProps) => 
                 Oops, your session has expired!
               </Text>
             }
-            <Button onPress={login}>
-              Login or sign up
-            </Button>
+            <Text>For your security and privacy, we use Auth0 to manage our user accounts.</Text>
           </React.Fragment>
         }
       </Card>

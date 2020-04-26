@@ -229,5 +229,5 @@ const styles = StyleSheet.create({
   }
 });
 
-export default withModalContext(withAuth<ManualProps>(ChordCreator));
+export default withModalContext(withAuth<ManualProps & ModalContextProps>(ChordCreator));
 

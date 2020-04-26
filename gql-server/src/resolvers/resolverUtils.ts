@@ -16,15 +16,11 @@ export const wrapTopLevelOp =
     start,
     op: obj?.name?.value,
   });
-  let tx: Tx | undefined = undefined;
   try {
     if (!context.uid) {
       throw unauthenticatedError;
     }
-
-    tx = await context.txManager.begin();
     const res: U = await fn(obj, args, context);
-    await context.txManager.commit(tx);
     logger.child({ ms: Date.now() - start, success: true, }).info('success');
     return res;
   } catch (err) {
@@ -35,15 +31,6 @@ export const wrapTopLevelOp =
         err.code : ErrorType.Unhandled),
     });
     logger.error(err);
-    try {
-      if (tx !== undefined) {
-        await context.txManager.rollbackTx(tx);
-      }
-    } catch(txErr) {
-      logger.error('database rollback failed');
-    }
     throw err;
-  } finally {
-    context.dbClientManager.releaseClient(context.db);
   }
 };

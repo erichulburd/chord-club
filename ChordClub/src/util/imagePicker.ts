@@ -58,6 +58,14 @@ export class ResizableImage {
       }, reject);
     });
   }
+
+  static async newFromURL(url: string): Promise<ResizableImage> {
+    return new Promise((resolve, reject) => {
+      Image.getSize(url, (width, height) => {
+        resolve(new ResizableImage(url, width, height));
+      }, reject);
+    });
+  }
 }
 
 

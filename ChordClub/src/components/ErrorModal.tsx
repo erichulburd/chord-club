@@ -13,7 +13,7 @@ export const ErrorModal = ({ error }: Props) => (
     visible={Boolean(error)}
     backdropStyle={styles.backdrop}
   >
-    <Card>
+    <Card status={"danger"}>
       {error && <ErrorText error={error} />}
     </Card>
   </Modal>

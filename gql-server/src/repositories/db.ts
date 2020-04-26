@@ -46,7 +46,7 @@ export class DBTxManager {
 }
 
 export class DBClientManager {
-  protected pool: Pool;
+  public pool: Pool;
 
   constructor(pool: Pool) {
     this.pool = pool;
@@ -101,9 +101,9 @@ export const makeDBPool = () => new Pool({
   port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : undefined,
   database: process.env.PGDATABASE,
   // ssl: { ca: '', cert: '', },
-  max: 20,
+  max: 30,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
 });
 
 export const makeDBClientManager = () => new DBClientManager(makeDBPool());

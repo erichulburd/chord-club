@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { ChartNew } from '../types';
+import { ChartNew, Chart, ChartQuery } from '../types';
 
 export const chartDBFields = gql`
   fragment ChartDBFields on Chart {
@@ -24,4 +24,40 @@ export interface CreateChartVariables {
 
 export interface CreateChartResponse {
   createChart: ChartNew;
+}
+
+export const CHARTS_QUERY = gql`
+  query ChartsQuery($query: ChartQuery!) {
+    charts(query: $query) {
+      ...ChartDBFields
+      creator { uid username } reactionCounts { stars } userReactionType
+    }
+  }
+  ${chartDBFields}
+`;
+
+export interface ChartsQueryVariables {
+  query: ChartQuery;
+}
+
+export interface ChartsQueryResponse {
+  charts: Chart[];
+}
+
+
+export const CHART_EXTENSIONS_QUERY = gql`
+  query ChartsExtensionsQuery($chartID: Int!, $chartTypes: [ChartType!]!) {
+    charts(query: { id: $chartID, chartTypes: $chartTypes }) {
+      extensions { id degree extensionType }
+    }
+  }
+`;
+
+export interface ChartExtensionsQueryVariables {
+  chartID: number;
+  chartTypes: ChartType[];
+}
+
+export interface ChartExtensionsQueryResponse {
+  charts: Chart[];
 }

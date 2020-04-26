@@ -1,7 +1,7 @@
 import React from 'react';
 import { ApolloError } from 'apollo-client';
 import { Text, Button, Icon } from '@ui-kitten/components';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { ErrorType } from '../types';
 
 interface ErrorTextProps {
@@ -25,15 +25,25 @@ const getErrorText = (error: ApolloError | string) => {
 };
 
 export default ({ error, retry }: ErrorTextProps) => (
-  <View>
+  <View style={styles.container}>
     <Text category={'danger'}>
       {getErrorText(error)}
     </Text>
     {retry &&
       <Button
         appearance='outline'
+        size="small"
         accessoryLeft={(props) => <Icon name='redo' {...props} /> }
-      />
+      >Retry</Button>
     }
   </View>
 );
+
+const styles = StyleSheet.create({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  }
+})

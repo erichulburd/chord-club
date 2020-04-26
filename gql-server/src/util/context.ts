@@ -3,7 +3,7 @@ import { parseAuthorization, getBearerToken, AccessTokenClaims } from './auth';
 import { v4 as uuidv4 } from 'uuid';
 import { makeLoaders, Loaders } from '../repositories/loaders';
 import { PoolClient } from 'pg';
-import { DBClientManager, DBTxManager } from '../repositories/db';
+import { DBClientManager } from '../repositories/db';
 import { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import pino from 'pino';
 import baseLogger from './logger';
@@ -13,7 +13,6 @@ export interface Context {
   requestID: string;
   loaders: Loaders;
   db: PoolClient;
-  txManager: DBTxManager;
   dbClientManager: DBClientManager;
   logger: pino.Logger;
 }
@@ -40,13 +39,13 @@ async (ctx: ExpressContext): Promise<Context> => {
     logger = logger.child({
       uid,
     });
-    const [db, txManager] = await dbClientManager.newConnection();
+
+    const [db, _] = await dbClientManager.newConnection();
     const loaders = makeLoaders(db, uid);
     return {
       uid: uid || '',
       dbClientManager,
       db,
-      txManager,
       requestID,
       logger,
       loaders,

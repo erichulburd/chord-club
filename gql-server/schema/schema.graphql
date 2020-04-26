@@ -128,13 +128,13 @@ type Chart implements ChartBase {
   bassNote: String!
   root: Note!
   quality: ChartQuality!
+  createdAt: String!
+  createdBy: String!
+  updatedAt: String
+  creator: User
   extensions: [Extension!]
   reactionCounts: ReactionCounts!
   userReactionType: ReactionType
-  createdAt: String!
-  createdBy: String!
-  creator: User
-  updatedAt: String
 }
 
 input ChartNew {

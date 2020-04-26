@@ -43,7 +43,6 @@ const initialize = async () => {
       authState.token = token;
       const claims = parseJWT(token);
       authState.uid = claims.sub;
-      logger.info('claims', JSON.stringify(claims));
     }
   } catch (err) {
     logger.error(err);
@@ -67,7 +66,6 @@ const login = async () => {
     const credentials = await auth0Login();
     authState.token = credentials.accessToken;
     const claims = parseJWT(authState.token);
-    logger.info('claims', JSON.stringify(claims));
     authState.uid = claims.sub;
     publish({ state: { sessionExpired: false, ...authState }, type: AuthEventType.USER_LOGIN });
     AsyncStorage.setItem(TOKEN_ASYNC_KEY, authState.token);

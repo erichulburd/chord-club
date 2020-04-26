@@ -2,24 +2,10 @@ import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { GET_EXTENSIONS, GetExtensionsData } from '../../gql/extension';
 import { ButtonPallette } from './ButtonPallette';
-import { Extension, ExtensionType } from '../../types';
+import { Extension } from '../../types';
 import { Spinner } from '@ui-kitten/components';
 import ErrorText from '../ErrorText';
-
-const displayExtentionType = (et: ExtensionType) => {
-  switch(et) {
-    case ExtensionType.Flat:
-      return 'b';
-    case ExtensionType.Sharp:
-      return '#';
-    default:
-      return '';
-  }
-}
-
-const displayExtension = (e: Extension) => (
-  `${displayExtentionType(e.extensionType)}${e.degree}`
-);
+import { displayExtension } from '../../util/strings';
 
 interface Props {
   selected: Extension[];

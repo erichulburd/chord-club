@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
-import { Divider, Layout, Text, Button } from '@ui-kitten/components';
+import { Divider, Layout, Button } from '@ui-kitten/components';
 import { NavigationProp } from '@react-navigation/native';
 import Title from './Title'
-import ChordList from './Home/ChordList';
+import { ChartList } from './ChartList';
 import ChordCreator from './Home/ChordCreator';
+import { ChartType } from '../types';
 
 interface NavProp {}
 
@@ -34,8 +35,7 @@ export const HomeScreen = ({ navigation }: Props) => {
       <Layout style={styles.container}>
         {view === HomeView.ChordList &&
           <>
-            <ChordList
-            />
+            <ChartList query={{ chartTypes: [ChartType.Chord, ChartType.Progression]}} />
             <View>
               <Button
                 size={'giant'}
