@@ -6,14 +6,14 @@ import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables } from '../gql/
 import { ScrollView, FlatList } from 'react-native-gesture-handler';
 import { Spinner } from '@ui-kitten/components';
 import { ChartItem } from './ChartItem';
-import { AudioPlayerProvider } from './AudioPlayerProvider'
+import { RefreshControl } from 'react-native';
 
 interface Props {
   query: ChartQuery;
 }
 
 export const ChartList = ({ query }: Props) => {
-  const { data, loading, error, fetchMore } =
+  const { data, loading, error, refetch, fetchMore } =
     useQuery<ChartsQueryResponse, ChartsQueryVariables>(CHARTS_QUERY, { variables: { query } });
   const loadMore = () => fetchMore({
     variables: {
@@ -26,9 +26,14 @@ export const ChartList = ({ query }: Props) => {
       }
     }
   });
-
+  const refresh = () => {
+    refetch();
+  }
   return (
-    <ScrollView>
+    <ScrollView
+      refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
+
+    >
       <FlatList
         data={data?.charts}
         keyExtractor={chart => chart.id.toString()}

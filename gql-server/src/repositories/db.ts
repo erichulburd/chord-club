@@ -112,10 +112,13 @@ interface DBInsert {
   [key: string]: any;
 }
 
-export const prepareDBInsert = (values: DBInsert[]) => {
+export const prepareDBInsert = (values: DBInsert[], attrWhitelist?: string[]) => {
   const dbColumns: { [key: string]: boolean } = {};
   values.forEach((insert) => Object.keys(insert).forEach((k) => dbColumns[k] = true));
-  const columns = Object.keys(dbColumns);
+  let columns = Object.keys(dbColumns);
+  if (attrWhitelist) {
+    columns = columns.filter(c => attrWhitelist.includes(c));
+  }
   const prep = values.map((_val, i) =>
     '(' + columns.map((_k, j) =>
       `$${i * columns.length + j + 1}`

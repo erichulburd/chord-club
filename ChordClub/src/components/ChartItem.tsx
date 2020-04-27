@@ -8,6 +8,7 @@ import { displayNote } from '../util/strings';
 import { ModalImage } from './shared/ModalImage';
 import { ResizableImage } from '../util/imagePicker';
 import AudioPlayer from './AudioPlayer1';
+import { TagCollection } from './TagCollection';
 
 export const ChartItem = ({ chart }: { chart: Chart }) => {
   const Footer = (props?: ViewProps) => (
@@ -57,6 +58,9 @@ export const ChartItem = ({ chart }: { chart: Chart }) => {
           onPress={openImage}
         >View chart</Button>
       </View>
+      <TagCollection
+        tags={chart.tags}
+      />
       {Boolean(chart.notes) &&
         <View>
           <View style={styles.attributeHeader}>

@@ -17,7 +17,7 @@ export const uploadFilesIfNecessary = async <T extends Record<string, string>>(
   const filesToUpload = {} as Record<string, string>;
   const urls = {} as Record<string, string>;
   Object.keys(fileLocalPaths).forEach((key) => {
-    urls[key] = existingUploadCache[key];
+    urls[key] = existingUploadCache[fileLocalPaths[key]];
     if (urls[key] === undefined && fileLocalPaths[key]) {
       filesToUpload[key] = fileLocalPaths[key];
     }

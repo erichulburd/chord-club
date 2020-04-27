@@ -8,16 +8,22 @@ interface Message {
   status?: Status;
 }
 
+interface Callbacks {
+  confirm: () => void;
+  cancel: () => void;
+}
+
 interface State {
   message?: Message;
   waiting: boolean;
+  callbacks?: Callbacks;
 }
 
 interface ModalContextValue {
   state: State;
   wait: (waiting?: boolean) => void;
-  message: (msg: Message) => void;
-  clearMessage: () => void;
+  message: (msg: Message, cb?: Callbacks) => void;
+  clearMessage: (cb?: () => void) => void;
 }
 
 const initialState = { waiting: false };
@@ -26,7 +32,7 @@ export const ModalContext = createContext<ModalContextValue>({
   state: initialState,
   wait: (_waiting?: boolean) => undefined,
   message: (_msg?: Message) => undefined,
-  clearMessage: () => undefined,
+  clearMessage: (cb?: () => void) => undefined,
 });
 
 
@@ -37,16 +43,16 @@ export class ModalProvider extends React.Component<{}, State> {
     this.setState({ waiting });
   }
 
-  public message = ({ msg, status = 'primary' }: Message) => {
-    this.setState({ message: { msg, status } });
+  public message = ({ msg, status = 'primary' }: Message, callbacks?: Callbacks) => {
+    this.setState({ message: { msg, status }, callbacks });
   }
 
-  public clearMessage = () => {
-    this.setState({ message: undefined });
+  public clearMessage = (cb: undefined | (() => void)) => {
+    this.setState({ message: undefined }, cb);
   }
 
   public render() {
-    const { waiting, message } = this.state;
+    const { waiting, message, callbacks } = this.state;
     const value = {
       state: this.state,
       wait: this.wait,
@@ -54,8 +60,20 @@ export class ModalProvider extends React.Component<{}, State> {
       clearMessage: this.clearMessage,
     };
     const Footer = (props: ViewProps = {}) => (
-      <View {...props}>
-        <Button size={'small'} appearance={'outline'} onPress={this.clearMessage}>OK</Button>
+      <View {...props} style={[props.style, styles.footer]}>
+        <Button
+          size={'small'}
+          appearance={'outline'}
+          onPress={() => this.clearMessage(callbacks?.confirm)}
+        >OK</Button>
+        {callbacks?.cancel &&
+          <Button
+            size={'small'}
+            appearance={'outline'}
+            status={'warning'}
+            onPress={() => this.clearMessage(callbacks?.cancel)}
+          >Cancel</Button>
+        }
       </View>
     );
     return (
@@ -85,6 +103,11 @@ const styles = StyleSheet.create({
   backdrop: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+  footer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  }
 });
 
 

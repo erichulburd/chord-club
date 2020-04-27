@@ -14,10 +14,6 @@ const dbDataToExtension = makeDBDataToObject<Extension>(attrs, 'Extension');
 export const insertExtensions = async (
   extensions: ExtensionNew[], client: PoolClient) => {
   const { columns, prep, values } = prepareDBInsert(extensions);
-  console.info(`
-  INSERT INTO extension (${columns})
-      VALUES ${prep} RETURNING ${dbFields.join(', ')}
-  `);
   const res = await client.query(`
     INSERT INTO extension (${columns})
       VALUES ${prep} RETURNING ${dbFields.join(', ')}

@@ -3,7 +3,8 @@ import { PoolClient } from 'pg';
 import { omit } from 'lodash';
 import {
   prepareDBUpdate, makeDBFields, makeSelectFields,
-  makeDBDataToObject
+  makeDBDataToObject,
+  prepareDBInsert
 } from './db';
 import { invalidChartScope } from '../util/errors';
 
@@ -172,26 +173,14 @@ export const deleteChartsForUser = async (uid: string, client: PoolClient) => {
 };
 
 export const insertNewChart = async (chartNew: ChartNew, uid: string, client: PoolClient) => {
-  const {
-    audioURL, imageURL, hint, notes, abc, scope,
-    chartType, bassNote, root, quality,
-  } = chartNew;
-  validateChartScope(scope, uid);
+  validateChartScope(chartNew.scope, uid);
+  const payload = { ...chartNew, createdBy: uid };
+  const { values, columns, prep } = prepareDBInsert([payload], attrs.filter(attr => attr !== 'id'));
   const result = await client.query(`
     INSERT INTO
-      chart (
-        audio_url, image_url, hint, notes, abc, scope,
-        chart_type, bass_note, root, quality,
-        created_at, created_by
-      )
-      VALUES (
-        $1, $2, $3, $4, $5, $6,
-        $7, $8, $9, $10, NOW(), $11
-      ) RETURNING ${dbFields.join(', ')}
-  `, [
-    audioURL, imageURL, hint, notes, abc, scope,
-    chartType, bassNote, root, quality, uid,
-  ]);
+      chart (${columns})
+      VALUES ${prep} RETURNING ${dbFields.join(', ')}
+  `, values);
   return dbDataToChart(result.rows[0]) as Chart;
 };
 

@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { ChartNew, Chart, ChartQuery, ChartType } from '../types';
+import { tagDBFields } from './tag';
 
 export const chartDBFields = gql`
   fragment ChartDBFields on Chart {
@@ -31,9 +32,11 @@ export const CHARTS_QUERY = gql`
     charts(query: $query) {
       ...ChartDBFields
       creator { uid username } reactionCounts { stars } userReactionType
+      tags { ...TagDBFields }
     }
   }
   ${chartDBFields}
+  ${tagDBFields}
 `;
 
 export interface ChartsQueryVariables {

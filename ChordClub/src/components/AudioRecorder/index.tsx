@@ -272,15 +272,15 @@ class AudioRecorder extends Component<Props, State> {
   private onStopRecord = async () => {
     const result = await this.audioRecorderPlayer.stopRecorder();
     this.audioRecorderPlayer.removeRecordBackListener();
+    const { absFilePath, recordSecs } = this.state;
+    const { onRecordingComplete } = this.props;
+    onRecordingComplete(absFilePath, Math.round(recordSecs));
     this.setState({
       recordSecs: 0,
       playTime: '00:00:00',
       currentPositionSec: 0,
       isRecording: false,
     });
-    const { absFilePath, recordSecs } = this.state;
-    const { onRecordingComplete } = this.props;
-    onRecordingComplete(absFilePath, Math.round(recordSecs * 1000));
     console.log(result);
   };
 

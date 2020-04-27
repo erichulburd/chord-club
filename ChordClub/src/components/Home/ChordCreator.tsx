@@ -3,8 +3,8 @@ import { Text, Button, Input, TabBar, Tab, CheckBox } from '@ui-kitten/component
 import { View, Image, StyleSheet } from 'react-native';
 import { TouchableHighlight, ScrollView } from 'react-native-gesture-handler';
 import { withAuth, AuthConsumerProps } from '../AuthProvider';
-import { makeChartNew, ChartURLs } from '../../util/forms';
-import { ChartType, Extension, Note, BaseScopes, ChartNew } from '../../types';
+import { makeChartNew, ChartURLs, areTagsEqual } from '../../util/forms';
+import { ChartType, Extension, Note, BaseScopes, ChartNew, TagNew, Tag } from '../../types';
 import { Row } from '../shared/Row';
 import { ExtensionPalletteBG } from '../shared/ExtensionPalletteBG';
 import AudioRecorder from '../AudioRecorder/index';
@@ -20,6 +20,9 @@ import {
 } from '../../gql/chart';
 import { FileURLCache, uploadFilesIfNecessary } from '../../util/uploads';
 import { withModalContext, ModalContextProps } from '../ModalProvider';
+import TagAutocomplete from '../TagAutocomplete';
+import { TagCollection } from '../TagCollection';
+import omit from 'lodash/omit';
 
 interface ManualProps {
   close: () => void;
@@ -70,7 +73,8 @@ const ChordCreator = ({ close, modalCtx }: Props) => {
     };
     try {
       const { urls, didUpload, cache } =
-      await uploadFilesIfNecessary(filePaths, urlCache);
+        await uploadFilesIfNecessary(filePaths, urlCache);
+
       Object.assign(payload, urls);
       if (didUpload) setFileURLCache(cache);
 
@@ -87,6 +91,36 @@ const ChordCreator = ({ close, modalCtx }: Props) => {
     const image = await pickSingleImage();
     if (image) await setResizableImage(image);
   };
+
+  const addTag = (tagNew: TagNew | Tag) => {
+    const tags = newChart.tags || [];
+    const entry = omit(tagNew, ['id', '__typename', 'munge']) as TagNew;
+    if (!tags.some(t => areTagsEqual(t as Tag, entry))) {
+      setChart({ ...newChart, tags: [...tags, entry] })
+    }
+  };
+  const removeTag = (tagNew: Tag | TagNew) => {
+    const tags = newChart.tags || [];
+    if (tags.some(t => areTagsEqual(t as Tag, tagNew))) {
+      setChart({ ...newChart, tags: tags.filter(t => !areTagsEqual(t as Tag, tagNew)) })
+    }
+  };
+  const updatePublic = (isPublic: boolean) => {
+    if (!isPublic && newChart.tags?.some(t => t.scope === BaseScopes.Public)) {
+      modalCtx.message({
+        msg: 'Your public tags for this chart will be lost if you make it private.',
+        status: 'warning'
+      }, {
+        confirm: () => {
+          const tags = (newChart.tags || []).filter(t => t.scope !== BaseScopes.Public);
+          setChart({ ...newChart, scope: uid, tags })
+        },
+        cancel: () => {},
+      });
+      return;
+    }
+    setChart({ ...newChart, scope: isPublic ? BaseScopes.Public : uid })
+  }
 
   return (
     <View style={styles.container}>
@@ -129,7 +163,7 @@ const ChordCreator = ({ close, modalCtx }: Props) => {
         <Row>
           <CheckBox
             checked={newChart.scope === BaseScopes.Public}
-            onChange={checked => setChart({ ...newChart, scope: checked ? BaseScopes.Public : uid })}
+            onChange={updatePublic}
           />
           <Text category="label"> Share publicly?</Text>
         </Row>
@@ -166,6 +200,17 @@ const ChordCreator = ({ close, modalCtx }: Props) => {
             </Row>
           </>
         }
+        <Row style={{ flexDirection: 'column', alignSelf: 'stretch' }}>
+          <TagAutocomplete
+            containerStyle={{ width: '100%' }}
+            onSelect={addTag}
+            includePublic={newChart.scope === BaseScopes.Public}
+          />
+          <TagCollection
+            tags={newChart.tags || []}
+            onDelete={removeTag}
+          />
+        </Row>
         <Row style={{ flexDirection: 'column', alignSelf: 'stretch' }}>
           <Input
             multiline
