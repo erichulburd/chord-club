@@ -37,6 +37,7 @@ CREATE TABLE chart (
   id SERIAL PRIMARY KEY,
   audio_url TEXT NOT NULL,
   image_url TEXT,
+  audio_length INTEGER NOT NULL,
   hint TEXT,
   notes TEXT,
   abc TEXT,

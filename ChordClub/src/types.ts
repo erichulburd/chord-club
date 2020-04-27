@@ -87,6 +87,7 @@ export enum ChartType {
 
 export type ChartBase = {
   audioURL: Scalars['String'];
+  audioLength: Scalars['Int'];
   hint?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
@@ -109,6 +110,7 @@ export type Chart = ChartBase & {
    __typename?: 'Chart';
   id: Scalars['Int'];
   audioURL: Scalars['String'];
+  audioLength: Scalars['Int'];
   imageURL?: Maybe<Scalars['String']>;
   hint?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -119,17 +121,18 @@ export type Chart = ChartBase & {
   bassNote: Scalars['String'];
   root: Note;
   quality: ChartQuality;
+  createdAt: Scalars['String'];
+  createdBy: Scalars['String'];
+  updatedAt?: Maybe<Scalars['String']>;
+  creator?: Maybe<User>;
   extensions?: Maybe<Array<Extension>>;
   reactionCounts: ReactionCounts;
   userReactionType?: Maybe<ReactionType>;
-  createdAt: Scalars['String'];
-  createdBy: Scalars['String'];
-  creator?: Maybe<User>;
-  updatedAt?: Maybe<Scalars['String']>;
 };
 
 export type ChartNew = {
   audioURL: Scalars['String'];
+  audioLength: Scalars['Int'];
   imageURL?: Maybe<Scalars['String']>;
   hint?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -198,6 +201,7 @@ export type Extension = {
 export type ChartUpdate = {
   id: Scalars['Int'];
   audioURL?: Maybe<Scalars['String']>;
+  audioLength?: Maybe<Scalars['Int']>;
   bassNote?: Maybe<Note>;
   root?: Maybe<Note>;
   quality?: Maybe<ChartQuality>;

@@ -84,7 +84,7 @@ interface State {
 }
 
 interface Props extends ThemedComponentProps {
-  onRecordingComplete: (path: string) => void;
+  onRecordingComplete: (path: string, lengthMs: number) => void;
 }
 
 const getColors = (theme: Record<string, string>) => ({
@@ -278,9 +278,9 @@ class AudioRecorder extends Component<Props, State> {
       currentPositionSec: 0,
       isRecording: false,
     });
-    const { absFilePath } = this.state;
+    const { absFilePath, recordSecs } = this.state;
     const { onRecordingComplete } = this.props;
-    onRecordingComplete(absFilePath);
+    onRecordingComplete(absFilePath, Math.round(recordSecs * 1000));
     console.log(result);
   };
 

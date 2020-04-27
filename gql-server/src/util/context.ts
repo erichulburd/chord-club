@@ -7,6 +7,7 @@ import { DBClientManager } from '../repositories/db';
 import { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import pino from 'pino';
 import baseLogger from './logger';
+import { RequestWithMeta } from './app';
 
 export interface Context {
   uid: string;
@@ -39,8 +40,8 @@ async (ctx: ExpressContext): Promise<Context> => {
     logger = logger.child({
       uid,
     });
-
-    const [db, _] = await dbClientManager.newConnection();
+    const req = ctx.req as RequestWithMeta;
+    const db = req._meta.db;
     const loaders = makeLoaders(db, uid);
     return {
       uid: uid || '',

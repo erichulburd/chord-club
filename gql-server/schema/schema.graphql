@@ -98,6 +98,7 @@ enum ChartType {
 
 interface ChartBase {
   audioURL: String!
+  audioLength: Int!
   hint: String
   notes: String
   abc: String!
@@ -118,6 +119,7 @@ type ReactionCounts {
 type Chart implements ChartBase {
   id: Int!
   audioURL: String!
+  audioLength: Int!
   imageURL: String
   hint: String
   notes: String
@@ -139,6 +141,7 @@ type Chart implements ChartBase {
 
 input ChartNew {
   audioURL: String!
+  audioLength: Int!
   imageURL: String
   hint: String
   notes: String
@@ -187,6 +190,7 @@ type Extension {
 input ChartUpdate {
   id: Int!
   audioURL: String
+  audioLength: Int
   bassNote: Note
   root: Note
   quality: ChartQuality

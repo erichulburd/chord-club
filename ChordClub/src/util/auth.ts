@@ -96,11 +96,11 @@ const publish = (event: AuthEvent) => {
 };
 
 export const observable = new Observable<AuthEvent>(observer => {
+  subscribers.add(observer);
   observer.next({
     type: AuthEventType.SUBSCRIBED,
     state: authState,
   });
-  subscribers.add(observer);
   return () => {
     subscribers.delete(observer);
   };

@@ -7,6 +7,7 @@ import { ChartExtensions } from './ChartExtensions';
 import { displayNote } from '../util/strings';
 import { ModalImage } from './shared/ModalImage';
 import { ResizableImage } from '../util/imagePicker';
+import AudioPlayer from './AudioPlayer1';
 
 export const ChartItem = ({ chart }: { chart: Chart }) => {
   const Footer = (props?: ViewProps) => (
@@ -49,6 +50,7 @@ export const ChartItem = ({ chart }: { chart: Chart }) => {
       footer={Footer}
     >
       <View>
+        <AudioPlayer audio={chart} />
         <Button
           appearance="ghost"
           status="warning"

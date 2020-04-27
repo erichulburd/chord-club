@@ -1,9 +1,10 @@
 import { ChartNew, ChartType, Note, ChartQuality, BaseScopes, TagNew, TagType, UserNew, Extension, ExtensionType, ExtensionNew } from '../src/types';
 import * as faker from 'faker';
-import { sample, kebabCase } from 'lodash';
+import { sample } from 'lodash';
 
 export const makeChartNew = (overrides: Partial<ChartNew> = {}): ChartNew => ({
   audioURL: faker.internet.url(),
+  audioLength: 10,
   imageURL: faker.internet.url(),
   hint: faker.lorem.words(3),
   notes: faker.lorem.words(3),

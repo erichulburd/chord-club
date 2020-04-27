@@ -6,6 +6,7 @@ import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables } from '../gql/
 import { ScrollView, FlatList } from 'react-native-gesture-handler';
 import { Spinner } from '@ui-kitten/components';
 import { ChartItem } from './ChartItem';
+import { AudioPlayerProvider } from './AudioPlayerProvider'
 
 interface Props {
   query: ChartQuery;

@@ -1,9 +1,9 @@
 import gql from 'graphql-tag';
-import { ChartNew, Chart, ChartQuery } from '../types';
+import { ChartNew, Chart, ChartQuery, ChartType } from '../types';
 
 export const chartDBFields = gql`
   fragment ChartDBFields on Chart {
-    id audioURL imageURL hint notes
+    id audioURL audioLength imageURL hint notes
     abc scope chartType bassNote
     root quality createdAt createdBy updatedAt
   }

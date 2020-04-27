@@ -37,7 +37,7 @@ export const Title = ({
 
   const renderTitle = (props: TextProps | undefined) => (
     <View style={styles.titleContainer}>
-      <Text category="h5">{title}</Text>
+      <Text status="success" category="h5">{title}</Text>
     </View>
   );
 

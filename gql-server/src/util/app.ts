@@ -1,5 +1,5 @@
 import { ApolloServer } from 'apollo-server-express';
-import express from 'express';
+import express, { Request } from 'express';
 import { IncomingForm } from 'formidable';
 import { importSchema } from 'graphql-import';
 import { makeExecutableSchema, IResolvers } from 'graphql-tools';
@@ -14,6 +14,7 @@ import { auth0GetKey, getUID } from './auth';
 import { MAX_FILE_SIZE_MB, upload } from './gcStorage';
 import baseLogger from './logger';
 import { ErrorType } from '../types';
+import { PoolClient } from 'pg';
 
 export type TopLevelRootValue = Maybe<OperationDefinitionNode>;
 
@@ -81,8 +82,23 @@ export const initializeApp =
     });
   });
 
+  app.post('/graphql', async (req, _res, next) => {
+    const [db, _] = await clientManager.newConnection();
+    (req as RequestWithMeta)._meta = { db };
+    try {
+      next();
+    } finally {
+      db.release();
+    }
+  })
+
   server.applyMiddleware({ app });
   return app;
 };
 
+export interface RequestWithMeta extends Request {
+  _meta: {
+    db: PoolClient;
+  }
+}
 

@@ -42,6 +42,10 @@ const ChordCreator = ({ close, modalCtx }: Props) => {
     setExtensions([...extensions]);
   };
   const [audioFilePath, setAudioFilePath] = useState<string | undefined>(undefined);
+  const onRecordingComplete = (path: string, ms: number) => {
+    setAudioFilePath(path);
+    setChart({ ...newChart, audioLength: ms });
+  }
   const [image, setResizableImage] = useState<ResizableImage | null>(null);
   const [modalImageVisible, setModalImageVisible] = useState<boolean>(false);
   const [urlCache, setFileURLCache] = useState<FileURLCache>({});
@@ -97,7 +101,7 @@ const ChordCreator = ({ close, modalCtx }: Props) => {
       <ScrollView style={{ height: '80%' }}>
         <Row>
           <AudioRecorder
-            onRecordingComplete={setAudioFilePath}
+            onRecordingComplete={onRecordingComplete}
           />
         </Row>
         {image &&
