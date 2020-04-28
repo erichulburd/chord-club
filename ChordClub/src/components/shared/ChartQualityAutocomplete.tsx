@@ -57,6 +57,7 @@ export const ChartQualityAutocomplete = ({
 
   return (
     <Autocomplete
+      autoCapitalize={'none'}
       style={style}
       placeholder={placeholder}
       value={query}

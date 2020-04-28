@@ -1,5 +1,5 @@
 import { Pool, PoolClient } from 'pg';
-import { snakeCase, pickBy, flatten } from 'lodash';
+import { snakeCase, pickBy, flatten, uniq } from 'lodash';
 
 export type Tx = number;
 
@@ -113,19 +113,25 @@ interface DBInsert {
 }
 
 export const prepareDBInsert = (values: DBInsert[], columnWhitelist?: string[]) => {
-  const attrsSet: { [key: string]: boolean } = {};
-  values.forEach((insert) => Object.keys(insert).forEach((k) => attrsSet[k] = true));
-  const attrs = Object.keys(attrsSet);
-  let columns = attrs.map(attr => snakeCase(attr));
+  const dbValues: DBUpdate[] = values.map(o => Object.keys(o).reduce((prev, k) =>
+    o[k] === undefined ? prev : ({
+      ...prev,
+      [snakeCase(k)]: o[k],
+    }),
+  {}));
+  let columns = uniq(flatten(dbValues.map(val => Object.keys(val))));
   if (columnWhitelist) {
     columns = columns.filter(c => columnWhitelist.includes(c));
   }
-  const prep = values.map((_val, i) =>
+  const prep = dbValues.map((_val, i) =>
     '(' + columns.map((_k, j) =>
       `$${i * columns.length + j + 1}`
     ).join(', ') + ')'
   ).join(', ');
-  const pgValues = flatten(values.map((val) => attrs.map((attr) => val[attr])));
+  const pgValues = flatten(dbValues.map((val) => columns.map((c) => val[c])));
+  console.info('COLUMNS', JSON.stringify(columns, null, 2));
+  console.info('dbValues', JSON.stringify(dbValues, null, 2));
+  console.info('values', JSON.stringify(pgValues, null, 2));
   return {
     columns: columns.join(', '),
     prep,

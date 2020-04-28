@@ -115,7 +115,7 @@ export const findExistingTags =
   const prep: string[] = [];
   tags.forEach((tag, i) => {
     prep.push(`(munge = $${i*2+1} AND scope = $${i*2+2})`);
-    values.push(getTagMu(tag.displayName));
+    values.push(getTagMunge(tag.displayName));
     values.push(tag.scope);
   });
   const result = await client.query(`

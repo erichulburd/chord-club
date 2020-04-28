@@ -50,7 +50,7 @@ export class TagAutocomplete extends React.Component<Props> {
   constructor(props: Props) {
     super(props);
 
-    this.throttleQuery = throttle(this.execQuery, 250);
+    this.throttleQuery = throttle(() => this.execQuery(), 500);
   }
 
   private includePublic() {
@@ -105,13 +105,13 @@ export class TagAutocomplete extends React.Component<Props> {
 
   private updateQueryDisplayName = (displayName: string) => {
     this.setState({ query: { ...this.state.query, displayName } }, () => {
-      this.execQuery();
+      this.throttleQuery();
     });
   }
 
   private clearText = () => {
     const { query } = this.state;
-    this.setState({ query: { ...query, displayName: '' } });
+    this.setState({ query: { ...query, displayName: '' }, options: [] });
   }
 
   private onSelect = (index: number) => {
@@ -125,7 +125,7 @@ export class TagAutocomplete extends React.Component<Props> {
   }
 
   public render() {
-    const { placeholder = 'Add tag', containerStyle = {} } = this.props;
+    const { placeholder = 'Add tag', containerStyle = {}, authState } = this.props;
     const { query, error, options, includePublic, loading } = this.state;
 
     const renderCloseIcon = (props: IconProps) =>
@@ -134,18 +134,24 @@ export class TagAutocomplete extends React.Component<Props> {
           {createElement(ThemedIcon('times'), props)}
         </TouchableWithoutFeedback>
       );
+    let data = options;
+    if (data.length === 0) {
+      // If no data, insert a faux tag, otherwise, Autocomplete will not set
+      // its state to listVisible: true on focus.
+      data = [makeTagNew('', this.includePublic(), authState.uid)];
+    }
     return (
       <View style={containerStyle}>
         {error && <ErrorText error={error} />}
-        <Text>{options.join(', ')}</Text>
         <Autocomplete
+          autoCapitalize={'none'}
           placeholder={placeholder}
           value={query.displayName || ''}
           accessoryRight={renderCloseIcon}
           onChangeText={this.updateQueryDisplayName}
           onSelect={this.onSelect}
         >
-          {options.map((tag) =>(
+          {data.map((tag) =>(
             <AutocompleteItem
               key={getTagMunge(tag)}
               title={tag.displayName}
