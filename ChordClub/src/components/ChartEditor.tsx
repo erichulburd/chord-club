@@ -243,8 +243,8 @@ const ChartEditor = ({ close, modalCtx, authState, chart }: Props) => {
             multiline
             textStyle={styles.input}
             placeholder='Description'
-            value={chartUpdate.notes || ''}
-            onChangeText={(txt: string) => setChart({ ...chartUpdate, notes: txt })}
+            value={chartUpdate.description || ''}
+            onChangeText={(txt: string) => setChart({ ...chartUpdate, description: txt })}
           />
         </Row>
       </ScrollView>

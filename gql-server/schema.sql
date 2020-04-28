@@ -16,14 +16,14 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: citext; Type: EXTENSION; Schema: -; Owner: 
+-- Name: citext; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
@@ -77,7 +77,7 @@ CREATE TABLE public.chart (
     audio_url text NOT NULL,
     image_url text NOT NULL,
     hint text,
-    notes text,
+    description text,
     abc text,
     chart_type public.chart_type NOT NULL,
     bass_note character varying(180),

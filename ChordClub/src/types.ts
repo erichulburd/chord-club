@@ -89,7 +89,7 @@ export type ChartBase = {
   audioURL: Scalars['String'];
   audioLength: Scalars['Int'];
   hint?: Maybe<Scalars['String']>;
-  notes?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
   scope: Scalars['String'];
@@ -113,7 +113,7 @@ export type Chart = ChartBase & {
   audioLength: Scalars['Int'];
   imageURL?: Maybe<Scalars['String']>;
   hint?: Maybe<Scalars['String']>;
-  notes?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
   scope: Scalars['String'];
@@ -135,7 +135,7 @@ export type ChartNew = {
   audioLength: Scalars['Int'];
   imageURL?: Maybe<Scalars['String']>;
   hint?: Maybe<Scalars['String']>;
-  notes?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   scope: Scalars['String'];
   chartType: ChartType;
@@ -206,7 +206,7 @@ export type ChartUpdate = {
   root?: Maybe<Note>;
   quality?: Maybe<ChartQuality>;
   hint?: Maybe<Scalars['String']>;
-  notes?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
   abc?: Maybe<Scalars['String']>;
   imageURL?: Maybe<Scalars['String']>;
   scope?: Maybe<Scalars['String']>;
@@ -393,6 +393,6 @@ export type MutationAddTagsArgs = {
 
 export type MutationUnTagArgs = {
   chartID: Scalars['Int'];
-  tagID: Scalars['Int'];
+  tagIDs: Array<Scalars['Int']>;
 };
 

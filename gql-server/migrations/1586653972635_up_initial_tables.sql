@@ -39,7 +39,7 @@ CREATE TABLE chart (
   image_url TEXT,
   audio_length INTEGER NOT NULL,
   hint TEXT,
-  notes TEXT,
+  description TEXT,
   abc TEXT,
   chart_type chart_type NOT NULL,
   bass_note VARCHAR(180),

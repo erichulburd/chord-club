@@ -89,7 +89,7 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
       <TagCollection
         tags={chart.tags}
       />
-      {Boolean(chart.notes) &&
+      {Boolean(chart.description) &&
         <View>
           <View style={styles.attributeHeader}>
             <Text category="label">Description</Text>
@@ -100,7 +100,7 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
           </View>
           {accordionState.description &&
             <View>
-              <Text>{chart.notes || 'NO DESCRIPTION'}</Text>
+              <Text>{chart.description}</Text>
             </View>
           }
         </View>

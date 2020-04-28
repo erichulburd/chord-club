@@ -215,8 +215,8 @@ const ChordCreator = ({ close, modalCtx, authState }: Props) => {
             multiline
             textStyle={styles.input}
             placeholder='Description'
-            value={newChart.notes || ''}
-            onChangeText={(txt: string) => setChart({ ...newChart, notes: txt })}
+            value={newChart.description || ''}
+            onChangeText={(txt: string) => setChart({ ...newChart, description: txt })}
           />
         </Row>
       </ScrollView>
