@@ -32,7 +32,7 @@ const strToNote = (n: string) => (sharpRegex.test(n) ? n.replace('#', 's') : n) 
 
 interface Props {
   onSelect: (note: Note) => void;
-  initialValue?: Note;
+  initialValue?: Note | undefined | string;
   disabled?: boolean;
   style?: StyleProp<TextStyle>;
   placeholder?: string;

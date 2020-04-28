@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Text, Button, Toggle } from '@ui-kitten/components';
+import React, { useState } from 'react';
+import { Card, Text, Button } from '@ui-kitten/components';
 import { ThemedIcon } from './FontAwesomeIcons';
 import { ReactionType, Chart, ChartType } from '../types';
 import { View, ViewProps, StyleSheet } from 'react-native';
@@ -9,11 +9,39 @@ import { ModalImage } from './shared/ModalImage';
 import { ResizableImage } from '../util/imagePicker';
 import AudioPlayer from './AudioPlayer1';
 import { TagCollection } from './TagCollection';
+import { withAuth, AuthConsumerProps } from './AuthProvider';
 
-export const ChartItem = ({ chart }: { chart: Chart }) => {
+interface ManualProps {
+  chart: Chart;
+  editChart: (chart: Chart) => void;
+  onDeleteChart: (chartID: number) => void;
+}
+interface Props extends ManualProps, AuthConsumerProps {}
+
+const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
   const Footer = (props?: ViewProps) => (
     <View {...props} style={[props?.style || {}, styles.footer]}>
-      <Text category="label">{chart.creator?.username}</Text>
+      <View style={styles.ownerActions}>
+        <Text category="label">{chart.creator?.username}</Text>
+        {chart.createdBy === authState.uid &&
+          <>
+            <Button
+              appearance="ghost"
+              status="basic"
+              size="small"
+              accessoryLeft={ThemedIcon('edit')}
+              onPress={() => editChart(chart)}
+            />
+            <Button
+              appearance="ghost"
+              status="basic"
+              size="small"
+              accessoryLeft={ThemedIcon('trash')}
+              onPress={() => onDeleteChart(chart.id)}
+            />
+          </>
+        }
+      </View>
       <View style={styles.reactions}>
         <Button
           size="small"
@@ -71,7 +99,9 @@ export const ChartItem = ({ chart }: { chart: Chart }) => {
             />
           </View>
           {accordionState.description &&
-            <View><Text>{chart.notes || 'NO DESCRIPTION'}</Text></View>
+            <View>
+              <Text>{chart.notes || 'NO DESCRIPTION'}</Text>
+            </View>
           }
         </View>
       }
@@ -153,5 +183,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  ownerActions: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   }
 })
+
+export default withAuth<ManualProps>(ChartItem);

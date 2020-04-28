@@ -105,7 +105,7 @@ interface ChartBase {
   tags: [Tag!]!
   scope: String!
   chartType: ChartType!
-  bassNote: String!
+  bassNote: Note
   root: Note!
   quality: ChartQuality!
   extensions: [Extension!]
@@ -127,7 +127,7 @@ type Chart implements ChartBase {
   tags: [Tag!]!
   scope: String!
   chartType: ChartType!
-  bassNote: String!
+  bassNote: Note
   root: Note!
   quality: ChartQuality!
   createdAt: String!
@@ -148,7 +148,7 @@ input ChartNew {
   abc: String!
   scope: String!
   chartType: ChartType!
-  bassNote: String!
+  bassNote: Note
   root: Note!
   quality: ChartQuality!
   extensionIDs: [Int!]
@@ -199,6 +199,8 @@ input ChartUpdate {
   abc: String
   imageURL: String
   scope: String
+  extensionIDs: [Int!]
+  tags: [TagNew!]
 }
 
 enum ChartQueryOrder {
@@ -297,5 +299,5 @@ type Mutation {
   createTags(tagNews: [TagNew!]!): [Tag!]!
   deleteTag(tagID: Int!): Empty
   addTags(chartID: Int!, tags: [TagNew!]!): Chart
-  unTag(chartID: Int!, tagID: Int!): Chart
+  unTag(chartID: Int!, tagIDs: [Int!]!): Chart
 }

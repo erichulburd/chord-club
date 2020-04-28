@@ -1,19 +1,23 @@
-import React from 'react';
-import { useQuery } from '@apollo/react-hooks';
-import { ChartQuery } from '../types';
+import React, { useState } from 'react';
+import { useQuery, useMutation } from '@apollo/react-hooks';
+import { ChartQuery, Chart } from '../types';
 import last from 'lodash/last';
-import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables } from '../gql/chart';
+import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables, DELETE_CHART_MUTATION, DeleteChartMutationVariables } from '../gql/chart';
 import { ScrollView, FlatList } from 'react-native-gesture-handler';
 import { Spinner } from '@ui-kitten/components';
-import { ChartItem } from './ChartItem';
+import ChartItem from './ChartItem';
 import { RefreshControl } from 'react-native';
+import { withModalContext, ModalContextProps } from './ModalProvider';
 
-interface Props {
+interface ManualProps {
   query: ChartQuery;
+  editChart: (chart: Chart) => void;
 }
 
-export const ChartList = ({ query }: Props) => {
-  const { data, loading, error, refetch, fetchMore } =
+interface Props extends ModalContextProps, ManualProps {}
+
+const ChartList = ({ query, editChart, modalCtx }: Props) => {
+  const { data, loading, refetch, fetchMore } =
     useQuery<ChartsQueryResponse, ChartsQueryVariables>(CHARTS_QUERY, { variables: { query } });
   const loadMore = () => fetchMore({
     variables: {
@@ -26,21 +30,44 @@ export const ChartList = ({ query }: Props) => {
       }
     }
   });
+  const [dismissed, setDismissed] = useState<Record<number, boolean>>({});
+  const [deleteChart, {}] = useMutation<{}, DeleteChartMutationVariables>(DELETE_CHART_MUTATION);
+  const onDeleteChart = (chartID: number) => {
+    modalCtx.message({
+      msg: 'Are you sure you want to delete this chart?',
+      status: 'warning',
+    }, {
+      confirm: () => {
+        deleteChart({ variables: { chartID } });
+        setDismissed({ ...dismissed, [chartID]: true });
+      },
+      cancel: () => undefined,
+    })
+  };
   const refresh = () => {
     refetch();
-  }
+  };
+  const charts= (data?.charts || []).filter((chart) => !dismissed[chart.id]);
   return (
     <ScrollView
       refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
 
     >
       <FlatList
-        data={data?.charts}
+        data={charts}
         keyExtractor={chart => chart.id.toString()}
-        renderItem={(item) => <ChartItem chart={item.item} />}
+        renderItem={(item) => (
+          <ChartItem
+            chart={item.item}
+            editChart={editChart}
+            onDeleteChart={onDeleteChart}
+          />
+        )}
       />
       {loading && <Spinner />}
     </ScrollView>
   )
 };
 
+
+export default withModalContext<ManualProps>(ChartList);

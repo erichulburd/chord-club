@@ -8,8 +8,6 @@ const start = async () => {
 
   app.listen({ port: 4000 }, () => {
     console.log('🚀 Server ready at http://localhost:4000')
-    console.log(dbClientManger.pool.idleCount)
-    console.log(dbClientManger.pool.totalCount);
   });
 };
 

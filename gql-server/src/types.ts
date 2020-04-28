@@ -94,7 +94,7 @@ export type ChartBase = {
   tags: Array<Tag>;
   scope: Scalars['String'];
   chartType: ChartType;
-  bassNote: Scalars['String'];
+  bassNote?: Maybe<Note>;
   root: Note;
   quality: ChartQuality;
   extensions?: Maybe<Array<Extension>>;
@@ -118,7 +118,7 @@ export type Chart = ChartBase & {
   tags: Array<Tag>;
   scope: Scalars['String'];
   chartType: ChartType;
-  bassNote: Scalars['String'];
+  bassNote?: Maybe<Note>;
   root: Note;
   quality: ChartQuality;
   createdAt: Scalars['String'];
@@ -139,7 +139,7 @@ export type ChartNew = {
   abc: Scalars['String'];
   scope: Scalars['String'];
   chartType: ChartType;
-  bassNote: Scalars['String'];
+  bassNote?: Maybe<Note>;
   root: Note;
   quality: ChartQuality;
   extensionIDs?: Maybe<Array<Scalars['Int']>>;
@@ -210,6 +210,8 @@ export type ChartUpdate = {
   abc?: Maybe<Scalars['String']>;
   imageURL?: Maybe<Scalars['String']>;
   scope?: Maybe<Scalars['String']>;
+  extensionIDs?: Maybe<Array<Scalars['Int']>>;
+  tags?: Maybe<Array<TagNew>>;
 };
 
 export enum ChartQueryOrder {

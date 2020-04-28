@@ -3,6 +3,7 @@ import {  kebabCase, groupBy } from 'lodash';
 import { TagQuery, Tag, TagQueryOrder, TagNew, Chart, BaseScopes, TagBase, TagType } from '../types';
 import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBInsert } from './db';
 import {  invalidChartTagError, invalidTagQueryScopeError, invalidNewTagsScopeError } from '../util/errors';
+import baseLogger from '../util/logger';
 
 const attrs = [
   'id', 'munge', 'displayName', 'createdBy', 'createdAt', 'scope', 'tagType',
@@ -127,8 +128,10 @@ export const findExistingTags =
 
 export const insertNewTags = async (newTags: TagNew[], uid: string, client: PoolClient) => {
   const { prep, values, columns } =
-    prepareDBInsert(newTags.map((t) => ({ ...t, munge: kebabCase(t.displayName), createdBy: uid })));
-
+    prepareDBInsert(newTags.map((t) => ({ ...t, munge: kebabCase(t.displayName), createdBy: uid })), dbFields);
+  console.info(JSON.stringify({
+    prep, values, columns
+  }, null, 2))
   const result = await client.query(`
     INSERT INTO
       tag (${columns})
@@ -169,7 +172,7 @@ export const addTagsForChart = async (chart: Chart, tags: TagNew[], uid: string,
   `, values);
 };
 
-export const unTag = async (chartID: number, tagID: number, uid: string, client: PoolClient) => {
+export const unTag = async (chartID: number, tagIDs: number[], uid: string, client: PoolClient) => {
   await client.query(`
     DELETE FROM chart_tag ct
       USING chart c
@@ -177,8 +180,8 @@ export const unTag = async (chartID: number, tagID: number, uid: string, client:
         ct.chart_id = c.id AND
         c.created_by = $1 AND
         chart_id = $2 AND
-        tag_id = $3
-  `, [uid, chartID, tagID]);
+        tag_id = ANY ($3)
+  `, [uid, chartID, tagIDs]);
 };
 
 export const findTagsForCharts = async (
@@ -199,6 +202,22 @@ export const findTagsForCharts = async (
     return chartIDs.map((chartID) => (tagDataByChartID[chartID] || []).map(dbDataToTag)) as Tag[][];
   }
   return chartIDs.map((chartID) => (tagDataByChartID[chartID] || []).map(dbDataToTag)) as Tag[][];
+};
+
+export const getCompositeTagKey =
+  (t: TagNew | Tag) => `${t.scope}-${kebabCase(t.displayName.toLowerCase())}`;
+
+export const tagsAreEqual = (t1: TagNew | Tag, t2: TagNew | Tag) =>
+  getCompositeTagKey(t1) === getCompositeTagKey(t2);
+
+export const reconcileChartTags = async (
+  chart: Chart, tags: TagNew[],
+  existingTags: Tag[], client: PoolClient,
+) => {
+  const tagsToDelete = existingTags.filter(t => !tags.some(tagNew => tagsAreEqual(t, tagNew)));
+  await unTag(chart.id, tagsToDelete.map(t => t.id), chart.createdBy, client);
+  const tagsToAdd = tags.filter(t => !existingTags.some(tag => tagsAreEqual(t, tag)));
+  await addTagsForChart(chart, tagsToAdd, chart.createdBy, client);
 };
 
 export const validateNewTagsScopes = (tags: TagNew[], uid: string): TagNew[] => {

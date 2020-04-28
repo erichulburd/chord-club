@@ -18,6 +18,7 @@ export const TagLabel = ({ tag, onDelete, onPress, size = 'tiny' }: Props ) => {
     <View style={styles.container}>
       <Button
         size={size}
+        appearance="outline"
         status={tag.scope === BaseScopes.Public ? 'primary' : 'info'}
         accessoryLeft={ThemedIcon(tag.scope === BaseScopes.Public ? 'users' : 'user')}
         onPress={onPress}
@@ -25,6 +26,7 @@ export const TagLabel = ({ tag, onDelete, onPress, size = 'tiny' }: Props ) => {
       {onDelete &&
         <Button
           size={size}
+          appearance="outline"
           status="danger"
           accessoryLeft={ThemedIcon('times')}
           onPress={onDelete}

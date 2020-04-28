@@ -37,7 +37,7 @@ export const ButtonPallette = <T extends any>({
           key={getUniqKey(value)}
           size={size}
           style={styles.button}
-          appearance={selected.indexOf(value) >= 0 ? 'filled' : 'outline'}
+          appearance={selected.some(e => e.id === value.id) ? 'filled' : 'outline'}
           onPress={() => onSelect(value)}
         >{displayValue(value)}</Button>
       ))}

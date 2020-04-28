@@ -112,21 +112,22 @@ interface DBInsert {
   [key: string]: any;
 }
 
-export const prepareDBInsert = (values: DBInsert[], attrWhitelist?: string[]) => {
-  const dbColumns: { [key: string]: boolean } = {};
-  values.forEach((insert) => Object.keys(insert).forEach((k) => dbColumns[k] = true));
-  let columns = Object.keys(dbColumns);
-  if (attrWhitelist) {
-    columns = columns.filter(c => attrWhitelist.includes(c));
+export const prepareDBInsert = (values: DBInsert[], columnWhitelist?: string[]) => {
+  const attrsSet: { [key: string]: boolean } = {};
+  values.forEach((insert) => Object.keys(insert).forEach((k) => attrsSet[k] = true));
+  const attrs = Object.keys(attrsSet);
+  let columns = attrs.map(attr => snakeCase(attr));
+  if (columnWhitelist) {
+    columns = columns.filter(c => columnWhitelist.includes(c));
   }
   const prep = values.map((_val, i) =>
     '(' + columns.map((_k, j) =>
       `$${i * columns.length + j + 1}`
     ).join(', ') + ')'
   ).join(', ');
-  const pgValues = flatten(values.map((val) => columns.map((c) => val[c])));
+  const pgValues = flatten(values.map((val) => attrs.map((attr) => val[attr])));
   return {
-    columns: columns.map((c) => snakeCase(c)).join(', '),
+    columns: columns.join(', '),
     prep,
     values: pgValues,
   };
@@ -136,13 +137,16 @@ interface DBUpdate {
   [key: string]: any;
 }
 
-export const prepareDBUpdate = (values: DBUpdate) => {
+export const prepareDBUpdate = (values: DBUpdate, columnWhitelist?: string[]) => {
   const definedValues: DBUpdate = pickBy(values, (v) => v !== undefined);
   const dbValues: DBUpdate = Object.keys(definedValues).reduce((prev, k) => ({
     ...prev,
     [snakeCase(k)]: definedValues[k],
   }), {});
-  const dbColumns = Object.keys(dbValues);
+  let dbColumns = Object.keys(dbValues);
+  if (columnWhitelist) {
+    dbColumns = dbColumns.filter(c => columnWhitelist.includes(c));
+  }
   const prep = dbColumns.map((c, i) => `${c} = $${i+1}`).join(', ');
   const pgValues = dbColumns.map((c) => dbValues[c]);
   return { prep, values: pgValues };

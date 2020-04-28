@@ -13,7 +13,6 @@ import { pickSingleImage, ResizableImage } from '../../util/imagePicker';
 import { ModalImage } from '../shared/ModalImage';
 import { NoteAutocomplete } from '../shared/NoteAutocomplete';
 import { ChartQualityAutocomplete } from '../shared/ChartQualityAutocomplete';
-import auth from '../../util/auth';
 import { useMutation } from '@apollo/react-hooks';
 import {
   CREATE_CHART_NEW, CreateChartResponse, CreateChartVariables
@@ -30,8 +29,8 @@ interface ManualProps {
 
 interface Props extends ManualProps, AuthConsumerProps, ModalContextProps {}
 
-const ChordCreator = ({ close, modalCtx }: Props) => {
-  const uid = auth.currentState().uid;
+const ChordCreator = ({ close, modalCtx, authState }: Props) => {
+  const { uid } = authState;
   const [newChart, setChart] = useState(makeChartNew(uid));
   const updateChartType = (ct: ChartType) => setChart({ ...newChart, chartType: ct });
   const updateChartRoot = (n: Note) => setChart({ ...newChart, root: n });

@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { ChartNew, Chart, ChartQuery, ChartType } from '../types';
+import { ChartNew, Chart, ChartQuery, ChartType, ChartUpdate } from '../types';
 import { tagDBFields } from './tag';
 
 export const chartDBFields = gql`
@@ -24,7 +24,25 @@ export interface CreateChartVariables {
 }
 
 export interface CreateChartResponse {
-  createChart: ChartNew;
+  createChart: Chart;
+}
+
+export const UPDATE_CHART = gql`
+  mutation UpdateChart($chartUpdate: ChartUpdate!) {
+    updateChart(chartUpdate: $chartUpdate) {
+      ...ChartDBFields
+      extensions { id degree extensionType  }
+    }
+  }
+  ${chartDBFields}
+`;
+
+export interface UpdateChartVariables {
+  chartUpdate: ChartUpdate;
+}
+
+export interface UpdateChartResponse {
+  updateChart: Chart;
 }
 
 export const CHARTS_QUERY = gql`
@@ -63,4 +81,16 @@ export interface ChartExtensionsQueryVariables {
 
 export interface ChartExtensionsQueryResponse {
   charts: Chart[];
+}
+
+export const DELETE_CHART_MUTATION = gql`
+  mutation DeleteChartMutation($chartID: Int!) {
+    deleteChart(chartID: $chartID) {
+      empty
+    }
+  }
+`;
+
+export interface DeleteChartMutationVariables {
+  chartID: number;
 }

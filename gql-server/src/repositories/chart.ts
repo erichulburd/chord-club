@@ -175,7 +175,7 @@ export const deleteChartsForUser = async (uid: string, client: PoolClient) => {
 export const insertNewChart = async (chartNew: ChartNew, uid: string, client: PoolClient) => {
   validateChartScope(chartNew.scope, uid);
   const payload = { ...chartNew, createdBy: uid };
-  const { values, columns, prep } = prepareDBInsert([payload], attrs.filter(attr => attr !== 'id'));
+  const { values, columns, prep } = prepareDBInsert([omit(payload, ['id'])], dbFields);
   const result = await client.query(`
     INSERT INTO
       chart (${columns})
@@ -189,16 +189,13 @@ export const updateChart = async (
   if (update.scope) {
     validateChartScope(update.scope, uid);
   }
-  const { prep, values } = prepareDBUpdate(omit(update, 'id'));
+  const { prep, values } = prepareDBUpdate(omit(update, ['id']), dbFields);
   const result = await client.query(`
     UPDATE chart
       SET ${prep}
       WHERE id = $${values.length + 1} AND created_by = $${values.length + 2}
       RETURNING ${dbFields.join(', ')}
   `, [...values, update.id, uid]);
-  if (result.rows.length === 0) {
-    return undefined;
-  }
   return dbDataToChart(result.rows[0]) as Chart;
 };
 

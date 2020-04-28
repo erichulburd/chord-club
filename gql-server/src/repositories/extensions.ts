@@ -1,6 +1,6 @@
 import { PoolClient } from 'pg';
 import { prepareDBInsert } from './db';
-import { Extension, ExtensionNew } from '../types';
+import { Extension, ExtensionNew, Chart } from '../types';
 import { groupBy } from 'lodash';
 import { makeDBFields, makeSelectFields, makeDBDataToObject } from './db';
 
@@ -67,4 +67,16 @@ export const findAllExtensions = async (client: PoolClient) => {
     SELECT ${selectFields} FROM extension e
   `);
   return result.rows.map(dbDataToExtension) as Extension[];
+};
+
+export const reconcileChartExtensions = async (
+  chart: Chart, extensionIDs: number[],
+  existingExtensionIDs: number[], client: PoolClient,
+) => {
+  const extensionsToDelete = existingExtensionIDs
+    .filter(extensionID => !extensionIDs.includes(extensionID));
+  await removeExtensionsForChart(chart.id, extensionsToDelete, client);
+  const extensionsToAdd = extensionIDs
+    .filter(extensionID => !existingExtensionIDs.includes(extensionID));
+  await addExtensionsForChart(chart.id, extensionsToAdd, client);
 };

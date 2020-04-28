@@ -7,9 +7,9 @@ import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
 import { deleteChartsForUser, findChartByID, insertNewChart, updateChart, deleteChart } from '../repositories/chart';
 import { upsertReactionNew } from '../repositories/reaction';
-import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes } from '../repositories/tag';
+import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes, reconcileChartTags } from '../repositories/tag';
 import { wrapTopLevelOp, Resolver } from './resolverUtils';
-import { addExtensionsForChart, removeExtensionsForChart } from '../repositories/extensions';
+import { addExtensionsForChart, removeExtensionsForChart, reconcileChartExtensions } from '../repositories/extensions';
 import { chartNotFoundError, forbiddenResourceOpError } from '../util/errors';
 
 interface CreateAccountArgs {
@@ -43,7 +43,7 @@ interface AddTagArgs {
 
 interface UnTagArgs {
   chartID: number;
-  tagID: number;
+  tagIDs: number[];
 }
 
 interface AddRemoveExtensionsArgs {
@@ -119,11 +119,33 @@ M.createChart = wrapTopLevelOp(async (
 
 M.updateChart = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: UpdateChartArgs, context: Context): Promise<Chart | undefined> => {
-  const chart = await findChartByID(args.chartUpdate.id, context.uid, context.db);
+  let chart = await findChartByID(args.chartUpdate.id, context.uid, context.db);
   if (!chart) {
     throw chartNotFoundError(args.chartUpdate.id);
+  } else if (chart.createdBy !== context.uid) {
+    throw forbiddenResourceOpError();
   }
-  return updateChart(args.chartUpdate, context.uid, context.db);
+  const [db, txManager] = await context.dbClientManager.newConnection();
+  const tx = await txManager.begin();
+  try {
+    chart = await updateChart(args.chartUpdate, context.uid, db);
+    if (args.chartUpdate.tags) {
+      const existingTags = await context.loaders.tagsByChartID.load(chart.id);
+      await reconcileChartTags(chart, args.chartUpdate.tags, existingTags, db);
+    }
+    if (args.chartUpdate.extensionIDs) {
+      const existingExtensions = await context.loaders.extensionsByChartID.load(chart.id);
+      const existingExtensionIDs = existingExtensions.map(e => e.id);
+      await reconcileChartExtensions(chart, args.chartUpdate.extensionIDs, existingExtensionIDs, db);
+    }
+    await txManager.commit(tx);
+    await db.release();
+    return chart;
+  } catch (err) {
+    await txManager.rollbackTx(tx);
+    await db.release();
+    throw err;
+  }
 });
 
 M.deleteChart = wrapTopLevelOp(async (
@@ -152,7 +174,7 @@ M.unTag = wrapTopLevelOp(async (
   if (!chart) {
     throw chartNotFoundError(args.chartID);
   }
-  await unTag(args.chartID, args.tagID, context.uid, context.db);
+  await unTag(args.chartID, args.tagIDs, context.uid, context.db);
   return chart;
 });
 

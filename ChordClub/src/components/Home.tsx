@@ -3,14 +3,13 @@ import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { Divider, Layout, Button } from '@ui-kitten/components';
 import { NavigationProp } from '@react-navigation/native';
 import Title from './Title'
-import { ChartList } from './ChartList';
+import ChartList from './ChartList';
 import ChordCreator from './Home/ChordCreator';
-import { ChartType } from '../types';
+import { ChartType, Chart } from '../types';
+import ChartEditor from './ChartEditor';
+import { AuthConsumerProps, withAuth } from './AuthProvider';
 
-interface NavProp {}
-
-interface Props {
-  navigation: NavigationProp<{ [key: string]: NavProp }>;
+interface Props extends AuthConsumerProps {
 }
 
 const styles = StyleSheet.create({
@@ -22,10 +21,20 @@ const styles = StyleSheet.create({
 enum HomeView {
   ChordList,
   ChordCreator,
+  ChordEditor,
 }
 
-export const HomeScreen = ({ navigation }: Props) => {
+export const HomeScreen = ({ authState }: Props) => {
   const [view, setView] = useState(HomeView.ChordList);
+  const [editingChart, setEditingChart] = useState<Chart | undefined>(undefined);
+  const editChart = (chart: Chart) => {
+    setEditingChart(chart);
+    setView(HomeView.ChordEditor);
+  };
+  const closeEditor = () => {
+    setEditingChart(undefined);
+    setView(HomeView.ChordList);
+  };
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Title
@@ -35,7 +44,12 @@ export const HomeScreen = ({ navigation }: Props) => {
       <Layout style={styles.container}>
         {view === HomeView.ChordList &&
           <>
-            <ChartList query={{ chartTypes: [ChartType.Chord, ChartType.Progression]}} />
+            {Boolean(authState.token) &&
+              <ChartList
+                query={{ chartTypes: [ChartType.Chord, ChartType.Progression]}}
+                editChart={editChart}
+              />
+            }
             <View>
               <Button
                 size={'giant'}
@@ -51,7 +65,15 @@ export const HomeScreen = ({ navigation }: Props) => {
             close={() => setView(HomeView.ChordList)}
           />
         }
+        {(view === HomeView.ChordEditor && editingChart) &&
+          <ChartEditor
+            chart={editingChart}
+            close={closeEditor}
+          />
+        }
       </Layout>
     </SafeAreaView>
   );
 };
+
+export default withAuth(HomeScreen);
