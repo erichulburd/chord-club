@@ -76,7 +76,6 @@ export class AudioPlayer extends React.Component<Props> {
       if (!playWidth) playWidth = 0;
     }
     const colors = getColors(eva?.theme || {});
-    console.info('EVA', Object.keys(this.props));
     let actionIcon = ThemedIcon('play');
     let action = this._play;
     if (audioStateObserver.isPlaying(audio.audioURL)) {
