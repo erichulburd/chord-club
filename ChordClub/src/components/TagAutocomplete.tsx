@@ -1,13 +1,11 @@
-import React, { useState, createElement } from 'react';
+import React, { createElement } from 'react';
 import { Autocomplete, AutocompleteItem, CheckBox, IconProps, Spinner, Text } from '@ui-kitten/components';
 import { View, StyleProp, ViewStyle } from 'react-native';
-import { useQuery, useLazyQuery } from '@apollo/react-hooks';
-import { GET_TAGS, GetTagsData, GetTagsVariables, GET_TAGS_RAW } from '../gql/tag';
+import { GET_TAGS, GetTagsData, GetTagsVariables } from '../gql/tag';
 import { TagQuery, BaseScopes, TagType, TagNew, Tag } from '../types';
 import { ThemedIcon } from './FontAwesomeIcons';
-import kebabCase from 'lodash/kebabCase';
 import throttle from 'lodash/throttle';
-import { makeTagNew } from '../util/forms';
+import { makeTagNew, getTagMunge } from '../util/forms';
 import { withAuth, AuthConsumerProps } from './AuthProvider';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import ErrorText from './ErrorText';
@@ -98,7 +96,7 @@ export class TagAutocomplete extends React.Component<Props> {
       error = new ApolloError({ graphQLErrors: errors });
     }
     let options: any[] = data.tags;
-    if (query.displayName && !options.some(t => t.munge !== kebabCase(query.displayName || ''))) {
+    if (query.displayName && !options.some(t => t.munge !== getTagMunge(query.displayName || ''))) {
       const tagNew = makeTagNew(query.displayName, this.includePublic(), uid);
       options = [ tagNew, ...options ];
     }
@@ -149,7 +147,7 @@ export class TagAutocomplete extends React.Component<Props> {
         >
           {options.map((tag) =>(
             <AutocompleteItem
-              key={kebabCase(tag.displayName).toString()}
+              key={getTagMunge(tag)}
               title={tag.displayName}
               accessoryLeft={ThemedIcon(tag.scope === BaseScopes.Public ? 'users' : 'user')}
             />
@@ -166,69 +164,5 @@ export class TagAutocomplete extends React.Component<Props> {
     );
   }
 }
-/*
-export const TagAutocomplete = ({ authState, onSelect, placeholder = 'Add tag' }: Props) => {
-  const { uid } = authState;
-  const scopes = [uid];
-  const [query, setQuery] = useState<TagQuery>({
-    displayName: '',
-    scopes,
-    tagTypes: [TagType.List],
-    limit: 5,
-  });
-  const { data, loading, error } = useQuery<GetTagsData, GetTagsVariables>(GET_TAGS, {
-    variables: { query },
-  });
 
-  const onChangeText = (txt: string) => {
-    setQuery({ ...query, displayName: txt });
-  };
-
-  const clearInput = () => {
-    setQuery({ ...query, displayName: '' });
-  };
-
-  const renderCloseIcon = (props: IconProps) =>
-    loading ? <Spinner /> : (
-      <TouchableWithoutFeedback onPress={clearInput}>
-        {createElement(ThemedIcon('times'), props)}
-      </TouchableWithoutFeedback>
-    );
-
-  let options: any[] = data?.tags || [];
-  if (query.displayName && !options.some(t => t.munge !== kebabCase(query.displayName || ''))) {
-    const tagNew = makeTagNew(query.displayName, query.scopes.includes(BaseScopes.Public), uid);
-    options = [ tagNew, ...options ];
-  }
-  const updateSelection = (index: number) => {
-    onSelect(options[index] as (Tag | TagNew));
-    clearInput();
-  }
-
-  return (
-    <View>
-      {error && <ErrorText error={error} />}
-      <Autocomplete
-        placeholder={placeholder}
-        value={query.displayName || ''}
-        accessoryRight={renderCloseIcon}
-        onChangeText={onChangeText}
-        onSelect={updateSelection}
-      >
-        {options.map((tag) =>(
-          <AutocompleteItem
-            key={kebabCase(tag.displayName).toString()}
-            title={tag.displayName}
-          />
-        ))}
-      </Autocomplete>
-      <CheckBox
-        status="control"
-        checked={query.scopes.includes(BaseScopes.Public)}
-        onChange={c => setQuery({ ...query, scopes: c ? [uid, BaseScopes.Public] : [uid] })}
-      >Include public?</CheckBox>
-    </View>
-  );
-};
-*/
 export default withApollo<ManualProps>(withAuth<WithApolloClient<ManualProps>>(TagAutocomplete));

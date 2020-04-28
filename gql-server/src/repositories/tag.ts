@@ -1,9 +1,8 @@
 import { PoolClient } from 'pg';
-import {  kebabCase, groupBy } from 'lodash';
+import {  kebabCase, groupBy, trim } from 'lodash';
 import { TagQuery, Tag, TagQueryOrder, TagNew, Chart, BaseScopes, TagBase, TagType } from '../types';
 import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBInsert } from './db';
 import {  invalidChartTagError, invalidTagQueryScopeError, invalidNewTagsScopeError } from '../util/errors';
-import baseLogger from '../util/logger';
 
 const attrs = [
   'id', 'munge', 'displayName', 'createdBy', 'createdAt', 'scope', 'tagType',
@@ -116,7 +115,7 @@ export const findExistingTags =
   const prep: string[] = [];
   tags.forEach((tag, i) => {
     prep.push(`(munge = $${i*2+1} AND scope = $${i*2+2})`);
-    values.push(kebabCase(tag.displayName));
+    values.push(getTagMu(tag.displayName));
     values.push(tag.scope);
   });
   const result = await client.query(`
@@ -128,7 +127,7 @@ export const findExistingTags =
 
 export const insertNewTags = async (newTags: TagNew[], uid: string, client: PoolClient) => {
   const { prep, values, columns } =
-    prepareDBInsert(newTags.map((t) => ({ ...t, munge: kebabCase(t.displayName), createdBy: uid })), dbFields);
+    prepareDBInsert(newTags.map((t) => ({ ...t, munge: getTagMunge(t.displayName), createdBy: uid })), dbFields);
   console.info(JSON.stringify({
     prep, values, columns
   }, null, 2))
@@ -156,7 +155,7 @@ export const addTagsForChart = async (chart: Chart, tags: TagNew[], uid: string,
   let savedTags = [...existingTags];
 
   const newTags: TagNew[] = validatedTags
-    .filter((tag) => !existingTags.some(t => t.munge === kebabCase(tag.displayName)));
+    .filter((tag) => !existingTags.some(t => t.munge === getTagMunge(tag.displayName)));
   if (newTags.length > 0) {
     const createdTags = await insertNewTags(newTags, uid, client);
     savedTags = savedTags.concat(createdTags);
@@ -205,7 +204,7 @@ export const findTagsForCharts = async (
 };
 
 export const getCompositeTagKey =
-  (t: TagNew | Tag) => `${t.scope}-${kebabCase(t.displayName.toLowerCase())}`;
+  (t: TagNew | Tag) => `${t.scope}-${getTagMunge(t.displayName)}`;
 
 export const tagsAreEqual = (t1: TagNew | Tag, t2: TagNew | Tag) =>
   getCompositeTagKey(t1) === getCompositeTagKey(t2);
@@ -265,4 +264,8 @@ const validateTagScopesForChart = (tags: TagNew[], chart: Chart, uid: string): T
     ...t,
     scope: t.scope || defaultScope,
   }), {});
+};
+
+export const getTagMunge = (displayName: string) => {
+  return kebabCase(trim(displayName).toLowerCase())
 };
