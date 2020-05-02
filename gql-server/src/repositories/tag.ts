@@ -128,9 +128,6 @@ export const findExistingTags =
 export const insertNewTags = async (newTags: TagNew[], uid: string, client: PoolClient) => {
   const { prep, values, columns } =
     prepareDBInsert(newTags.map((t) => ({ ...t, munge: getTagMunge(t.displayName), createdBy: uid })), dbFields);
-  console.info(JSON.stringify({
-    prep, values, columns
-  }, null, 2))
   const result = await client.query(`
     INSERT INTO
       tag (${columns})

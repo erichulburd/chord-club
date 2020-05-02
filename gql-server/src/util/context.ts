@@ -34,9 +34,12 @@ async (ctx: ExpressContext): Promise<Context> => {
     requestID,
   });
   try {
-    const token = getBearerToken(ctx.req.headers.authorization || '');
-    let claims: AccessTokenClaims | undefined = (token && await parseAuthorization(token, getKey)) || undefined;
-    const uid = claims && claims.sub;
+    const token = getBearerToken(ctx.req.headers.authorization || '') || undefined;
+    let claims: AccessTokenClaims | undefined;
+    if (token) {
+      claims = await parseAuthorization(token, getKey);
+    }
+    const uid = claims?.sub;
     logger = logger.child({
       uid,
     });

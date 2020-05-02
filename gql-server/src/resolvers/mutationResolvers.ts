@@ -102,7 +102,7 @@ M.react = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: ReactArgs, contex
     throw chartNotFoundError(args.reactionNew.chartID);
   }
   const rxns = await findReactionsByChartID([args.reactionNew.chartID], context.uid, context.db);
-  if (!rxns[0]) {
+  if (!rxns[0] || rxns[0] !== args.reactionNew.reactionType) {
     await upsertReactionNew(args.reactionNew, context.db);
   } else {
     await deleteReactionNew(args.reactionNew.chartID, context.uid, context.db);
@@ -144,11 +144,11 @@ M.updateChart = wrapTopLevelOp(async (
       await reconcileChartExtensions(chart, args.chartUpdate.extensionIDs, existingExtensionIDs, db);
     }
     await txManager.commit(tx);
-    await db.release();
+    await context.dbClientManager.releaseClient(db);
     return chart;
   } catch (err) {
     await txManager.rollbackTx(tx);
-    await db.release();
+    await context.dbClientManager.releaseClient(db);
     throw err;
   }
 });

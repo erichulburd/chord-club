@@ -115,5 +115,55 @@ describe('reaction ops', () => {
     expect(chart3.userReactionType).toEqual(ReactionType.Flag);
   });
 
+  test('toggle reaction', async () => {
+    const uid = 'uid';
+    await insertUserNew(makeUserNew(), uid, client);
+    const c1 = await insertNewChart(makeChartNew({
+      scope: uid,
+    }), uid, client);
+    const c2 = await insertNewChart(makeChartNew({ scope: uid }), uid, client);
+    const c3 = await insertNewChart(makeChartNew({ scope: uid }), uid, client);
+    const charts = [c1, c2, c3];
+
+    const reaction: ReactionNew = {
+      chartID: charts[0].id,
+      uid,
+      reactionType: ReactionType.Star,
+    };
+    const res1 = await graphql().send({
+      query: `
+        mutation ($reactionNew: ReactionNew!) {
+          react(reactionNew: $reactionNew) {
+            reactionCounts { stars flags } userReactionType
+          }
+        }
+      `,
+      variables: {
+        reactionNew: reaction,
+      },
+    }).expect(200);
+    const chart: Partial<Chart> = res1.body.data.react;
+    expect(chart.reactionCounts?.stars).toEqual(1);
+    expect(chart.reactionCounts?.flags).toEqual(0);
+    expect(chart.userReactionType).toEqual(ReactionType.Star);
+
+    const res2 = await graphql().send({
+      query: `
+        mutation ($reactionNew: ReactionNew!) {
+          react(reactionNew: $reactionNew) {
+            reactionCounts { stars flags } userReactionType
+          }
+        }
+      `,
+      variables: {
+        reactionNew: reaction,
+      },
+    }).expect(200);
+    const chart2: Partial<Chart> = res2.body.data.react;
+    expect(chart2.reactionCounts?.stars).toEqual(0);
+    expect(chart2.reactionCounts?.flags).toEqual(0);
+    expect(chart2.userReactionType).toEqual(null);
+  });
+
 });
 

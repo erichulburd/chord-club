@@ -88,7 +88,7 @@ export const initializeApp =
     try {
       next();
     } finally {
-      db.release();
+      clientManager.releaseClient(db);
     }
   })
 

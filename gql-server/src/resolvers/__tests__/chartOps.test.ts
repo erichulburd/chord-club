@@ -247,17 +247,18 @@ describe('chart ops', () => {
 
     const res3 = await graphql().send({
       query: `
-        mutation ($chartID: Int!, $tagID: Int!) {
-          unTag(chartID: $chartID, tagID: $tagID) {
+        mutation ($chartID: Int!, $tagIDs: [Int!]!) {
+          unTag(chartID: $chartID, tagIDs: $tagIDs) {
             tags { id displayName munge scope }
           }
         }
       `,
       variables: {
         chartID: data.createChart.id,
-        tagID: allTags[0].id,
+        tagIDs: [allTags[0].id],
       },
     }).expect(200);
+
     allTags = res3.body.data.unTag.tags;
     expect(allTags.length).toEqual(5);
   });

@@ -129,9 +129,6 @@ export const prepareDBInsert = (values: DBInsert[], columnWhitelist?: string[]) 
     ).join(', ') + ')'
   ).join(', ');
   const pgValues = flatten(dbValues.map((val) => columns.map((c) => val[c])));
-  console.info('COLUMNS', JSON.stringify(columns, null, 2));
-  console.info('dbValues', JSON.stringify(dbValues, null, 2));
-  console.info('values', JSON.stringify(pgValues, null, 2));
   return {
     columns: columns.join(', '),
     prep,

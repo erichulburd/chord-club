@@ -1,6 +1,7 @@
 import jwkToPem from 'jwk-to-pem';
 import jwt from 'jsonwebtoken';
 import { AccessTokenClaims } from '../src/util/auth';
+import { config } from '../src/util/config';
 
 const testPublicKeyJWK: jwkToPem.RSA = {
   kty: 'RSA',
@@ -32,8 +33,8 @@ export const getTestKey: jwt.GetPublicKeyOrSecret =
 
 export const signWithTestKey = (claims: Partial<AccessTokenClaims>): string =>
   jwt.sign({
-    iss: 'https:///',
-    aud: "aud",
+    iss: `https://${config.AUTH0_DOMAIN}/`,
+    aud: config.AUTH0_AUDIENCE,
     iat: Date.now(),
     exp: Date.now() + 3600 * 24,
     ...claims,

@@ -93,7 +93,7 @@ describe('tag repository', () => {
         let tags = await findTagsForCharts([chart.id], 'uid', client);
         expect(tags[0].length).toEqual(2);
         const removedTagID = tags[0][0].id;
-        await unTag(chart.id, removedTagID, 'uid', client);
+        await unTag(chart.id, [removedTagID], 'uid', client);
         tags = await findTagsForCharts([chart.id], 'uid', client);
         expect(tags[0].length).toEqual(1);
         expect(tags[0].every(t => t.id !== removedTagID)).toEqual(true);
