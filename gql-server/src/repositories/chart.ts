@@ -46,9 +46,16 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
     return res;
   }
 
-  const order = (rawQuery.order || ChartQueryOrder.CreatedAt).toLowerCase();
-  const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
-  const orderBy = `${order} ${direction}`;
+  let order = (rawQuery.order || ChartQueryOrder.CreatedAt).toLowerCase();
+  if (rawQuery.order === ChartQueryOrder.Random) {
+    order = 'RANDOM()';
+  }
+  let orderBy = order;
+  let direction: 'ASC' | 'DESC' = 'ASC';
+  if (rawQuery.order !== ChartQueryOrder.Random) {
+    direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
+    orderBy = `${order} ${direction}`;
+  }
   const limit = Math.min(100, rawQuery.limit || 50);
   const chartTypes = rawQuery.chartTypes;
   let query: BaseChartQuery = { orderBy, limit, chartTypes, direction };

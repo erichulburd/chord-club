@@ -220,7 +220,8 @@ export type ChartUpdate = {
 
 export enum ChartQueryOrder {
   ThumbsUp = 'THUMBS_UP',
-  CreatedAt = 'CREATED_AT'
+  CreatedAt = 'CREATED_AT',
+  Random = 'RANDOM'
 }
 
 export type ChartQuery = {

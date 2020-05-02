@@ -174,6 +174,17 @@ describe('chart repository', () => {
       expect(charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
     });
 
+    test('query order randomly', async () => {
+      const query: ChartQuery = {
+        limit: 10,
+        chartTypes: [ChartType.Chord, ChartType.Progression],
+        order: ChartQueryOrder.Random,
+        asc: false,
+      };
+      const charts = await executeChartQuery(query, 'uid1', client);
+      expect(charts.length).toEqual(10);
+    });
+
     test('query just chords DESC', async () => {
       const query: ChartQuery = {
         limit: 50,
