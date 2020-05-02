@@ -1,0 +1,5 @@
+#! /bin/bash
+
+npx graphql-codegen && \
+  cp ./src/types.ts ../ChordClub/src && \
+  cp ./src/fragmentTypes.json ../ChordClub/src

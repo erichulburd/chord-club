@@ -1,6 +1,9 @@
 schema: http://localhost:4000/graphql
 generates:
-  ./src/types.d.ts:
+  ./src/types.ts:
     plugins:
       - typescript
       - typescript-operations
+  ./src/fragmentTypes.json:
+    plugins:
+      - fragment-matcher

@@ -96,7 +96,7 @@ export type ChartBase = {
   scope: Scalars['String'];
   chartType: ChartType;
   bassNote?: Maybe<Note>;
-  root: Note;
+  root?: Maybe<Note>;
   quality: ChartQuality;
   extensions?: Maybe<Array<Extension>>;
 };
@@ -121,7 +121,7 @@ export type Chart = ChartBase & {
   scope: Scalars['String'];
   chartType: ChartType;
   bassNote?: Maybe<Note>;
-  root: Note;
+  root?: Maybe<Note>;
   quality: ChartQuality;
   createdAt: Scalars['String'];
   createdBy: Scalars['String'];
