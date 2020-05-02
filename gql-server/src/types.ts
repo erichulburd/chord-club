@@ -89,6 +89,7 @@ export type ChartBase = {
   audioURL: Scalars['String'];
   audioLength: Scalars['Int'];
   hint?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
@@ -113,6 +114,7 @@ export type Chart = ChartBase & {
   audioLength: Scalars['Int'];
   imageURL?: Maybe<Scalars['String']>;
   hint?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
@@ -135,13 +137,14 @@ export type ChartNew = {
   audioLength: Scalars['Int'];
   imageURL?: Maybe<Scalars['String']>;
   hint?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   scope: Scalars['String'];
   chartType: ChartType;
   bassNote?: Maybe<Note>;
-  root: Note;
-  quality: ChartQuality;
+  root?: Maybe<Note>;
+  quality?: Maybe<ChartQuality>;
   extensionIDs?: Maybe<Array<Scalars['Int']>>;
   tags: Array<TagNew>;
 };
@@ -206,6 +209,7 @@ export type ChartUpdate = {
   root?: Maybe<Note>;
   quality?: Maybe<ChartQuality>;
   hint?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   abc?: Maybe<Scalars['String']>;
   imageURL?: Maybe<Scalars['String']>;
@@ -271,6 +275,7 @@ export enum ErrorType {
   InvalidChartScope = 'INVALID_CHART_SCOPE',
   InvalidChartReaction = 'INVALID_CHART_REACTION',
   Unhandled = 'UNHANDLED',
+  InternalServerError = 'INTERNAL_SERVER_ERROR',
   ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION'
 }
 

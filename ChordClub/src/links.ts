@@ -27,11 +27,12 @@ const authLink = setContext(async (_request, previousContext) => {
 );
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
+  console.log("GRAPHQL ERRORS", graphQLErrors)
   if (graphQLErrors) {
     if (graphQLErrors.some((err) => err.extensions?.code === 'UNAUTHENTICATED')) {
       auth.actions.sessionExpired()
     }
-    graphQLErrors.forEach(({ message, locations, path, extensions }) =>
+    graphQLErrors.forEach(({ message, locations, path }) =>
       logger.error(
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
       )

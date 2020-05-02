@@ -53,12 +53,13 @@ export const getBearerToken = (authorization: string) => {
 };
 
 export const parseAuthorization =
-  (token: string, getKey: jwt.GetPublicKeyOrSecret): Promise<AccessTokenClaims> => {
-  return new Promise((resolve, reject) => {
+  (token: string, getKey: jwt.GetPublicKeyOrSecret): Promise<AccessTokenClaims | undefined> => {
+  return new Promise((resolve, _reject) => {
     const cb: jwt.VerifyCallback = (err, decoded) => {
       if(err) {
         logger.error(err);
-        return reject(err);
+        resolve(undefined);
+        return;
       }
       resolve(decoded as AccessTokenClaims);
     };
@@ -70,7 +71,6 @@ export const getUID = async (authHeader: string | undefined, getKey: jwt.GetPubl
   if (!authHeader) return '';
   const token = getBearerToken(authHeader);
   if (!token) return '';
-  let uid: string;
   const claims = await parseAuthorization(token, getKey);
   return claims?.sub || '';
 }

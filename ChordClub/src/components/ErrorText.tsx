@@ -11,11 +11,15 @@ interface ErrorTextProps {
 
 const defaultServerMessage = 'We experienced an unexpected issue on our server.';
 
+const unhandledErrors = new Set([
+  ErrorType.Unhandled, ErrorType.InternalServerError,
+])
+
 const getErrorText = (error: ApolloError | string) => {
   if (error instanceof ApolloError) {
     return error.graphQLErrors.map((err) => {
       const code = err.extensions?.code;
-      if (!code || code === ErrorType.Unhandled) {
+      if (!code || unhandledErrors.has(code)) {
         return defaultServerMessage;
       }
       return err.message;

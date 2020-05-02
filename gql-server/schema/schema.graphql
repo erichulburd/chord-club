@@ -100,13 +100,14 @@ interface ChartBase {
   audioURL: String!
   audioLength: Int!
   hint: String
+  name: String
   description: String
   abc: String!
   tags: [Tag!]!
   scope: String!
   chartType: ChartType!
   bassNote: Note
-  root: Note!
+  root: Note
   quality: ChartQuality!
   extensions: [Extension!]
 }
@@ -122,13 +123,14 @@ type Chart implements ChartBase {
   audioLength: Int!
   imageURL: String
   hint: String
+  name: String
   description: String
   abc: String!
   tags: [Tag!]!
   scope: String!
   chartType: ChartType!
   bassNote: Note
-  root: Note!
+  root: Note
   quality: ChartQuality!
   createdAt: String!
   createdBy: String!
@@ -144,13 +146,14 @@ input ChartNew {
   audioLength: Int!
   imageURL: String
   hint: String
+  name: String
   description: String
   abc: String!
   scope: String!
   chartType: ChartType!
   bassNote: Note
-  root: Note!
-  quality: ChartQuality!
+  root: Note
+  quality: ChartQuality
   extensionIDs: [Int!]
   tags: [TagNew!]!
 }
@@ -195,6 +198,7 @@ input ChartUpdate {
   root: Note
   quality: ChartQuality
   hint: String
+  name: String
   description: String
   abc: String
   imageURL: String
@@ -261,6 +265,7 @@ enum ErrorType {
   INVALID_CHART_SCOPE,
   INVALID_CHART_REACTION,
   UNHANDLED,
+  INTERNAL_SERVER_ERROR,
   FORBIDDEN_RESOURCE_OPERATION,
 }
 

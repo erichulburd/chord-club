@@ -9,7 +9,7 @@ import {
 import { invalidChartScope } from '../util/errors';
 
 const attrs = [
-  'id', 'audioURL', 'audioLength', 'imageURL', 'hint', 'description', 'abc',
+  'id', 'audioURL', 'audioLength', 'imageURL', 'hint', 'name', 'description', 'abc',
   'scope', 'chartType', 'bassNote', 'root', 'quality', 'createdAt', 'createdBy',
   'updatedAt',
 ];

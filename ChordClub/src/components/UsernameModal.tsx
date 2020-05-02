@@ -61,6 +61,8 @@ const UserModal = ({
     >
       {loading && <Spinner size={'giant'} />}
       {error && <ErrorText retry={refetch} error={error} />}
+      <Text>{error?.message}</Text>
+      <Text>{JSON.stringify(data)}</Text>
       {!loading && !error && <UsernameForm done={refetch} />}
     </Modal>
   );

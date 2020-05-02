@@ -210,10 +210,20 @@ const ChordCreator = ({ close, modalCtx, authState }: Props) => {
             onDelete={removeTag}
           />
         </Row>
+        {newChart.chartType === ChartType.Progression &&
+          <Row style={{ flexDirection: 'column', alignSelf: 'stretch' }}>
+            <Input
+              textStyle={styles.input}
+              placeholder='Name'
+              value={newChart.name || ''}
+              onChangeText={(txt: string) => setChart({ ...newChart, name: txt })}
+            />
+          </Row>
+        }
         <Row style={{ flexDirection: 'column', alignSelf: 'stretch' }}>
           <Input
             multiline
-            textStyle={styles.input}
+            textStyle={[styles.input, styles.inputMultiline]}
             placeholder='Description'
             value={newChart.description || ''}
             onChangeText={(txt: string) => setChart({ ...newChart, description: txt })}
@@ -260,6 +270,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch',
     width: '100%',
+  },
+  inputMultiline: {
     minHeight: 64,
   },
   chordTone: { flex: 1, flexShrink: 1, flexGrow: 1, flexBasis: 1 },

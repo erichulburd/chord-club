@@ -38,6 +38,7 @@ CREATE TABLE chart (
   audio_url TEXT NOT NULL,
   image_url TEXT,
   audio_length INTEGER NOT NULL,
+  name VARCHAR(180),
   hint TEXT,
   description TEXT,
   abc TEXT,

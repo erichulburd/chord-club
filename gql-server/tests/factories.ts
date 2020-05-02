@@ -7,6 +7,7 @@ export const makeChartNew = (overrides: Partial<ChartNew> = {}): ChartNew => ({
   audioLength: 10,
   imageURL: faker.internet.url(),
   hint: faker.lorem.words(3),
+  name: faker.lorem.words(1),
   description: faker.lorem.words(3),
   abc: faker.lorem.words(3),
   scope: BaseScopes.Public,
