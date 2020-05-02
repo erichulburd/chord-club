@@ -10,6 +10,9 @@ import { ResizableImage } from '../util/imagePicker';
 import AudioPlayer from './AudioPlayer1';
 import { TagCollection } from './TagCollection';
 import { withAuth, AuthConsumerProps } from './AuthProvider';
+import { useMutation } from 'react-apollo';
+import ChartReactions from './ChartReactions';
+import { REACT_TO_CHART, ReactToChartResponse, ReactToChartVariables } from '../gql/chart';
 
 interface ManualProps {
   chart: Chart;
@@ -19,6 +22,19 @@ interface ManualProps {
 interface Props extends ManualProps, AuthConsumerProps {}
 
 const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
+  const { uid } = authState;
+  const [reactToChart, reaction] = useMutation<ReactToChartResponse, ReactToChartVariables>(REACT_TO_CHART);
+  const react = (reactionType: ReactionType) => {
+    if (reactionType === chart.userReactionType) {
+      return;
+    }
+    reactToChart({ variables: {
+      reactionNew: { chartID: chart.id, reactionType, uid  }
+    }})
+  };
+  const userReactionType =  reaction.data?.react.userReactionType || chart.userReactionType;
+  const starCount: number = reaction.data?.react.reactionCounts?.stars ||
+    chart.reactionCounts.stars;
   const Footer = (props?: ViewProps) => (
     <View {...props} style={[props?.style || {}, styles.footer]}>
       <View style={styles.ownerActions}>
@@ -42,20 +58,7 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
           </>
         }
       </View>
-      <View style={styles.reactions}>
-        <Button
-          size="small"
-          status="warning"
-          appearance={chart.userReactionType === ReactionType.Star ? 'outline' : 'ghost'}
-          accessoryRight={ThemedIcon('star')}
-        >{chart.reactionCounts.stars.toString()}</Button>
-        <Button
-          size="small"
-          status="danger"
-          appearance={chart.userReactionType === ReactionType.Flag ? 'outline' : 'ghost'}
-          accessoryLeft={ThemedIcon('flag')}
-        />
-      </View>
+      <ChartReactions chart={chart} />
     </View>
   );
   const [accordionState, setAccordionState] = useState<AccordionState>({
@@ -98,7 +101,7 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
               toggle={(nextIsOpen) => setAccordionState({ ...accordionState, description: nextIsOpen })}
             />
           </View>
-          {accordionState.description &&
+          {accordionState.description && chart.description &&
             <View>
               <Text>{chart.description}</Text>
             </View>
@@ -115,7 +118,7 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
                 toggle={(nextIsOpen) => setAccordionState({ ...accordionState, toneAndQuality: nextIsOpen })}
               />
             </View>
-            {accordionState.toneAndQuality &&
+            {(accordionState.toneAndQuality && chart.root) &&
               <View><Text>{displayNote(chart.root)} {chart.quality}</Text></View>
             }
           </View>
@@ -172,11 +175,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  reactions: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
   },
   attributeHeader: {
     display: 'flex',

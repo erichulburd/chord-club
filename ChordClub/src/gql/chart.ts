@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { ChartNew, Chart, ChartQuery, ChartType, ChartUpdate } from '../types';
+import { ChartNew, Chart, ChartQuery, ChartType, ChartUpdate, ReactionNew } from '../types';
 import { tagDBFields } from './tag';
 
 export const chartDBFields = gql`
@@ -93,4 +93,20 @@ export const DELETE_CHART_MUTATION = gql`
 
 export interface DeleteChartMutationVariables {
   chartID: number;
+}
+
+export const REACT_TO_CHART = gql`
+  mutation ReactToChart($reactionNew: ReactionNew!) {
+    react(reactionNew: $reactionNew) {
+      id userReactionType reactionCounts { stars }
+    }
+  }
+`;
+
+export interface ReactToChartVariables {
+  reactionNew: ReactionNew;
+}
+
+export interface ReactToChartResponse {
+  react: Partial<Chart>;
 }

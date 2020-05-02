@@ -24,11 +24,19 @@ const IconProvider = (name: string) => ({
 function FontAwesomeIcon({ name, style, ...props }: IconProps & FontAwesome5IconProps) {
   const { height, tintColor, ...iconStyle } = StyleSheet.flatten(style);
   return (
-    <FontAwesome5 {...props} name={name} size={height} color={tintColor} style={iconStyle} />
+    <FontAwesome5
+      {...props}
+      name={name}
+      size={height}
+      color={tintColor}
+      style={iconStyle}
+    />
   );
 }
 
-export const ThemedIcon = (name: string) =>
+export const ThemedIcon = (
+  name: string,
+  overrides: Partial<IconProps & FontAwesome5IconProps> = {}) =>
 (props: Partial<IconProps & FontAwesome5IconProps> = {}) => (
-  <Icon {...props} name={name} />
+  <Icon {...props} {...overrides} name={name} />
 );

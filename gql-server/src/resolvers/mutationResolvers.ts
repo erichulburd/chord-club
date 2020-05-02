@@ -6,7 +6,7 @@ import { insertUserNew, updateUser, deleteUser } from '../repositories/user';
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
 import { deleteChartsForUser, findChartByID, insertNewChart, updateChart, deleteChart } from '../repositories/chart';
-import { upsertReactionNew } from '../repositories/reaction';
+import { upsertReactionNew, findReactionsByChartID, deleteReactionNew } from '../repositories/reaction';
 import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes, reconcileChartTags } from '../repositories/tag';
 import { wrapTopLevelOp, Resolver } from './resolverUtils';
 import { addExtensionsForChart, removeExtensionsForChart, reconcileChartExtensions } from '../repositories/extensions';
@@ -101,7 +101,12 @@ M.react = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: ReactArgs, contex
   if (!chart) {
     throw chartNotFoundError(args.reactionNew.chartID);
   }
-  await upsertReactionNew(args.reactionNew, context.db);
+  const rxns = await findReactionsByChartID([args.reactionNew.chartID], context.uid, context.db);
+  if (!rxns[0]) {
+    await upsertReactionNew(args.reactionNew, context.db);
+  } else {
+    await deleteReactionNew(args.reactionNew.chartID, context.uid, context.db);
+  }
   return chart as Chart;
 });
 
