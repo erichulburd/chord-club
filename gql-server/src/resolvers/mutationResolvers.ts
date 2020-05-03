@@ -212,7 +212,7 @@ M.setTagPositions = wrapTopLevelOp(async (
     await txManager.rollbackTx(tx);
     throw err;
   }
-  return findChartsByID(chartIDs, context.uid, context.db);
+  return findChartsByID(chartIDs, [context.uid, BaseScopes.Public], context.db);
 });
 
 M.addExtensions = wrapTopLevelOp(async (

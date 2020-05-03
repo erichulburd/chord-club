@@ -223,6 +223,7 @@ input ChartQuery {
   order: ChartQueryOrder
   asc: Boolean
   limit: Int
+  scopes: [String!]
 }
 
 interface UserBase {

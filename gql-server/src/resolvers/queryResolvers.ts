@@ -2,6 +2,7 @@ import {
   UserQuery, User, ChartQuery, Chart, TagQuery,
   Tag,
   Extension,
+  BaseScopes,
 } from '../types';
 import { executeUserQuery, findUserByUID } from '../repositories/user';
 import { Context } from '../util/context';
@@ -10,6 +11,7 @@ import { executeChartQuery } from '../repositories/chart';
 import { executeTagQuery } from '../repositories/tag';
 import { wrapTopLevelOp, Resolver } from './resolverUtils';
 import { findAllExtensions } from '../repositories/extensions';
+import { forbiddenResourceOpError } from '../util/errors';
 
 interface UsersArgs {
   query: UserQuery;
@@ -46,6 +48,10 @@ Q.users = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: UsersArgs, contex
 });
 
 Q.charts = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: ChartsArgs, context: Context): Promise<Chart[]>  => {
+  const permittedScopes = new Set([context.uid, BaseScopes.Public]);
+  if (args.query.scopes?.some(s => !permittedScopes.has(s))) {
+    throw forbiddenResourceOpError();
+  }
   return (await executeChartQuery(args.query, context.uid, context.db)) || [];
 });
 

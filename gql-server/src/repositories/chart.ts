@@ -64,6 +64,9 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
     // If order is random, ignore after id.
     after = undefined;
   }
+
+  const scopes = rawQuery.scopes || [uid, BaseScopes.Public];
+
   const limit = Math.min(100, rawQuery.limit || 50);
   const chartTypes = rawQuery.chartTypes;
   let query: BaseChartQuery = { orderBy, limit, chartTypes, direction };
@@ -72,27 +75,27 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
     const chartTagQueryAfter: ChartQueryByTagsAfter = {
       ...query, tagIDs: rawQuery.tagIDs, after,
     };
-    return findChartsByTagsAfter(chartTagQueryAfter, uid, client);
+    return findChartsByTagsAfter(chartTagQueryAfter, scopes, client);
   }
 
   if (rawQuery.tagIDs) {
     const chartTagQuery: ChartQueryByTags = {
       ...query, tagIDs: rawQuery.tagIDs,
     };
-    return findChartsByTags(chartTagQuery, uid, client);
+    return findChartsByTags(chartTagQuery, scopes, client);
   }
 
   if (after) {
     const chartQueryAfter: BaseChartQueryAfter = {
       ...query, after,
     };
-    return findChartsAfter(chartQueryAfter, uid, client);
+    return findChartsAfter(chartQueryAfter, scopes, client);
   }
-  return findCharts(query, uid, client);
+  return findCharts(query, scopes, client);
 };
 
 export const findChartByID = async (id: number, uid: string, client: PoolClient) => {
-  const scopes = [uid, BaseScopes.Public];
+  const scopes = [BaseScopes.Public, uid];
   const result = await client.query(`
     SELECT
       ${selectFields}
@@ -105,7 +108,7 @@ export const findChartByID = async (id: number, uid: string, client: PoolClient)
   return dbDataToChart(result.rows[0]) as Chart;
 };
 
-export const findChartsByID = async (chartIDs: number[], uid: string, client: PoolClient) => {
+export const findChartsByID = async (chartIDs: number[], uid: string[], client: PoolClient) => {
   const scopes = [uid, BaseScopes.Public];
   const result = await client.query(`
     SELECT
@@ -116,8 +119,7 @@ export const findChartsByID = async (chartIDs: number[], uid: string, client: Po
   return result.rows.map(dbDataToChart);
 };
 
-const findCharts = async (query: BaseChartQuery, uid: string, client: PoolClient) => {
-  const scopes = [uid, BaseScopes.Public];
+const findCharts = async (query: BaseChartQuery, scopes: string[], client: PoolClient) => {
   const result = await client.query(`
   SELECT
     ${selectFields}
@@ -130,9 +132,8 @@ const findCharts = async (query: BaseChartQuery, uid: string, client: PoolClient
 };
 
 const findChartsAfter = async (
-  query: BaseChartQueryAfter, uid: string, client: PoolClient) => {
+  query: BaseChartQueryAfter, scopes: string[], client: PoolClient) => {
 
-  const scopes = [uid, BaseScopes.Public];
   const result = await client.query(`
   WITH ranks AS (
     SELECT
@@ -152,9 +153,8 @@ const findChartsAfter = async (
 };
 
 const findChartsByTags = async (
-  query: ChartQueryByTags, uid: string, client: PoolClient,
+  query: ChartQueryByTags, scopes: string[], client: PoolClient,
 ) => {
-  const tagScopes = [BaseScopes.Public, uid];
   const result = await client.query(`
   SELECT
     ${selectFields}
@@ -164,14 +164,13 @@ const findChartsByTags = async (
   WHERE t.id = ANY ($1) AND t.scope = ANY ($2) AND c.chart_type = ANY ($5)
   ORDER BY $3, c.id ${query.direction}
   LIMIT $4
-  `, [query.tagIDs, tagScopes, query.orderBy, query.limit, query.chartTypes]);
+  `, [query.tagIDs, scopes, query.orderBy, query.limit, query.chartTypes]);
   return result.rows.map(dbDataToChart) as Chart[];
 };
 
 const findChartsByTagsAfter = async (
-  query: ChartQueryByTagsAfter, uid: string, client: PoolClient,
+  query: ChartQueryByTagsAfter, scopes: string[], client: PoolClient,
 ) => {
-  const scopes = [BaseScopes.Public, uid];
   const result = await client.query(`
   WITH ranks AS (
     SELECT

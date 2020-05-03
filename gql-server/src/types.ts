@@ -234,6 +234,7 @@ export type ChartQuery = {
   order?: Maybe<ChartQueryOrder>;
   asc?: Maybe<Scalars['Boolean']>;
   limit?: Maybe<Scalars['Int']>;
+  scopes?: Maybe<Array<Scalars['String']>>;
 };
 
 export type UserBase = {
@@ -277,6 +278,7 @@ export enum ErrorType {
   InvalidChartTagError = 'INVALID_CHART_TAG_ERROR',
   InvalidChartScope = 'INVALID_CHART_SCOPE',
   InvalidChartReaction = 'INVALID_CHART_REACTION',
+  InvalidTagPositionUpdate = 'INVALID_TAG_POSITION_UPDATE',
   Unhandled = 'UNHANDLED',
   InternalServerError = 'INTERNAL_SERVER_ERROR',
   ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION'
@@ -338,6 +340,7 @@ export type Mutation = {
   deleteTag?: Maybe<Empty>;
   addTags?: Maybe<Chart>;
   unTag?: Maybe<Chart>;
+  setTagPositions?: Maybe<Array<Maybe<Chart>>>;
 };
 
 
@@ -402,5 +405,12 @@ export type MutationAddTagsArgs = {
 export type MutationUnTagArgs = {
   chartID: Scalars['Int'];
   tagIDs: Array<Scalars['Int']>;
+};
+
+
+export type MutationSetTagPositionsArgs = {
+  tagID: Scalars['Int'];
+  chartIDs: Array<Scalars['Int']>;
+  positions: Array<Scalars['Int']>;
 };
 
