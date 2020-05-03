@@ -67,7 +67,7 @@ export const HomeScreen = ({ authState }: Props) => {
                 appearance={'ghost'}
                 status={'success'}
                 onPress={() => setView(HomeView.ChordCreator)}
-              >New chord</Button>
+              >Record new sound</Button>
             </View>
           </>
         }

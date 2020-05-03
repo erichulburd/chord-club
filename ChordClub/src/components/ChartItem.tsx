@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Card, Text, Button } from '@ui-kitten/components';
 import { ThemedIcon } from './FontAwesomeIcons';
-import { ReactionType, Chart, ChartType } from '../types';
+import moment from 'moment';
+import { Chart, ChartType } from '../types';
 import { View, ViewProps, StyleSheet } from 'react-native';
 import { ChartExtensions } from './ChartExtensions';
 import { displayNote } from '../util/strings';
@@ -10,9 +11,8 @@ import { ResizableImage } from '../util/imagePicker';
 import AudioPlayer from './AudioPlayer1';
 import { TagCollection } from './TagCollection';
 import { withAuth, AuthConsumerProps } from './AuthProvider';
-import { useMutation } from 'react-apollo';
 import ChartReactions from './ChartReactions';
-import { REACT_TO_CHART, ReactToChartResponse, ReactToChartVariables } from '../gql/chart';
+import ChartOwnerMenu from './ChartOwnerMenu';
 
 interface ManualProps {
   chart: Chart;
@@ -23,29 +23,23 @@ interface Props extends ManualProps, AuthConsumerProps {}
 
 const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
 
-  const Footer = (props?: ViewProps) => (
-    <View {...props} style={[props?.style || {}, styles.footer]}>
-      <View style={styles.ownerActions}>
-        <Text category="label">{chart.creator?.username}</Text>
-        {chart.createdBy === authState.uid &&
-          <>
-            <Button
-              appearance="ghost"
-              status="basic"
-              size="small"
-              accessoryLeft={ThemedIcon('edit')}
-              onPress={() => editChart(chart)}
-            />
-            <Button
-              appearance="ghost"
-              status="basic"
-              size="small"
-              accessoryLeft={ThemedIcon('trash')}
-              onPress={() => onDeleteChart(chart.id)}
-            />
-          </>
-        }
+  const Header = (props?: ViewProps) => (
+    <View {...props} style={styles.headerAndFooter}>
+      <View style={styles.chartCreatorAndTime}>
+        <Text>{chart.creator?.username}</Text>
+        <Text>{moment(parseInt(chart.createdAt, 10)).fromNow()}</Text>
       </View>
+      {chart.createdBy === authState.uid &&
+        <ChartOwnerMenu
+          chart={chart}
+          editChart={editChart}
+          onDeleteChart={onDeleteChart}
+        />
+      }
+    </View>
+  );
+  const Footer = (props?: ViewProps) => (
+    <View {...props} style={[props?.style || {}, styles.headerAndFooter]}>
       <ChartReactions chart={chart} />
     </View>
   );
@@ -68,6 +62,7 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
       style={styles.card}
       status="success"
       footer={Footer}
+      header={Header}
     >
       <View>
         <AudioPlayer audio={chart} />
@@ -160,7 +155,7 @@ const styles = StyleSheet.create({
   card: {
     margin: 10,
   },
-  footer: {
+  headerAndFooter: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -172,11 +167,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  ownerActions: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+  chartCreatorAndTime: {
+    marginLeft: 10,
   }
 })
 
