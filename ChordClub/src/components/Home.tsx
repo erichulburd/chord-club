@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { Divider, Layout, Button } from '@ui-kitten/components';
-import { NavigationProp } from '@react-navigation/native';
 import Title from './Title'
 import ChartList from './ChartList';
 import ChordCreator from './Home/ChordCreator';
-import { ChartType, Chart } from '../types';
+import { ChartType, Chart, ChartQuery, BaseScopes } from '../types';
 import ChartEditor from './ChartEditor';
 import { AuthConsumerProps, withAuth } from './AuthProvider';
+import ChartQueryComponent from './ChartQuery';
+import { Column } from './Column';
 
 interface Props extends AuthConsumerProps {
 }
@@ -35,6 +36,10 @@ export const HomeScreen = ({ authState }: Props) => {
     setEditingChart(undefined);
     setView(HomeView.ChordList);
   };
+  const [query, updateQuery] = useState<ChartQuery>({
+    chartTypes: [ChartType.Chord, ChartType.Progression],
+    scopes: [BaseScopes.Public],
+  })
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Title
@@ -45,10 +50,16 @@ export const HomeScreen = ({ authState }: Props) => {
         {view === HomeView.ChordList &&
           <>
             {Boolean(authState.token) &&
-              <ChartList
-                query={{ chartTypes: [ChartType.Chord, ChartType.Progression]}}
-                editChart={editChart}
-              />
+              <>
+                <ChartQueryComponent
+                  query={query}
+                  onChange={updateQuery}
+                />
+                <ChartList
+                  query={query}
+                  editChart={editChart}
+                />
+              </>
             }
             <View>
               <Button

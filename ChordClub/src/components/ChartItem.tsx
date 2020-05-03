@@ -22,19 +22,7 @@ interface ManualProps {
 interface Props extends ManualProps, AuthConsumerProps {}
 
 const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
-  const { uid } = authState;
-  const [reactToChart, reaction] = useMutation<ReactToChartResponse, ReactToChartVariables>(REACT_TO_CHART);
-  const react = (reactionType: ReactionType) => {
-    if (reactionType === chart.userReactionType) {
-      return;
-    }
-    reactToChart({ variables: {
-      reactionNew: { chartID: chart.id, reactionType, uid  }
-    }})
-  };
-  const userReactionType =  reaction.data?.react.userReactionType || chart.userReactionType;
-  const starCount: number = reaction.data?.react.reactionCounts?.stars ||
-    chart.reactionCounts.stars;
+
   const Footer = (props?: ViewProps) => (
     <View {...props} style={[props?.style || {}, styles.footer]}>
       <View style={styles.ownerActions}>
@@ -78,16 +66,18 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
   return (
     <Card
       style={styles.card}
-      status="basic"
+      status="success"
       footer={Footer}
     >
       <View>
         <AudioPlayer audio={chart} />
-        <Button
-          appearance="ghost"
-          status="warning"
-          onPress={openImage}
-        >View chart</Button>
+        {chart.imageURL &&
+          <Button
+            appearance="ghost"
+            status="warning"
+            onPress={openImage}
+          >View chart</Button>
+        }
       </View>
       <TagCollection
         tags={chart.tags}

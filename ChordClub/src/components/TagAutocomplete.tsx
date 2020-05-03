@@ -18,7 +18,8 @@ import logger from '../util/logger';
 interface ManualProps {
   placeholder?: string;
   includePublic?: boolean;
-  onSelect: (t: TagNew | Tag) => void;
+  onSelect: ((t: TagNew | Tag) => void) | ((t: Tag) => void);
+  allowNewTags?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
@@ -32,6 +33,8 @@ interface State {
   queryTs?: number;
   includePublic: boolean
 }
+
+const fauxResult = makeTagNew('No results', false, 'FAUX');
 
 export class TagAutocomplete extends React.Component<Props> {
   public state: State = {
@@ -89,16 +92,19 @@ export class TagAutocomplete extends React.Component<Props> {
 
   private updateOptions = (data: GetTagsData, errors: readonly GraphQLError[] | undefined) => {
     const { query } = this.state;
-    const { authState } = this.props;
+    const { authState, allowNewTags = true } = this.props;
     const { uid } = authState
     let error = undefined;
     if (errors && errors.length > 0) {
       error = new ApolloError({ graphQLErrors: errors });
     }
     let options: any[] = data.tags;
-    if (query.displayName && !options.some(t => t.munge !== getTagMunge(query.displayName || ''))) {
-      const tagNew = makeTagNew(query.displayName, this.includePublic(), uid);
-      options = [ tagNew, ...options ];
+    if (allowNewTags && query.displayName) {
+      const tagExists = options.some(t => t.munge !== getTagMunge(query.displayName || ''));
+      if (!tagExists) {
+        const tagNew = makeTagNew(query.displayName, this.includePublic(), uid);
+        options = [ tagNew, ...options ];
+      }
     }
     this.setState({ options, error, loading: false, queryTs: undefined });
   }
@@ -117,7 +123,11 @@ export class TagAutocomplete extends React.Component<Props> {
   private onSelect = (index: number) => {
     const { query, options } = this.state;
     const { onSelect } = this.props;
-    onSelect(options[index]);
+    const tag = options[index];
+    if (tag === fauxResult) {
+      return;
+    }
+    onSelect(tag);
     this.setState({
       query: { ...query, displayName: '' },
       options: [],
@@ -125,7 +135,7 @@ export class TagAutocomplete extends React.Component<Props> {
   }
 
   public render() {
-    const { placeholder = 'Add tag', containerStyle = {}, authState } = this.props;
+    const { placeholder = 'Add tag', containerStyle = {} } = this.props;
     const { query, error, options, includePublic, loading } = this.state;
 
     const renderCloseIcon = (props: IconProps) =>
@@ -138,7 +148,7 @@ export class TagAutocomplete extends React.Component<Props> {
     if (data.length === 0) {
       // If no data, insert a faux tag, otherwise, Autocomplete will not set
       // its state to listVisible: true on focus.
-      data = [makeTagNew('', this.includePublic(), authState.uid)];
+      data = [fauxResult];
     }
     return (
       <View style={containerStyle}>

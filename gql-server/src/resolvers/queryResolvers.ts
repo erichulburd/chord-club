@@ -50,7 +50,7 @@ Q.users = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: UsersArgs, contex
 Q.charts = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: ChartsArgs, context: Context): Promise<Chart[]>  => {
   const permittedScopes = new Set([context.uid, BaseScopes.Public]);
   if (args.query.scopes?.some(s => !permittedScopes.has(s))) {
-    throw forbiddenResourceOpError();
+    throw forbiddenResourceOpError({ scopes: args.query.scopes });
   }
   return (await executeChartQuery(args.query, context.uid, context.db)) || [];
 });

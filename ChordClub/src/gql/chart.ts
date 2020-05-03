@@ -49,8 +49,10 @@ export const CHARTS_QUERY = gql`
   query ChartsQuery($query: ChartQuery!) {
     charts(query: $query) {
       ...ChartDBFields
-      creator { uid username } reactionCounts { stars } userReactionType
-      tags { ...TagDBFields }
+      userReactionType
+      creator { uid username }
+      reactionCounts { stars }
+      tags { ...TagDBFields tagPosition }
     }
   }
   ${chartDBFields}

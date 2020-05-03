@@ -35,6 +35,6 @@ export const getTagMunge = (displayName: string) => {
 }
 
 export const getTagKey = (t: Tag | TagNew) => `${t.scope}-${getTagMunge(t.displayName)}`
-export const areTagsEqual = (t1: Tag, t2: TagNew) => {
+export const areTagsEqual = (t1: Tag | TagNew, t2: Tag | TagNew) => {
   return getTagKey(t1) === getTagKey(t2);
 };

@@ -6,7 +6,7 @@ import { getTagKey } from '../util/forms';
 
 interface Props {
   tags: (Tag | TagNew)[];
-  onDelete?: (tag: Tag | TagNew) => void;
+  onDelete?: ((tag: Tag | TagNew) => void) | ((tag: Tag) => void);
 }
 
 export const TagCollection = ({ tags, onDelete }: Props) => {

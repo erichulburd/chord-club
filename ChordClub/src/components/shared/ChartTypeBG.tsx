@@ -4,25 +4,25 @@ import { ChartType } from '../../types';
 import { ThemedIcon } from '../FontAwesomeIcons';
 
 interface Props {
-  chartType: ChartType | undefined;
+  chartTypes: ChartType[];
   onChange: (chartType: ChartType) => void;
 }
 
-export const ChartTypeBG = ({ chartType, onChange }: Props) => {
+export const ChartTypeBG = ({ chartTypes, onChange }: Props) => {
 
   return (
     <ButtonGroup appearance='outline' status='info' size="small">
       <Button
         onPress={() =>
-          chartType !== ChartType.Chord && onChange(ChartType.Chord)
+          !chartTypes.includes(ChartType.Chord) && onChange(ChartType.Chord)
         }
-        accessoryLeft={chartType === ChartType.Chord ? ThemedIcon('check-square') : ThemedIcon('square')}
+        accessoryLeft={chartTypes.includes(ChartType.Chord) ? ThemedIcon('check-square') : ThemedIcon('square')}
       >Chord</Button>
       <Button
         onPress={() =>
-          chartType !== ChartType.Progression && onChange(ChartType.Progression)
+          !chartTypes.includes(ChartType.Progression) && onChange(ChartType.Progression)
         }
-        accessoryLeft={chartType === ChartType.Progression ? ThemedIcon('check-square') : ThemedIcon('square')}
+        accessoryLeft={chartTypes.includes(ChartType.Progression) ? ThemedIcon('check-square') : ThemedIcon('square')}
       >Progression</Button>
     </ButtonGroup>
   )

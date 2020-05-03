@@ -71,14 +71,14 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
   const chartTypes = rawQuery.chartTypes;
   let query: BaseChartQuery = { orderBy, limit, chartTypes, direction };
 
-  if (rawQuery.tagIDs && after) {
+  if (rawQuery.tagIDs?.length && after) {
     const chartTagQueryAfter: ChartQueryByTagsAfter = {
       ...query, tagIDs: rawQuery.tagIDs, after,
     };
     return findChartsByTagsAfter(chartTagQueryAfter, scopes, client);
   }
 
-  if (rawQuery.tagIDs) {
+  if (rawQuery.tagIDs?.length) {
     const chartTagQuery: ChartQueryByTags = {
       ...query, tagIDs: rawQuery.tagIDs,
     };

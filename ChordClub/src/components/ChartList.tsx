@@ -4,9 +4,9 @@ import { ChartQuery, Chart } from '../types';
 import last from 'lodash/last';
 import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables, DELETE_CHART_MUTATION, DeleteChartMutationVariables } from '../gql/chart';
 import { ScrollView, FlatList } from 'react-native-gesture-handler';
-import { Spinner } from '@ui-kitten/components';
+import { Spinner, ViewPager } from '@ui-kitten/components';
 import ChartItem from './ChartItem';
-import { RefreshControl } from 'react-native';
+import { RefreshControl, View, StyleSheet } from 'react-native';
 import { withModalContext, ModalContextProps } from './ModalProvider';
 
 interface ManualProps {
@@ -19,6 +19,8 @@ interface Props extends ModalContextProps, ManualProps {}
 const ChartList = ({ query, editChart, modalCtx }: Props) => {
   const { data, loading, refetch, fetchMore } =
     useQuery<ChartsQueryResponse, ChartsQueryVariables>(CHARTS_QUERY, { variables: { query } });
+
+
   const loadMore = () => fetchMore({
     variables: {
       query: { ...query, after: last(data?.charts || [])?.id }
@@ -44,30 +46,30 @@ const ChartList = ({ query, editChart, modalCtx }: Props) => {
       cancel: () => undefined,
     })
   };
-  const refresh = () => {
-    refetch();
-  };
   const charts= (data?.charts || []).filter((chart) => !dismissed[chart.id]);
+  if (loading) {
+    return (<View><Spinner /></View>);
+  }
   return (
-    <ScrollView
-      refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
-
-    >
-      <FlatList
-        data={charts}
-        keyExtractor={chart => chart.id.toString()}
-        renderItem={(item) => (
-          <ChartItem
-            chart={item.item}
-            editChart={editChart}
-            onDeleteChart={onDeleteChart}
-          />
-        )}
-      />
-      {loading && <Spinner />}
-    </ScrollView>
-  )
+    <FlatList
+      horizontal
+      data={charts}
+      keyExtractor={chart => chart.id.toString()}
+      renderItem={(item) => (
+        <ChartItem
+          chart={item.item}
+          editChart={editChart}
+          onDeleteChart={onDeleteChart}
+        />
+      )}
+    />
+  );
 };
+
+const styles = StyleSheet.create({
+  container: {},
+  list: {}
+})
 
 
 export default withModalContext<ManualProps>(ChartList);
