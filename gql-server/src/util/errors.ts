@@ -23,6 +23,10 @@ export const invalidChartTagError = (chartID: number, tag: TagBase) => new Apoll
   ErrorType.InvalidChartTagError,
   'This tag is invalid for the chart.', { chartID, tag });
 
+export const invalidTagPositionUpdate = () => new ApolloError(
+  ErrorType.InvalidChartTagError,
+  'Must have a single tag position for each chart.', {});
+
 export const invalidChartScope = (scope: string) => new ApolloError(
   ErrorType.InvalidChartScope,
   'This scope is invalid for the chart.', { scope });

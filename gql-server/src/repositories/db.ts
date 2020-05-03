@@ -112,29 +112,57 @@ interface DBInsert {
   [key: string]: any;
 }
 
-export const prepareDBInsert = (values: DBInsert[], columnWhitelist?: string[]) => {
+interface DynamicValues<T> {
+  [key: string]: string | ((val: T) => string);
+}
+
+export const prepareDBInsert = <T extends Record<string, any>>(
+  values: T[], columnWhitelist?: string[],
+  dynamicValues: DynamicValues<T> = {},
+) => {
   const dbValues: DBUpdate[] = values.map(o => Object.keys(o).reduce((prev, k) =>
     o[k] === undefined ? prev : ({
       ...prev,
       [snakeCase(k)]: o[k],
     }),
   {}));
+
   let columns = uniq(flatten(dbValues.map(val => Object.keys(val))));
   if (columnWhitelist) {
     columns = columns.filter(c => columnWhitelist.includes(c));
   }
+
+  const dynamicColumns = Object.keys(dynamicValues);
+
   const prep = dbValues.map((_val, i) =>
-    '(' + columns.map((_k, j) =>
-      `$${i * columns.length + j + 1}`
-    ).join(', ') + ')'
+    '(' +
+      columns.map((_k, j) => `$${i * columns.length + j + 1}`).join(', ') +
+      getDynamicValue(values[i], dynamicColumns, dynamicValues) +
+    ')'
   ).join(', ');
   const pgValues = flatten(dbValues.map((val) => columns.map((c) => val[c])));
   return {
-    columns: columns.join(', '),
+    columns: columns.concat(dynamicColumns.map(snakeCase)).join(', '),
     prep,
     values: pgValues,
   };
 };
+
+const getDynamicValue = <T>(
+  val: T,
+  dynamicColumns: string[],
+  dynamicValues: DynamicValues<T>
+): string => {
+  if (dynamicColumns.length <= 0) {
+    return '';
+  }
+  return ', ' + dynamicColumns.map((c) =>
+    isCallable(dynamicValues[c]) ?
+      (dynamicValues[c] as Function)(val) :
+      dynamicValues[c]).join(', ');
+}
+
+const isCallable = (s: any) => typeof s === 'function' || s instanceof Function;
 
 interface DBUpdate {
   [key: string]: any;

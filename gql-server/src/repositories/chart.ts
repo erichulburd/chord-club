@@ -15,7 +15,7 @@ const attrs = [
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 'c');
-const dbDataToChart = makeDBDataToObject(attrs, 'Chart');
+const dbDataToChart = makeDBDataToObject<Chart>(attrs, 'Chart');
 
 interface AfterQuery {
   after: number;
@@ -47,22 +47,30 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
   }
 
   let order = (rawQuery.order || ChartQueryOrder.CreatedAt).toLowerCase();
-  if (rawQuery.order === ChartQueryOrder.Random) {
+  if (rawQuery.order === ChartQueryOrder.TagPosition && rawQuery.tagIDs?.length !== 1) {
+    order = ChartQueryOrder.CreatedAt.toLowerCase();
+  } else if (rawQuery.order === ChartQueryOrder.TagPosition && rawQuery.tagIDs?.length === 1) {
+    order = ChartQueryOrder.TagPosition.toLowerCase();
+  } else if (rawQuery.order === ChartQueryOrder.Random) {
     order = 'RANDOM()';
   }
   let orderBy = order;
-  let direction: 'ASC' | 'DESC' = 'ASC';
+  let direction: 'ASC' | 'DESC' = 'DESC';
+  let after = rawQuery.after;
   if (rawQuery.order !== ChartQueryOrder.Random) {
     direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
     orderBy = `${order} ${direction}`;
+  } else {
+    // If order is random, ignore after id.
+    after = undefined;
   }
   const limit = Math.min(100, rawQuery.limit || 50);
   const chartTypes = rawQuery.chartTypes;
   let query: BaseChartQuery = { orderBy, limit, chartTypes, direction };
 
-  if (rawQuery.tagIDs && rawQuery.after) {
+  if (rawQuery.tagIDs && after) {
     const chartTagQueryAfter: ChartQueryByTagsAfter = {
-      ...query, tagIDs: rawQuery.tagIDs, after: rawQuery.after,
+      ...query, tagIDs: rawQuery.tagIDs, after,
     };
     return findChartsByTagsAfter(chartTagQueryAfter, uid, client);
   }
@@ -74,9 +82,9 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
     return findChartsByTags(chartTagQuery, uid, client);
   }
 
-  if (rawQuery.after) {
+  if (after) {
     const chartQueryAfter: BaseChartQueryAfter = {
-      ...query, after: rawQuery.after,
+      ...query, after,
     };
     return findChartsAfter(chartQueryAfter, uid, client);
   }
@@ -95,6 +103,17 @@ export const findChartByID = async (id: number, uid: string, client: PoolClient)
     return undefined;
   }
   return dbDataToChart(result.rows[0]) as Chart;
+};
+
+export const findChartsByID = async (chartIDs: number[], uid: string, client: PoolClient) => {
+  const scopes = [uid, BaseScopes.Public];
+  const result = await client.query(`
+    SELECT
+      ${selectFields}
+      FROM chart c
+      WHERE c.id = ANY ($1) AND c.scope = ANY ($2)
+  `, [chartIDs, scopes]);
+  return result.rows.map(dbDataToChart);
 };
 
 const findCharts = async (query: BaseChartQuery, uid: string, client: PoolClient) => {
@@ -157,6 +176,7 @@ const findChartsByTagsAfter = async (
   WITH ranks AS (
     SELECT
       ${selectFields},
+      ct.tag_position,
       RANK() OVER (
         ORDER BY $4, c.id ${query.direction}
       ) rank_number

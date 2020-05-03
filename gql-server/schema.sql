@@ -158,7 +158,8 @@ ALTER SEQUENCE public.chart_id_seq OWNED BY public.chart.id;
 CREATE TABLE public.chart_tag (
     id integer NOT NULL,
     chart_id integer NOT NULL,
-    tag_id integer NOT NULL
+    tag_id integer NOT NULL,
+    tag_position integer NOT NULL
 );
 
 

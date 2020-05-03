@@ -33,6 +33,7 @@ export type Tag = TagBase & {
   scope: Scalars['String'];
   password: Scalars['String'];
   tagType: TagType;
+  tagPosition?: Maybe<Scalars['Int']>;
 };
 
 export type TagNew = {
@@ -221,6 +222,7 @@ export type ChartUpdate = {
 export enum ChartQueryOrder {
   ThumbsUp = 'THUMBS_UP',
   CreatedAt = 'CREATED_AT',
+  TagPosition = 'TAG_POSITION',
   Random = 'RANDOM'
 }
 

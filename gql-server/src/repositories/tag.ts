@@ -9,7 +9,7 @@ const attrs = [
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 't');
-const dbDataToTag = makeDBDataToObject<Tag>(attrs, 'Tag');
+const dbDataToTag = makeDBDataToObject<Tag>([...attrs, 'tagPosition'], 'Tag');
 
 interface BaseTagQuery {
   orderBy: string;
@@ -133,6 +133,10 @@ export const insertNewTags = async (newTags: TagNew[], uid: string, client: Pool
       tag (${columns})
       VALUES ${prep} RETURNING ${dbFields.join(', ')}
   `, values);
+  const createSequences = result.rows.map((r) =>
+    `CREATE SEQUENCE tag_position_${r.id} AS INTEGER START 1`
+  );
+  await Promise.all(createSequences.map(seqStatement => client.query(seqStatement)));
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
@@ -158,9 +162,14 @@ export const addTagsForChart = async (chart: Chart, tags: TagNew[], uid: string,
     savedTags = savedTags.concat(createdTags);
   }
 
+  const newChartTags = savedTags.map((t) => ({
+    tagID: t.id, chartID: chart.id,
+  }));
   const {
     values, prep, columns,
-  } = prepareDBInsert(savedTags.map((t) => ({ tagID: t.id, chartID: chart.id })));
+  } = prepareDBInsert(newChartTags, ['chart_id', 'tag_id'], {
+    tagPosition: (t) => `nextval('tag_position_${t.tagID}')`
+  });
   await client.query(`
     INSERT INTO
       chart_tag (${columns})
@@ -186,7 +195,7 @@ export const findTagsForCharts = async (
   const tagScopes: string[] = [BaseScopes.Public];
   if (uid !== undefined) tagScopes.push(uid);
   const result = await client.query(`
-    SELECT ct.chart_id, ${selectFields}
+    SELECT ct.chart_id, ct.tag_position, ${selectFields}
       FROM tag t
         INNER JOIN chart_tag ct
         ON t.id = ct.tag_id
@@ -198,6 +207,16 @@ export const findTagsForCharts = async (
     return chartIDs.map((chartID) => (tagDataByChartID[chartID] || []).map(dbDataToTag)) as Tag[][];
   }
   return chartIDs.map((chartID) => (tagDataByChartID[chartID] || []).map(dbDataToTag)) as Tag[][];
+};
+
+export const updateTagPositions = async (
+  tagID: number, chartIDs: number[], positions: number[], client: PoolClient,
+  ) => {
+  await Promise.all(chartIDs.map((chartID, i) =>
+    client.query(
+      `UPDATE chart_tag SET tag_position=$1 WHERE tag_id=$2 AND chart_id=$3`,
+      [positions[i], tagID, chartID])
+  ))
 };
 
 export const getCompositeTagKey =

@@ -1,10 +1,16 @@
 import { TestDBClientManager, makeDBPool, DBTxManager } from '../db';
 import { PoolClient } from 'pg';
-import { insertNewChart, findChartByID, deleteChart, updateChart, deleteChartsForUser, executeChartQuery } from '../chart';
+import {
+  insertNewChart, findChartByID, deleteChart, updateChart,
+  deleteChartsForUser, executeChartQuery,
+} from '../chart';
 import { ChartNew, ChartUpdate, ChartQuery, ChartType, ChartQueryOrder, BaseScopes, TagType, Tag } from '../../types';
 import { makeChartNew, makeTagNew } from '../../../tests/factories';
 import { range } from 'lodash';
-import { insertNewTags, addTagsForChart } from '../tag';
+import {
+  insertNewTags, addTagsForChart, findTagsForCharts,
+  updateTagPositions
+} from '../tag';
 import { ApolloError } from 'apollo-server-express';
 
 describe('chart repository', () => {
@@ -290,6 +296,39 @@ describe('chart repository', () => {
       expect(q2Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
       expect(q2Charts.length).toEqual(1);
       expect(q1Charts[1].id).toEqual(q2Charts[0].id);
+    });
+
+    test('query order tag position', async () => {
+      const tag = privateTags[0][0];
+      const query: ChartQuery = {
+        limit: 50,
+        chartTypes: [ChartType.Chord],
+        order: ChartQueryOrder.TagPosition,
+        asc: true,
+        tagIDs: [tag.id],
+      };
+      const q1Charts = await executeChartQuery(query, 'uid1', client);
+      expect(q1Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
+      expect(q1Charts.length).toEqual(2);
+      let tagss = await findTagsForCharts(q1Charts.map(c => c.id), 'uid1', client);
+      expect(tagss[0].find(t => t.id === tag.id)?.tagPosition).toEqual(1);
+      expect(tagss[1].find(t => t.id === tag.id)?.tagPosition).toEqual(2);
+
+      query.asc = false;
+      const q2Charts = await executeChartQuery(query, 'uid1', client);
+      expect(q2Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
+      expect(q2Charts.length).toEqual(2);
+      tagss = await findTagsForCharts(q2Charts.map(c => c.id), 'uid1', client);
+      expect(tagss[0].find(t => t.id === tag.id)?.tagPosition).toEqual(2);
+      expect(tagss[1].find(t => t.id === tag.id)?.tagPosition).toEqual(1);
+
+      await updateTagPositions(tag.id, q2Charts.map(c => c.id), [1, 2], client);
+
+      const q3Charts = await executeChartQuery(query, 'uid1', client);
+      expect(q3Charts.length).toEqual(2);
+      tagss = await findTagsForCharts(q3Charts.map(c => c.id), 'uid1', client);
+      expect(tagss[0].find(t => t.id === tag.id)?.tagPosition).toEqual(1);
+      expect(tagss[1].find(t => t.id === tag.id)?.tagPosition).toEqual(2);
     });
   });
 });

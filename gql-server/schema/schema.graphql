@@ -45,6 +45,7 @@ type Tag implements TagBase {
   scope: String!
   password: String!
   tagType: TagType!
+  tagPosition: Int
 }
 
 input TagNew {
@@ -210,6 +211,7 @@ input ChartUpdate {
 enum ChartQueryOrder {
   THUMBS_UP,
   CREATED_AT,
+  TAG_POSITION,
   RANDOM,
 }
 
@@ -265,6 +267,7 @@ enum ErrorType {
   INVALID_CHART_TAG_ERROR,
   INVALID_CHART_SCOPE,
   INVALID_CHART_REACTION,
+  INVALID_TAG_POSITION_UPDATE,
   UNHANDLED,
   INTERNAL_SERVER_ERROR,
   FORBIDDEN_RESOURCE_OPERATION,
@@ -306,4 +309,5 @@ type Mutation {
   deleteTag(tagID: Int!): Empty
   addTags(chartID: Int!, tags: [TagNew!]!): Chart
   unTag(chartID: Int!, tagIDs: [Int!]!): Chart
+  setTagPositions(tagID: Int!, chartIDs: [Int!]!, positions: [Int!]!): [Chart]
 }

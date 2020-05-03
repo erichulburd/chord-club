@@ -1,16 +1,16 @@
 import {
   User, Chart,
-  UserNew, UserUpdate, ChartNew, ChartUpdate, TagNew, ReactionNew, Tag,
+  UserNew, UserUpdate, ChartNew, ChartUpdate, TagNew, ReactionNew, Tag, BaseScopes,
 } from '../types';
 import { insertUserNew, updateUser, deleteUser } from '../repositories/user';
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
-import { deleteChartsForUser, findChartByID, insertNewChart, updateChart, deleteChart } from '../repositories/chart';
+import { deleteChartsForUser, findChartByID, insertNewChart, updateChart, deleteChart, findChartsByID } from '../repositories/chart';
 import { upsertReactionNew, findReactionsByChartID, deleteReactionNew } from '../repositories/reaction';
-import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes, reconcileChartTags } from '../repositories/tag';
+import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes, reconcileChartTags, updateTagPositions, findTagByID } from '../repositories/tag';
 import { wrapTopLevelOp, Resolver } from './resolverUtils';
 import { addExtensionsForChart, removeExtensionsForChart, reconcileChartExtensions } from '../repositories/extensions';
-import { chartNotFoundError, forbiddenResourceOpError } from '../util/errors';
+import { chartNotFoundError, forbiddenResourceOpError, invalidTagPositionUpdate } from '../util/errors';
 
 interface CreateAccountArgs {
   newUser: UserNew;
@@ -46,6 +46,12 @@ interface UnTagArgs {
   tagIDs: number[];
 }
 
+interface SetTagPositionArgs {
+  tagID: number;
+  chartIDs: number[];
+  positions: number[];
+}
+
 interface AddRemoveExtensionsArgs {
   chartID: number;
   extensionIDs: number[];
@@ -69,6 +75,7 @@ interface MutationResolvers {
   deleteChart: Resolver<DeleteChartArgs, void>;
   addTags: Resolver<AddTagArgs, Chart>;
   unTag: Resolver<UnTagArgs, Chart>;
+  setTagPositions: Resolver<SetTagPositionArgs, Chart[]>;
   addExtensions: Resolver<AddRemoveExtensionsArgs, Chart>;
   removeExtensions: Resolver<AddRemoveExtensionsArgs, Chart>;
   createTags: Resolver<CreateTagArgs, Tag[]>;
@@ -181,6 +188,31 @@ M.unTag = wrapTopLevelOp(async (
   }
   await unTag(args.chartID, args.tagIDs, context.uid, context.db);
   return chart;
+});
+
+M.setTagPositions = wrapTopLevelOp(async (
+  _obj: TopLevelRootValue, args: SetTagPositionArgs, context: Context): Promise<Chart[]> => {
+  const { tagID, chartIDs, positions } = args;
+  // within transaction.
+  const tagScopes = [BaseScopes.Public, context.uid];
+  const tag = await findTagByID(tagID, tagScopes, context.db);
+  if (!tag || tag.createdBy !== context.uid) {
+    throw forbiddenResourceOpError();
+  }
+  if (chartIDs.length !== positions.length) {
+    throw invalidTagPositionUpdate();
+  }
+
+  const [client, txManager] = await context.dbClientManager.newConnection();
+  const tx = await txManager.begin();
+  try {
+    await updateTagPositions(tagID, chartIDs, positions, client);
+    await txManager.commit(tx);
+  } catch (err) {
+    await txManager.rollbackTx(tx);
+    throw err;
+  }
+  return findChartsByID(chartIDs, context.uid, context.db);
 });
 
 M.addExtensions = wrapTopLevelOp(async (

@@ -56,6 +56,7 @@ CREATE TABLE chart_tag (
   id SERIAL PRIMARY KEY,
   chart_id INTEGER NOT NULL REFERENCES chart(id) ON DELETE CASCADE,
   tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
+  tag_position INTEGER NOT NULL,
 
   CONSTRAINT chart_tag_unique UNIQUE(chart_id, tag_id)
 );
