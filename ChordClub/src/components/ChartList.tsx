@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { ChartQuery, Chart } from '../types';
+import { ChartQuery, Chart, ChartType } from '../types';
 import last from 'lodash/last';
 import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables, DELETE_CHART_MUTATION, DeleteChartMutationVariables } from '../gql/chart';
-import { ScrollView, FlatList } from 'react-native-gesture-handler';
-import { Spinner, ViewPager } from '@ui-kitten/components';
+import { FlatList } from 'react-native-gesture-handler';
+import { Spinner } from '@ui-kitten/components';
 import ChartItem from './ChartItem';
-import { RefreshControl, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { withModalContext, ModalContextProps } from './ModalProvider';
 
 interface ManualProps {
@@ -33,6 +33,9 @@ const ChartList = ({ query, editChart, modalCtx }: Props) => {
     }
   });
   const [hidden, setHidden] = useState<Set<number>>(new Set());
+  const hide = (chartID: number) => {
+    setHidden(new Set([ chartID, ...Array.from(hidden)]));
+  }
   const [deleted, setDeleted] = useState<Set<number>>(new Set);
   const [deleteChart, {}] = useMutation<{}, DeleteChartMutationVariables>(DELETE_CHART_MUTATION);
   const onDeleteChart = (chartID: number) => {
@@ -52,13 +55,23 @@ const ChartList = ({ query, editChart, modalCtx }: Props) => {
   if (loading) {
     return (<View><Spinner /></View>);
   }
+  let flatList: FlatList<Chart> | null = null;
+  const next = (i: number) => {
+    if (flatList === null || i === charts.length - 1) {
+      return;
+    }
+    flatList.scrollToIndex({ index: i + 1 });
+  }
   return (
     <FlatList
       horizontal
+      ref={ref => { flatList = ref }}
+      onScrollToIndexFailed={() => undefined}
       data={charts}
       keyExtractor={chart => chart.id.toString()}
       renderItem={(item) => (
         <ChartItem
+          next={() => next(item.index)}
           chart={item.item}
           editChart={editChart}
           onDeleteChart={onDeleteChart}

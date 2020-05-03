@@ -18,10 +18,11 @@ interface ManualProps {
   chart: Chart;
   editChart: (chart: Chart) => void;
   onDeleteChart: (chartID: number) => void;
+  next: () => void;
 }
 interface Props extends ManualProps, AuthConsumerProps {}
 
-const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
+const ChartItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) => {
 
   const Header = (props?: ViewProps) => (
     <View {...props} style={styles.headerAndFooter}>
@@ -41,6 +42,13 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart }: Props) => {
   const Footer = (props?: ViewProps) => (
     <View {...props} style={[props?.style || {}, styles.headerAndFooter]}>
       <ChartReactions chart={chart} />
+      <Button
+        appearance={'ghost'}
+        status={'basic'}
+        size={'small'}
+        onPress={next}
+        accessoryLeft={ThemedIcon('arrow-circle-right')}
+      />
     </View>
   );
   const [accordionState, setAccordionState] = useState<AccordionState>({
