@@ -8,26 +8,46 @@ import {
 import ChordListScreen from './ChordListScreen';
 import {
   Drawer, DrawerItem, IndexPath,
-  Layout, Divider, Text,
+  Layout, Divider, Text, withStyles, ThemedComponentProps,
 } from '@ui-kitten/components';
-import { SafeAreaView, View } from 'react-native';
+import { SafeAreaView, View, ViewProps, StyleSheet } from 'react-native';
 import Title from './Title';
+import * as eva from '@eva-design/eva';
 import { ChartCreatorScreen } from './ChartCreatorScreen';
 import { Screens } from './AppScreen';
+import { ThemedIcon } from './FontAwesomeIcons';
 
 const { Navigator, Screen } = createDrawerNavigator();
 
+const BaseHeader = withStyles((props: ThemedComponentProps & (ViewProps | undefined)) => {
+  const theme = props.eva?.theme || {};
+  const backgroundColor = theme['border-basic-color-1'];
+  const color = theme['color-basic-500'];
+  return (
+    <View
+      {...props}
+      style={[styles.header, { backgroundColor }]}
+    >
+      <Text category="h4" style={[styles.title, { color }]}>Welcome to ChordClub</Text>
+      <Divider />
+    </View>
+  );
+});
+
+const Header = (props: ViewProps | undefined) => <BaseHeader {...props} />;
+
 const DrawerContent = ({ navigation, state }: DrawerContentComponentProps<DrawerContentOptions>) => (
     <Drawer
+      header={Header}
       selectedIndex={new IndexPath(state.index)}
       onSelect={index => navigation.navigate(state.routeNames[index.row])}
     >
       <SafeAreaView>
-        <DrawerItem title={Screens.ChordList} />
-        <DrawerItem title={Screens.ChordFlashcards} />
-        <DrawerItem title={Screens.ProgressionList} />
-        <DrawerItem title={Screens.CreateAChart} />
-        <DrawerItem title={Screens.Settings} />
+        <DrawerItem accessoryLeft={ThemedIcon('list')} title={Screens.ChordList} />
+        <DrawerItem accessoryLeft={ThemedIcon('list')} title={Screens.ProgressionList} />
+        <DrawerItem accessoryLeft={ThemedIcon('bolt')} title={Screens.ChordFlashcards} />
+        <DrawerItem accessoryLeft={ThemedIcon('circle', { solid: true })} title={Screens.CreateAChart} />
+        <DrawerItem accessoryLeft={ThemedIcon('cog')} title={Screens.Settings} />
       </SafeAreaView>
     </Drawer>
 );
@@ -58,3 +78,15 @@ export const AppNavigator = () => (
     </Navigator>
   </NavigationContainer>
 );
+
+const styles = StyleSheet.create({
+  header: {
+    paddingTop: 50,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
+  },
+  title: {
+    marginBottom: 10,
+  }
+})

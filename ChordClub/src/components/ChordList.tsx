@@ -4,9 +4,9 @@ import { ChartQuery, Chart } from '../types';
 import last from 'lodash/last';
 import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables, DELETE_CHART_MUTATION, DeleteChartMutationVariables } from '../gql/chart';
 import { FlatList } from 'react-native-gesture-handler';
-import { Spinner, Layout } from '@ui-kitten/components';
+import { Spinner } from '@ui-kitten/components';
 import ChordItem from './ChordItem';
-import { View, RefreshControl, StyleSheet, SafeAreaView } from 'react-native';
+import { View, RefreshControl, StyleSheet } from 'react-native';
 import { withModalContext, ModalContextProps } from './ModalProvider';
 import { ChordClubShim } from '../../types/ChordClubShim';
 
