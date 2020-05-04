@@ -101,7 +101,7 @@ export const makeDBPool = () => new Pool({
   port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : undefined,
   database: process.env.PGDATABASE,
   // ssl: { ca: '', cert: '', },
-  max: 30,
+  max: 100,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
 });
