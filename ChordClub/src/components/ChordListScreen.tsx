@@ -1,5 +1,5 @@
 import React from 'react';
-import ChartList from './ChartList';
+import ChordList from './ChordList';
 import { ChartType, BaseScopes } from '../types';
 import { AuthConsumerProps, withAuth } from './AuthProvider';
 import { ChartQueryView } from './ChartQueryView';
@@ -20,9 +20,9 @@ export const ChordListScreen = ({ authState }: Props) => {
           <ChartQueryView
             initialQuery={makeChordListQuery(authState.uid)}
             renderQueryResults={({ query }) => (
-              <ChartList
+              <ChordList
                 query={query}
-                editChart={(chart) => undefined}
+                editChart={(chart) => undefined /* TODO */}
               />
             )}
           />

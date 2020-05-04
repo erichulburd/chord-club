@@ -22,7 +22,7 @@ interface ManualProps {
 }
 interface Props extends ManualProps, AuthConsumerProps {}
 
-const ChartItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) => {
+const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) => {
 
   const Header = (props?: ViewProps) => (
     <View {...props} style={styles.headerAndFooter}>
@@ -180,4 +180,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default withAuth<ManualProps>(ChartItem);
+export default withAuth<ManualProps>(ChordItem);

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { ChartQuery, Chart, ChartType } from '../types';
+import { ChartQuery, Chart } from '../types';
 import last from 'lodash/last';
 import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables, DELETE_CHART_MUTATION, DeleteChartMutationVariables } from '../gql/chart';
 import { FlatList } from 'react-native-gesture-handler';
 import { Spinner } from '@ui-kitten/components';
-import ChartItem from './ChartItem';
-import { View, StyleSheet } from 'react-native';
+import ChordItem from './ChordItem';
+import { View } from 'react-native';
 import { withModalContext, ModalContextProps } from './ModalProvider';
 import { ChordClubShim } from '../../types/ChordClubShim';
 
@@ -17,7 +17,7 @@ interface ManualProps {
 
 interface Props extends ModalContextProps, ManualProps {}
 
-const ChartList = ({ query, editChart, modalCtx }: Props) => {
+const ChordList = ({ query, editChart, modalCtx }: Props) => {
   const { data, loading, refetch, fetchMore } =
     useQuery<ChartsQueryResponse, ChartsQueryVariables>(CHARTS_QUERY, { variables: { query } });
 
@@ -66,7 +66,7 @@ const ChartList = ({ query, editChart, modalCtx }: Props) => {
       data={charts}
       keyExtractor={chart => chart.id.toString()}
       renderItem={(item) => (
-        <ChartItem
+        <ChordItem
           next={() => next(item.index)}
           chart={item.item}
           editChart={editChart}
@@ -77,10 +77,4 @@ const ChartList = ({ query, editChart, modalCtx }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {},
-  list: {}
-})
-
-
-export default withModalContext<ManualProps>(ChartList);
+export default withModalContext<ManualProps>(ChordList);
