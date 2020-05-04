@@ -79,6 +79,7 @@ export class TestDBClientManager extends DBClientManager {
     }
     if (this.txManager == undefined) {
       const txManager = new DBTxManager(this.client);
+      // FIXME: In TravisCI environment, this is failing.
       // await txManager.begin();
       this.txManager = txManager;
     }
