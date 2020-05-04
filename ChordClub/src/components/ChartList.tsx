@@ -8,6 +8,7 @@ import { Spinner } from '@ui-kitten/components';
 import ChartItem from './ChartItem';
 import { View, StyleSheet } from 'react-native';
 import { withModalContext, ModalContextProps } from './ModalProvider';
+import { ChordClubShim } from '../../types/ChordClubShim';
 
 interface ManualProps {
   query: ChartQuery;
@@ -50,17 +51,17 @@ const ChartList = ({ query, editChart, modalCtx }: Props) => {
   if (loading) {
     return (<View><Spinner /></View>);
   }
-  let flatList: FlatList<Chart> | null = null;
+  let flatList: ChordClubShim.FlatList<Chart> | null = null;
   const next = (i: number) => {
     if (flatList === null || i === charts.length - 1) {
       return;
     }
-    flatList.scrollToIndex({ index: i + 1 });
+    (flatList).scrollToIndex({ index: i + 1 });
   }
   return (
     <FlatList
       horizontal
-      ref={ref => { flatList = ref }}
+      ref={ref => { flatList = ref as ChordClubShim.FlatList<Chart> }}
       onScrollToIndexFailed={() => undefined}
       data={charts}
       keyExtractor={chart => chart.id.toString()}

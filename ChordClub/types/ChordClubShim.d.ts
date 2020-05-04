@@ -1,4 +1,5 @@
 import { NavigationState, PartialState } from "@react-navigation/native";
+import * as gestureHandler from "react-native-gesture-handler";
 
 export declare namespace ChordClubShim {
 
@@ -16,6 +17,10 @@ export declare namespace ChordClubShim {
     goBack(): void;
     isFocused(): boolean;
     canGoBack(): boolean;
+  }
+
+  class FlatList<T> extends gestureHandler.FlatList<T> {
+    scrollToIndex({}: { index: number }): void;
   }
 
 }
