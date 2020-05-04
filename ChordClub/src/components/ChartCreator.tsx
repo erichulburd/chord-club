@@ -2,25 +2,25 @@ import React, { useState } from 'react';
 import { Text, Button, Input, TabBar, Tab, CheckBox } from '@ui-kitten/components';
 import { View, Image, StyleSheet } from 'react-native';
 import { TouchableHighlight, ScrollView } from 'react-native-gesture-handler';
-import { withAuth, AuthConsumerProps } from '../AuthProvider';
-import { makeChartNew, ChartURLs, areTagsEqual } from '../../util/forms';
-import { ChartType, Extension, Note, BaseScopes, ChartNew, TagNew, Tag } from '../../types';
-import { Row } from '../shared/Row';
-import { ExtensionPalletteBG } from '../shared/ExtensionPalletteBG';
-import AudioRecorder from '../AudioRecorder/index';
-import { ThemedIcon } from '../FontAwesomeIcons';
-import { pickSingleImage, ResizableImage } from '../../util/imagePicker';
-import { ModalImage } from '../shared/ModalImage';
-import { NoteAutocomplete } from '../shared/NoteAutocomplete';
-import { ChartQualityAutocomplete } from '../shared/ChartQualityAutocomplete';
+import { withAuth, AuthConsumerProps } from './AuthProvider';
+import { makeChartNew, ChartURLs, areTagsEqual } from '../util/forms';
+import { ChartType, Extension, Note, BaseScopes, ChartNew, TagNew, Tag } from '../types';
+import { Row } from './shared/Row';
+import { ExtensionPalletteBG } from './shared/ExtensionPalletteBG';
+import AudioRecorder from './AudioRecorder/index';
+import { ThemedIcon } from './FontAwesomeIcons';
+import { pickSingleImage, ResizableImage } from '../util/imagePicker';
+import { ModalImage } from './shared/ModalImage';
+import { NoteAutocomplete } from './shared/NoteAutocomplete';
+import { ChartQualityAutocomplete } from './shared/ChartQualityAutocomplete';
 import { useMutation } from '@apollo/react-hooks';
 import {
   CREATE_CHART_NEW, CreateChartResponse, CreateChartVariables
-} from '../../gql/chart';
-import { FileURLCache, uploadFilesIfNecessary } from '../../util/uploads';
-import { withModalContext, ModalContextProps } from '../ModalProvider';
-import TagAutocomplete from '../TagAutocomplete';
-import { TagCollection } from '../TagCollection';
+} from '../gql/chart';
+import { FileURLCache, uploadFilesIfNecessary } from '../util/uploads';
+import { withModalContext, ModalContextProps } from './ModalProvider';
+import TagAutocomplete from './TagAutocomplete';
+import { TagCollection } from './TagCollection';
 import omit from 'lodash/omit';
 
 interface ManualProps {
@@ -29,7 +29,7 @@ interface ManualProps {
 
 interface Props extends ManualProps, AuthConsumerProps, ModalContextProps {}
 
-const ChordCreator = ({ close, modalCtx, authState }: Props) => {
+const ChartCreator = ({ close, modalCtx, authState }: Props) => {
   const { uid } = authState;
   const [newChart, setChart] = useState(makeChartNew(uid));
   const updateChartType = (ct: ChartType) => setChart({ ...newChart, chartType: ct });
@@ -289,5 +289,5 @@ const styles = StyleSheet.create({
   }
 });
 
-export default withModalContext(withAuth<ManualProps & ModalContextProps>(ChordCreator));
+export default withModalContext(withAuth<ManualProps & ModalContextProps>(ChartCreator));
 

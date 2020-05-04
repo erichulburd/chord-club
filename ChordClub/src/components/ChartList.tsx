@@ -32,10 +32,6 @@ const ChartList = ({ query, editChart, modalCtx }: Props) => {
       }
     }
   });
-  const [hidden, setHidden] = useState<Set<number>>(new Set());
-  const hide = (chartID: number) => {
-    setHidden(new Set([ chartID, ...Array.from(hidden)]));
-  }
   const [deleted, setDeleted] = useState<Set<number>>(new Set);
   const [deleteChart, {}] = useMutation<{}, DeleteChartMutationVariables>(DELETE_CHART_MUTATION);
   const onDeleteChart = (chartID: number) => {
@@ -50,8 +46,7 @@ const ChartList = ({ query, editChart, modalCtx }: Props) => {
       cancel: () => undefined,
     })
   };
-  const charts = (data?.charts || []).filter((chart) =>
-    !deleted.has(chart.id) && !hidden.has(chart.id));
+  const charts = (data?.charts || []).filter((chart) => !deleted.has(chart.id));
   if (loading) {
     return (<View><Spinner /></View>);
   }
