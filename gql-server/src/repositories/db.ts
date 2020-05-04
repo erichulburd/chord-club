@@ -79,8 +79,7 @@ export class TestDBClientManager extends DBClientManager {
     }
     if (this.txManager == undefined) {
       const txManager = new DBTxManager(this.client);
-      // FIXME: In TravisCI environment, this is failing.
-      // await txManager.begin();
+      await txManager.begin();
       this.txManager = txManager;
     }
     return [this.client, this.txManager];
@@ -88,7 +87,7 @@ export class TestDBClientManager extends DBClientManager {
 
   public async rollbackAndRelease() {
     if (this.txManager !== undefined) {
-      this.txManager.rollbackTx(0);
+      await this.txManager.rollbackTx(0);
     }
     if (this.client !== undefined) {
       this.client.release();
