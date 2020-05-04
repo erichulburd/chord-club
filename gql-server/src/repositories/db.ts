@@ -9,7 +9,7 @@ export type Tx = number;
 // only safely spawn transactions from the same thread.
 export class DBTxManager {
   public client: PoolClient;
-  public savepoint: number = 0;
+  public savepoint = 0;
 
   constructor(client: PoolClient) {
     this.client = client;
@@ -116,6 +116,22 @@ interface DynamicValues<T> {
   [key: string]: string | ((val: T) => string);
 }
 
+const isCallable = (s: any) => typeof s === 'function' || s instanceof Function;
+
+const getDynamicValue = <T>(
+  val: T,
+  dynamicColumns: string[],
+  dynamicValues: DynamicValues<T>
+): string => {
+  if (dynamicColumns.length <= 0) {
+    return '';
+  }
+  return ', ' + dynamicColumns.map((c) =>
+    isCallable(dynamicValues[c]) ?
+      (dynamicValues[c] as Function)(val) :
+      dynamicValues[c]).join(', ');
+};
+
 export const prepareDBInsert = <T extends Record<string, any>>(
   values: T[], columnWhitelist?: string[],
   dynamicValues: DynamicValues<T> = {},
@@ -147,22 +163,6 @@ export const prepareDBInsert = <T extends Record<string, any>>(
     values: pgValues,
   };
 };
-
-const getDynamicValue = <T>(
-  val: T,
-  dynamicColumns: string[],
-  dynamicValues: DynamicValues<T>
-): string => {
-  if (dynamicColumns.length <= 0) {
-    return '';
-  }
-  return ', ' + dynamicColumns.map((c) =>
-    isCallable(dynamicValues[c]) ?
-      (dynamicValues[c] as Function)(val) :
-      dynamicValues[c]).join(', ');
-}
-
-const isCallable = (s: any) => typeof s === 'function' || s instanceof Function;
 
 interface DBUpdate {
   [key: string]: any;

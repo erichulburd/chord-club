@@ -34,6 +34,6 @@ const run = async () => {
     await pool.end();
     process.exit(err);
   }
-}
+};
 
 run();

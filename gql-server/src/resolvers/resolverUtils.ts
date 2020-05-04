@@ -1,6 +1,5 @@
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
-import { Tx } from '../repositories/db';
 import { ApolloError } from 'apollo-server-express';
 import { unauthenticatedError } from '../util/errors';
 import { ErrorType } from '../types';

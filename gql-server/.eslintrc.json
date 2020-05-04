@@ -12,7 +12,10 @@
     },
     "rules": {
         "semi": "error",
-        "quotes": ["error", "single"]
+        "quotes": ["error", "single"],
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/interface-name-prefix": "off",
+        "@typescript-eslint/no-unused-vars":  ["error", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }]
     },
     "env": {
         "node": true,
