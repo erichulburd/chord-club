@@ -20,12 +20,12 @@ export interface Context {
 
 const getRequestID = (ctx: ExpressContext) => {
   const { headers } = ctx.req;
-  let requestID = headers['X-REQUEST-ID'] instanceof Array ? headers['X-REQUEST-ID'][0] : headers['X-REQUEST-ID'];
+  const requestID = headers['X-REQUEST-ID'] instanceof Array ? headers['X-REQUEST-ID'][0] : headers['X-REQUEST-ID'];
   if (!requestID) {
     return uuidv4();
   }
   return requestID;
-}
+};
 
 export const makeRequestContext = (dbClientManager: DBClientManager, getKey: GetPublicKeyOrSecret) =>
 async (ctx: ExpressContext): Promise<Context> => {

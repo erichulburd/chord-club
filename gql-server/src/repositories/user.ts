@@ -15,29 +15,6 @@ interface UserSQLQuery {
   limit: number;
 }
 
-export const executeUserQuery = async (rawQuery: UserQuery, client: PoolClient) => {
-  if (rawQuery.uid) {
-    const user = await findUserByUID(rawQuery.uid, client);
-    if (!user) return [];
-    return [user];
-  }
-  if (rawQuery.username) {
-    const user = await findUserByUsername(rawQuery.username, client);
-    if (!user) return [];
-    return [user];
-  }
-
-  const order = (rawQuery.order || UserQueryOrder.CreatedBy).toLowerCase();
-  const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
-  const orderBy = `${order} ${direction}`;
-  const limit = Math.min(100, rawQuery.limit || 50);
-  const query: UserSQLQuery = { orderBy, direction, limit };
-  if (rawQuery.after) {
-    return findUsersAfter(rawQuery.after, query, client);
-  }
-  return findUsers(query, client);
-};
-
 export const findUserByUID = async (uid: string, client: PoolClient) => {
   const result = await client.query(`
     SELECT
@@ -136,4 +113,27 @@ export const deleteUser = async (
     await client.query(`
     DELETE FROM userr WHERE uid = $1
   `, [uid]);
+};
+
+export const executeUserQuery = async (rawQuery: UserQuery, client: PoolClient) => {
+  if (rawQuery.uid) {
+    const user = await findUserByUID(rawQuery.uid, client);
+    if (!user) return [];
+    return [user];
+  }
+  if (rawQuery.username) {
+    const user = await findUserByUsername(rawQuery.username, client);
+    if (!user) return [];
+    return [user];
+  }
+
+  const order = (rawQuery.order || UserQueryOrder.CreatedBy).toLowerCase();
+  const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
+  const orderBy = `${order} ${direction}`;
+  const limit = Math.min(100, rawQuery.limit || 50);
+  const query: UserSQLQuery = { orderBy, direction, limit };
+  if (rawQuery.after) {
+    return findUsersAfter(rawQuery.after, query, client);
+  }
+  return findUsers(query, client);
 };

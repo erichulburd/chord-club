@@ -22,34 +22,6 @@ interface BaseTagQueryAfter extends BaseTagQuery {
   after: number;
 }
 
-export const executeTagQuery = async (
-  rawQuery: TagQuery, uid: string, client: PoolClient): Promise<Tag[]> => {
-    validatedTagQueryScopes(rawQuery.scopes, uid);
-  if (rawQuery.id) {
-    const tag = await findTagByID(rawQuery.id, rawQuery.scopes, client);
-    if (!tag) return [];
-    return [tag];
-  }
-  const order = (rawQuery.order || TagQueryOrder.DisplayName).toLowerCase();
-  const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
-  const orderBy = `${order} ${direction}`;
-  const limit = Math.min(100, rawQuery.limit || 50);
-
-  const query: BaseTagQuery = {
-    orderBy, direction, limit, tagTypes: rawQuery.tagTypes,
-    scopes: rawQuery.scopes,
-  };
-  if (rawQuery.displayName) {
-    return searchForTag(rawQuery.displayName, query, client);
-  }
-
-  if (rawQuery.after) {
-    const afterQuery: BaseTagQueryAfter = { ...query, after: rawQuery.after };
-    return findTagsAfter(afterQuery, client);
-  }
-  return findTags(query, client);
-};
-
 const searchForTag = async (displayName: string, query: BaseTagQuery, client: PoolClient) => {
   const result = await client.query(`
     SELECT
@@ -106,6 +78,10 @@ const findTagsAfter = async (query: BaseTagQueryAfter, client: PoolClient) => {
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
+export const getTagMunge = (displayName: string) => {
+  return kebabCase(trim(displayName).toLowerCase());
+};
+
 export const findExistingTags =
   async (tags: TagNew[], client: PoolClient): Promise<Tag[]> => {
   if (!tags || tags.length === 0) {
@@ -145,6 +121,36 @@ export const deleteTag = async (tagID: number, uid: string, client: PoolClient) 
     DELETE FROM tag
       WHERE created_by = $1 AND id = $2
   `, [uid, tagID]);
+};
+
+const validatedTagQueryScopes = (scopes: string[], uid: string): void => {
+  const permittedScopes = {
+    [uid]: true,
+    [BaseScopes.Public]: true,
+  };
+  scopes.forEach((s) => {
+    if (!permittedScopes[s]) {
+      throw invalidTagQueryScopeError(s);
+    }
+  });
+};
+
+const validateTagScopesForChart = (tags: TagNew[], chart: Chart, uid: string): TagNew[] => {
+  const isPublic = chart.scope === BaseScopes.Public;
+  const defaultScope = uid;
+  const permittedScopes = {
+    [uid]: true,
+    [BaseScopes.Public]: isPublic,
+  };
+  tags.forEach((t) => {
+    if (t.scope && !permittedScopes[t.scope]) {
+      throw invalidChartTagError(chart.id, t as TagBase);
+    }
+  });
+  return tags.map((t) => ({
+    ...t,
+    scope: t.scope || defaultScope,
+  }), {});
 };
 
 export const addTagsForChart = async (chart: Chart, tags: TagNew[], uid: string, client: PoolClient) => {
@@ -214,9 +220,9 @@ export const updateTagPositions = async (
   ) => {
   await Promise.all(chartIDs.map((chartID, i) =>
     client.query(
-      `UPDATE chart_tag SET tag_position=$1 WHERE tag_id=$2 AND chart_id=$3`,
+      'UPDATE chart_tag SET tag_position=$1 WHERE tag_id=$2 AND chart_id=$3',
       [positions[i], tagID, chartID])
-  ))
+  ));
 };
 
 export const getCompositeTagKey =
@@ -252,36 +258,31 @@ export const validateNewTagsScopes = (tags: TagNew[], uid: string): TagNew[] => 
   }), {});
 };
 
-const validatedTagQueryScopes = (scopes: string[], uid: string): void => {
-  const permittedScopes = {
-    [uid]: true,
-    [BaseScopes.Public]: true,
+export const executeTagQuery = async (
+  rawQuery: TagQuery, uid: string, client: PoolClient): Promise<Tag[]> => {
+    validatedTagQueryScopes(rawQuery.scopes, uid);
+  if (rawQuery.id) {
+    const tag = await findTagByID(rawQuery.id, rawQuery.scopes, client);
+    if (!tag) return [];
+    return [tag];
+  }
+  const order = (rawQuery.order || TagQueryOrder.DisplayName).toLowerCase();
+  const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
+  const orderBy = `${order} ${direction}`;
+  const limit = Math.min(100, rawQuery.limit || 50);
+
+  const query: BaseTagQuery = {
+    orderBy, direction, limit, tagTypes: rawQuery.tagTypes,
+    scopes: rawQuery.scopes,
   };
-  scopes.forEach((s) => {
-    if (!permittedScopes[s]) {
-      throw invalidTagQueryScopeError(s);
-    }
-  });
+  if (rawQuery.displayName) {
+    return searchForTag(rawQuery.displayName, query, client);
+  }
+
+  if (rawQuery.after) {
+    const afterQuery: BaseTagQueryAfter = { ...query, after: rawQuery.after };
+    return findTagsAfter(afterQuery, client);
+  }
+  return findTags(query, client);
 };
 
-const validateTagScopesForChart = (tags: TagNew[], chart: Chart, uid: string): TagNew[] => {
-  const isPublic = chart.scope === BaseScopes.Public;
-  const defaultScope = uid;
-  const permittedScopes = {
-    [uid]: true,
-    [BaseScopes.Public]: isPublic,
-  };
-  tags.forEach((t) => {
-    if (t.scope && !permittedScopes[t.scope]) {
-      throw invalidChartTagError(chart.id, t as TagBase);
-    }
-  });
-  return tags.map((t) => ({
-    ...t,
-    scope: t.scope || defaultScope,
-  }), {});
-};
-
-export const getTagMunge = (displayName: string) => {
-  return kebabCase(trim(displayName).toLowerCase())
-};

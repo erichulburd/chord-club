@@ -5,7 +5,6 @@ import { findExtensionsForCharts } from './extensions';
 import { findTagsForCharts } from './tag';
 import { countReactions, findReactionsByChartID } from './reaction';
 import { findUsersByUID } from './user';
-import { DBClientManager } from './db';
 
 export interface Loaders {
   usersByUID: DataLoader<string, User>;

@@ -9,7 +9,7 @@ export type Tx = number;
 // only safely spawn transactions from the same thread.
 export class DBTxManager {
   public client: PoolClient;
-  public savepoint: number = 0;
+  public savepoint = 0;
 
   constructor(client: PoolClient) {
     this.client = client;
@@ -87,7 +87,7 @@ export class TestDBClientManager extends DBClientManager {
 
   public async rollbackAndRelease() {
     if (this.txManager !== undefined) {
-      this.txManager.rollbackTx(0);
+      await this.txManager.rollbackTx(0);
     }
     if (this.client !== undefined) {
       this.client.release();
@@ -101,7 +101,7 @@ export const makeDBPool = () => new Pool({
   port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : undefined,
   database: process.env.PGDATABASE,
   // ssl: { ca: '', cert: '', },
-  max: 30,
+  max: 100,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
 });
@@ -115,6 +115,22 @@ interface DBInsert {
 interface DynamicValues<T> {
   [key: string]: string | ((val: T) => string);
 }
+
+const isCallable = (s: any) => typeof s === 'function' || s instanceof Function;
+
+const getDynamicValue = <T>(
+  val: T,
+  dynamicColumns: string[],
+  dynamicValues: DynamicValues<T>
+): string => {
+  if (dynamicColumns.length <= 0) {
+    return '';
+  }
+  return ', ' + dynamicColumns.map((c) =>
+    isCallable(dynamicValues[c]) ?
+      (dynamicValues[c] as Function)(val) :
+      dynamicValues[c]).join(', ');
+};
 
 export const prepareDBInsert = <T extends Record<string, any>>(
   values: T[], columnWhitelist?: string[],
@@ -147,22 +163,6 @@ export const prepareDBInsert = <T extends Record<string, any>>(
     values: pgValues,
   };
 };
-
-const getDynamicValue = <T>(
-  val: T,
-  dynamicColumns: string[],
-  dynamicValues: DynamicValues<T>
-): string => {
-  if (dynamicColumns.length <= 0) {
-    return '';
-  }
-  return ', ' + dynamicColumns.map((c) =>
-    isCallable(dynamicValues[c]) ?
-      (dynamicValues[c] as Function)(val) :
-      dynamicValues[c]).join(', ');
-}
-
-const isCallable = (s: any) => typeof s === 'function' || s instanceof Function;
 
 interface DBUpdate {
   [key: string]: any;

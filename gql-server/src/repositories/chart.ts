@@ -36,62 +36,11 @@ interface ChartQueryByTags extends BaseChartQuery {
 
 interface ChartQueryByTagsAfter extends ChartQueryByTags, AfterQuery {}
 
-export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, client: PoolClient) => {
-  if (rawQuery.id) {
-    const chart = await findChartByID(rawQuery.id, uid, client);
-    const res = [];
-    if (chart) {
-      res.push(chart);
-    }
-    return res;
+const validateChartScope = (scope: string, uid: string) => {
+  const validScopes = [BaseScopes.Public, uid];
+  if (validScopes.indexOf(scope) < 0) {
+    throw invalidChartScope(scope);
   }
-
-  let order = (rawQuery.order || ChartQueryOrder.CreatedAt).toLowerCase();
-  if (rawQuery.order === ChartQueryOrder.TagPosition && rawQuery.tagIDs?.length !== 1) {
-    order = ChartQueryOrder.CreatedAt.toLowerCase();
-  } else if (rawQuery.order === ChartQueryOrder.TagPosition && rawQuery.tagIDs?.length === 1) {
-    order = ChartQueryOrder.TagPosition.toLowerCase();
-  } else if (rawQuery.order === ChartQueryOrder.Random) {
-    order = 'RANDOM()';
-  }
-  let orderBy = order;
-  let direction: 'ASC' | 'DESC' = 'DESC';
-  let after = rawQuery.after;
-  if (rawQuery.order !== ChartQueryOrder.Random) {
-    direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
-    orderBy = `${order} ${direction}`;
-  } else {
-    // If order is random, ignore after id.
-    after = undefined;
-  }
-
-  const scopes = rawQuery.scopes || [uid, BaseScopes.Public];
-
-  const limit = Math.min(100, rawQuery.limit || 50);
-  const chartTypes = rawQuery.chartTypes;
-  let query: BaseChartQuery = { orderBy, limit, chartTypes, direction };
-
-  if (rawQuery.tagIDs?.length && after) {
-    const chartTagQueryAfter: ChartQueryByTagsAfter = {
-      ...query, tagIDs: rawQuery.tagIDs, after,
-    };
-    return findChartsByTagsAfter(chartTagQueryAfter, scopes, client);
-  }
-
-  if (rawQuery.tagIDs?.length) {
-    const chartTagQuery: ChartQueryByTags = {
-      ...query, tagIDs: rawQuery.tagIDs,
-    };
-    return findChartsByTags(chartTagQuery, scopes, client);
-  }
-
-  if (after) {
-    const chartQueryAfter: BaseChartQueryAfter = {
-      ...query, after,
-    };
-    return findChartsAfter(chartQueryAfter, scopes, client);
-  }
-  return findCharts(query, scopes, client);
 };
 
 export const findChartByID = async (id: number, uid: string, client: PoolClient) => {
@@ -234,9 +183,60 @@ export const deleteChart = async (
   `, [chartID, uid]);
 };
 
-const validateChartScope = (scope: string, uid: string) => {
-  const validScopes = [BaseScopes.Public, uid];
-  if (validScopes.indexOf(scope) < 0) {
-    throw invalidChartScope(scope);
+export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, client: PoolClient) => {
+  if (rawQuery.id) {
+    const chart = await findChartByID(rawQuery.id, uid, client);
+    const res = [];
+    if (chart) {
+      res.push(chart);
+    }
+    return res;
   }
+
+  let order = (rawQuery.order || ChartQueryOrder.CreatedAt).toLowerCase();
+  if (rawQuery.order === ChartQueryOrder.TagPosition && rawQuery.tagIDs?.length !== 1) {
+    order = ChartQueryOrder.CreatedAt.toLowerCase();
+  } else if (rawQuery.order === ChartQueryOrder.TagPosition && rawQuery.tagIDs?.length === 1) {
+    order = ChartQueryOrder.TagPosition.toLowerCase();
+  } else if (rawQuery.order === ChartQueryOrder.Random) {
+    order = 'RANDOM()';
+  }
+  let orderBy = order;
+  let direction: 'ASC' | 'DESC' = 'DESC';
+  let after = rawQuery.after;
+  if (rawQuery.order !== ChartQueryOrder.Random) {
+    direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
+    orderBy = `${order} ${direction}`;
+  } else {
+    // If order is random, ignore after id.
+    after = undefined;
+  }
+
+  const scopes = rawQuery.scopes || [uid, BaseScopes.Public];
+
+  const limit = Math.min(100, rawQuery.limit || 50);
+  const chartTypes = rawQuery.chartTypes;
+  const query: BaseChartQuery = { orderBy, limit, chartTypes, direction };
+
+  if (rawQuery.tagIDs?.length && after) {
+    const chartTagQueryAfter: ChartQueryByTagsAfter = {
+      ...query, tagIDs: rawQuery.tagIDs, after,
+    };
+    return findChartsByTagsAfter(chartTagQueryAfter, scopes, client);
+  }
+
+  if (rawQuery.tagIDs?.length) {
+    const chartTagQuery: ChartQueryByTags = {
+      ...query, tagIDs: rawQuery.tagIDs,
+    };
+    return findChartsByTags(chartTagQuery, scopes, client);
+  }
+
+  if (after) {
+    const chartQueryAfter: BaseChartQueryAfter = {
+      ...query, after,
+    };
+    return findChartsAfter(chartQueryAfter, scopes, client);
+  }
+  return findCharts(query, scopes, client);
 };

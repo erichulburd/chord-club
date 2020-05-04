@@ -35,7 +35,7 @@ export const initializeApp =
 
   app.post('/v1/upload', async (req, res, next) => {
     const start = Date.now();
-    let uid = await getUID(req.headers.authorization || '', getKey);
+    const uid = await getUID(req.headers.authorization || '', getKey);
     const logger = baseLogger.child({
       uid,
       requestID: req.headers['X-REQUEST-ID'],
@@ -90,7 +90,7 @@ export const initializeApp =
     } finally {
       clientManager.releaseClient(db);
     }
-  })
+  });
 
   server.applyMiddleware({ app });
   return app;
@@ -99,6 +99,6 @@ export const initializeApp =
 export interface RequestWithMeta extends Request {
   _meta: {
     db: PoolClient;
-  }
+  };
 }
 

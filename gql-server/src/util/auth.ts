@@ -73,4 +73,4 @@ export const getUID = async (authHeader: string | undefined, getKey: jwt.GetPubl
   if (!token) return '';
   const claims = await parseAuthorization(token, getKey);
   return claims?.sub || '';
-}
+};
