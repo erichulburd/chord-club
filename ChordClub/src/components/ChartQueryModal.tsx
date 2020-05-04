@@ -18,6 +18,7 @@ export const ChartQueryModal = ({
     <Modal
       visible={isOpen}
       backdropStyle={styles.backdrop}
+      style={styles.modal}
     >
       <ChartQueryEditor
         initialQuery={query}
@@ -32,4 +33,5 @@ const styles = StyleSheet.create({
   backdrop: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+  modal: { width: '100%', maxWidth: 600 }
 })

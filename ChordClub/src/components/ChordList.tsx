@@ -4,9 +4,9 @@ import { ChartQuery, Chart } from '../types';
 import last from 'lodash/last';
 import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables, DELETE_CHART_MUTATION, DeleteChartMutationVariables } from '../gql/chart';
 import { FlatList } from 'react-native-gesture-handler';
-import { Spinner } from '@ui-kitten/components';
+import { Spinner, Layout } from '@ui-kitten/components';
 import ChordItem from './ChordItem';
-import { View } from 'react-native';
+import { View, RefreshControl, StyleSheet, SafeAreaView } from 'react-native';
 import { withModalContext, ModalContextProps } from './ModalProvider';
 import { ChordClubShim } from '../../types/ChordClubShim';
 
@@ -59,22 +59,39 @@ const ChordList = ({ query, editChart, modalCtx }: Props) => {
     (flatList).scrollToIndex({ index: i + 1 });
   }
   return (
-    <FlatList
-      horizontal
-      ref={ref => { flatList = ref as ChordClubShim.FlatList<Chart> }}
-      onScrollToIndexFailed={() => undefined}
-      data={charts}
-      keyExtractor={chart => chart.id.toString()}
-      renderItem={(item) => (
-        <ChordItem
-          next={() => next(item.index)}
-          chart={item.item}
-          editChart={editChart}
-          onDeleteChart={onDeleteChart}
-        />
-      )}
-    />
+    <View style={styles.container}>
+      <FlatList
+        onRefresh={() => refetch()}
+        refreshing={loading}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => refetch()} />}
+        ref={ref => { flatList = ref as ChordClubShim.FlatList<Chart> }}
+        onScrollToIndexFailed={() => undefined}
+        data={charts}
+        keyExtractor={chart => chart.id.toString()}
+        renderItem={(item) => (
+          <ChordItem
+            next={() => next(item.index)}
+            chart={item.item}
+            editChart={editChart}
+            onDeleteChart={onDeleteChart}
+          />
+        )}
+        style={styles.list}
+      />
+    </View>
+
   );
 };
 
 export default withModalContext<ManualProps>(ChordList);
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 150,
+
+  },
+  list: {
+    // flex: 1
+
+  }
+})

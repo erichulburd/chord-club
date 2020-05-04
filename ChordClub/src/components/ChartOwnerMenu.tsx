@@ -7,12 +7,12 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 interface ManualProps {
   chart: Chart;
   editChart: (chart: Chart) => void;
-  onDeleteChart: (chartID: number) => void;
+  deleteChart: (chartID: number) => void;
 }
 
 interface Props extends ManualProps {}
 
-const ChartOwnerMenu = ({ chart, onDeleteChart, editChart }: Props) => {
+const ChartOwnerMenu = ({ chart, deleteChart, editChart }: Props) => {
   const [open, setOpen] = useState(false);
   const toggleMenu = () => setOpen(!open);
   const renderActionMenu = () => (
@@ -21,6 +21,14 @@ const ChartOwnerMenu = ({ chart, onDeleteChart, editChart }: Props) => {
       icon={ThemedIcon('ellipsis-v')}
     />
   );
+  const onEditChart = () => {
+    setOpen(false);
+    editChart(chart)
+  }
+  const onDeleteChart = () => {
+    setOpen(false);
+    deleteChart(chart.id)
+  }
   return (
     <OverflowMenu
       anchor={renderActionMenu}
@@ -28,7 +36,7 @@ const ChartOwnerMenu = ({ chart, onDeleteChart, editChart }: Props) => {
       onBackdropPress={toggleMenu}
     >
       <TouchableOpacity
-        onPress={() => editChart(chart)}
+        onPress={onEditChart}
       >
         <MenuItem
           accessoryLeft={ThemedIcon('edit')}
@@ -36,7 +44,7 @@ const ChartOwnerMenu = ({ chart, onDeleteChart, editChart }: Props) => {
         />
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => onDeleteChart(chart.id)}
+        onPress={onDeleteChart}
       >
         <MenuItem
           accessoryLeft={ThemedIcon('trash')}

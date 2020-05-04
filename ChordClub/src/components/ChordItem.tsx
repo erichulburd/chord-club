@@ -34,7 +34,7 @@ const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) 
         <ChartOwnerMenu
           chart={chart}
           editChart={editChart}
-          onDeleteChart={onDeleteChart}
+          deleteChart={onDeleteChart}
         />
       }
     </View>
@@ -67,6 +67,7 @@ const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) 
   };
   return (
     <Card
+      disabled
       style={styles.card}
       status="success"
       footer={Footer}
@@ -168,6 +169,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 15,
   },
   attributeHeader: {
     display: 'flex',

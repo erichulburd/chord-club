@@ -35,5 +35,6 @@ export const AppScreen = ({ title, children }: PropsWithChildren<Props>) => {
 const styles = StyleSheet.create({
   layout: {
     flex: 1,
+    overflow: 'hidden'
   }
 })

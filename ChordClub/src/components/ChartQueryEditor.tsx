@@ -74,15 +74,17 @@ const ChartQueryEditor = ({ initialQuery, authState, save, cancel }: Props) => {
     cancel();
   }
   const Footer = (props: ViewProps | undefined) => (
-    <View {...props}>
+    <View {...props} style={[(props?.style || {}), styles.footer]}>
       <Button
         size="small"
         status="primary"
+        appearance="outline"
         onPress={() => save(query)}
       >Save</Button>
       <Button
         size="small"
         status="warning"
+        appearance="outline"
         onPress={resetAndCancel}
       >Cancel</Button>
     </View>
@@ -122,7 +124,13 @@ const ChartQueryEditor = ({ initialQuery, authState, save, cancel }: Props) => {
 const styles = StyleSheet.create({
   container: {
     margin: 10,
-
+    alignSelf: 'stretch',
+    flex: 2,
+  },
+  footer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around'
   }
 })
 
