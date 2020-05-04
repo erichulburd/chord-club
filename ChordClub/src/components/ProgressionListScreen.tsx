@@ -16,7 +16,7 @@ const makeProgressionListQuery = (uid: string) => ({
 
 export const ProgressionListScreen = ({ authState }: Props) => {
   return (
-    <AppScreen title={Screens.ProgressionList}>
+    <AppScreen title={Screens.Progressions}>
         {!Boolean(authState.token) && <Spinner />}
         {Boolean(authState.token) &&
           <ChartQueryView

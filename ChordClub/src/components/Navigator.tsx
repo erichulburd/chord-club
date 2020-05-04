@@ -43,8 +43,8 @@ const DrawerContent = ({ navigation, state }: DrawerContentComponentProps<Drawer
       onSelect={index => navigation.navigate(state.routeNames[index.row])}
     >
       <SafeAreaView>
-        <DrawerItem accessoryLeft={ThemedIcon('list')} title={Screens.ChordList} />
-        <DrawerItem accessoryLeft={ThemedIcon('list')} title={Screens.ProgressionList} />
+        <DrawerItem accessoryLeft={ThemedIcon('list')} title={Screens.Chords} />
+        <DrawerItem accessoryLeft={ThemedIcon('list')} title={Screens.Progressions} />
         <DrawerItem accessoryLeft={ThemedIcon('bolt')} title={Screens.ChordFlashcards} />
         <DrawerItem accessoryLeft={ThemedIcon('circle', { solid: true })} title={Screens.CreateAChart} />
         <DrawerItem accessoryLeft={ThemedIcon('cog')} title={Screens.Settings} />
@@ -68,10 +68,10 @@ export const AppNavigator = () => (
   <NavigationContainer>
     <Navigator
       drawerContent={(props) => <DrawerContent {...props} />}
-      initialRouteName={Screens.ChordList}
+      initialRouteName={Screens.Chords}
     >
-      <Screen name={Screens.ChordList} component={ChordListScreen} />
-      <Screen name={Screens.ProgressionList} component={ProgressionListScreen} />
+      <Screen name={Screens.Chords} component={ChordListScreen} />
+      <Screen name={Screens.Progressions} component={ProgressionListScreen} />
       <Screen name={Screens.ChordFlashcards} component={Todo} />
       <Screen name={Screens.CreateAChart} component={ChartCreatorScreen} />
       <Screen name={Screens.Settings} component={Todo} />

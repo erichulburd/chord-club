@@ -13,9 +13,9 @@ export interface ScreenProps {
 }
 
 export enum Screens {
-  ChordList = 'Chord List',
+  Chords = 'Chords',
   ChordFlashcards = 'Chord Flashcards',
-  ProgressionList = 'Progression List',
+  Progressions = 'Progressions',
   CreateAChart = 'Create a Chart',
   Settings = 'Settings',
 }

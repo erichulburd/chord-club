@@ -11,12 +11,12 @@ interface Props extends AuthConsumerProps {
 
 const makeChordListQuery = (uid: string) => ({
   chartTypes: [ChartType.Chord],
-  scopes: [BaseScopes.Public, uid],
+  scopes: uid ? [BaseScopes.Public, uid] : [BaseScopes.Public],
 });
 
 export const ChordListScreen = ({ authState }: Props) => {
   return (
-    <AppScreen title={Screens.ChordList}>
+    <AppScreen title={Screens.Chords}>
         {!Boolean(authState.token) && <Spinner />}
         {Boolean(authState.token) &&
           <ChartQueryView
