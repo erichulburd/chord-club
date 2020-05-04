@@ -11,7 +11,6 @@ import { ResizableImage } from '../util/imagePicker';
 import AudioPlayer from './AudioPlayer1';
 import { TagCollection } from './TagCollection';
 import { withAuth, AuthConsumerProps } from './AuthProvider';
-import ChartReactions from './ChartReactions';
 import ChartOwnerMenu from './ChartOwnerMenu';
 import { ChartFooter } from './ChartFooter';
 
@@ -23,7 +22,7 @@ interface ManualProps {
 }
 interface Props extends ManualProps, AuthConsumerProps {}
 
-const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) => {
+const ProgressionItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) => {
 
   const Header = (props?: ViewProps) => (
     <View {...props} style={styles.headerAndFooter}>
@@ -40,19 +39,6 @@ const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) 
       }
     </View>
   );
-  const Footer = (props?: ViewProps) => (
-    <ChartFooter
-      viewProps={props}
-      chart={chart}
-      next={next}
-      openImage={openImage}
-    />
-  );
-  const [accordionState, setAccordionState] = useState<AccordionState>({
-    description: false,
-    extensions: false,
-    toneAndQuality: false,
-  });
   const [image, setImage] = useState<ResizableImage | undefined>(undefined);
   const [imageIsOpen, toggleImage] = useState(false);
   const openImage = async () => {
@@ -62,6 +48,15 @@ const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) 
     }
     toggleImage(true);
   };
+  const Footer = (props?: ViewProps) => (
+    <ChartFooter
+      viewProps={props}
+      chart={chart}
+      next={next}
+      openImage={openImage}
+    />
+  );
+
   return (
     <Card
       disabled
@@ -71,55 +66,9 @@ const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) 
       header={Header}
     >
       <View>
+        <Text>{chart.name || 'Unnamed'}</Text>
         <AudioPlayer audio={chart} />
       </View>
-      <TagCollection
-        tags={chart.tags}
-      />
-      {Boolean(chart.description) &&
-        <View>
-          <View style={styles.attributeHeader}>
-            <Text category="label">Description</Text>
-            <CaretToggle
-              isOpen={accordionState.description}
-              toggle={(nextIsOpen) => setAccordionState({ ...accordionState, description: nextIsOpen })}
-            />
-          </View>
-          {accordionState.description && chart.description &&
-            <View>
-              <Text>{chart.description}</Text>
-            </View>
-          }
-        </View>
-      }
-      {chart.chartType === ChartType.Chord &&
-        <>
-          <View>
-            <View style={styles.attributeHeader}>
-              <Text category="label">{'Tone & Quality'}</Text>
-              <CaretToggle
-                isOpen={accordionState.toneAndQuality}
-                toggle={(nextIsOpen) => setAccordionState({ ...accordionState, toneAndQuality: nextIsOpen })}
-              />
-            </View>
-            {(accordionState.toneAndQuality && chart.root) &&
-              <View><Text>{displayNote(chart.root)} {chart.quality}</Text></View>
-            }
-          </View>
-          <View>
-            <View style={styles.attributeHeader}>
-              <Text category="label">Extensions</Text>
-              <CaretToggle
-                isOpen={accordionState.extensions}
-                toggle={(nextIsOpen) => setAccordionState({ ...accordionState, extensions: nextIsOpen })}
-              />
-            </View>
-            {accordionState.extensions &&
-              <View><ChartExtensions chartID={chart.id} /></View>
-            }
-          </View>
-        </>
-      }
       {image &&
         <ModalImage
           visible={imageIsOpen}
@@ -144,12 +93,6 @@ const CaretToggle = ({ isOpen, toggle }: CaretToggleProps) => (
   />
 )
 
-interface AccordionState {
-  description: boolean;
-  extensions: boolean;
-  toneAndQuality: boolean;
-}
-
 const styles = StyleSheet.create({
   card: {
     margin: 10,
@@ -172,4 +115,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default withAuth<ManualProps>(ChordItem);
+export default withAuth<ManualProps>(ProgressionItem);

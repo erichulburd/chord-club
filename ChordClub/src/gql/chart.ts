@@ -4,7 +4,7 @@ import { tagDBFields } from './tag';
 
 export const chartDBFields = gql`
   fragment ChartDBFields on Chart {
-    id audioURL audioLength imageURL hint description
+    id name audioURL audioLength imageURL hint description
     abc scope chartType bassNote
     root quality createdAt createdBy updatedAt
   }

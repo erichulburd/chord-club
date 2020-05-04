@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation } from '@apollo/react-hooks';
-import { ChartQuery, Chart } from '../types';
-import last from 'lodash/last';
-import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables, DELETE_CHART_MUTATION, DeleteChartMutationVariables } from '../gql/chart';
-import { FlatList } from 'react-native-gesture-handler';
-import { Spinner, Text } from '@ui-kitten/components';
-import ChordItem from './ChordItem';
 import { View, RefreshControl, StyleSheet } from 'react-native';
-import { withModalContext, ModalContextProps } from './ModalProvider';
-import { ChordClubShim } from '../../types/ChordClubShim';
+import { FlatList } from 'react-native-gesture-handler';
+import { ChartQuery, Chart } from '../types';
+import {
+  ChartsQueryResponse, ChartsQueryVariables,
+  CHARTS_QUERY, DELETE_CHART_MUTATION,
+  DeleteChartMutationVariables,
+} from '../gql/chart';
+import { useQuery, useMutation } from 'react-apollo';
+import last from 'lodash/last';
+import { ModalContextProps, withModalContext } from './ModalProvider';
+import { Spinner, Text } from '@ui-kitten/components';
+import { ChordClubShim } from 'types/ChordClubShim';
+import ProgressionItem from './ProgressionItem';
 
 const ListEmptyComponent = () => (
   <View style={styles.emptyList}>
-    <Text category="h6" status="warning">No chords found.</Text>
+    <Text category="h6" status="warning">No progressions found.</Text>
   </View>
 );
 
@@ -23,7 +27,7 @@ interface ManualProps {
 
 interface Props extends ModalContextProps, ManualProps {}
 
-const ChordList = ({ query, editChart, modalCtx }: Props) => {
+export const ProgressionList = ({ query, modalCtx, editChart }: Props) => {
   const { data, loading, refetch, fetchMore } =
     useQuery<ChartsQueryResponse, ChartsQueryVariables>(CHARTS_QUERY, { variables: { query } });
 
@@ -74,8 +78,9 @@ const ChordList = ({ query, editChart, modalCtx }: Props) => {
         onScrollToIndexFailed={() => undefined}
         data={charts}
         keyExtractor={chart => chart.id.toString()}
+        ListEmptyComponent={ListEmptyComponent}
         renderItem={(item) => (
-          <ChordItem
+          <ProgressionItem
             next={() => next(item.index)}
             chart={item.item}
             editChart={editChart}
@@ -86,9 +91,8 @@ const ChordList = ({ query, editChart, modalCtx }: Props) => {
     </View>
 
   );
-};
+}
 
-export default withModalContext<ManualProps>(ChordList);
 
 const styles = StyleSheet.create({
   container: {
@@ -99,3 +103,5 @@ const styles = StyleSheet.create({
     padding: 20,
   }
 })
+
+export default withModalContext<ManualProps>(ProgressionList);

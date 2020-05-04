@@ -6,13 +6,13 @@ import {
   DrawerContentOptions,
 } from '@react-navigation/drawer';
 import ChordListScreen from './ChordListScreen';
+import ProgressionListScreen from './ProgressionListScreen';
 import {
   Drawer, DrawerItem, IndexPath,
   Layout, Divider, Text, withStyles, ThemedComponentProps,
 } from '@ui-kitten/components';
 import { SafeAreaView, View, ViewProps, StyleSheet } from 'react-native';
 import Title from './Title';
-import * as eva from '@eva-design/eva';
 import { ChartCreatorScreen } from './ChartCreatorScreen';
 import { Screens } from './AppScreen';
 import { ThemedIcon } from './FontAwesomeIcons';
@@ -71,8 +71,8 @@ export const AppNavigator = () => (
       initialRouteName={Screens.ChordList}
     >
       <Screen name={Screens.ChordList} component={ChordListScreen} />
+      <Screen name={Screens.ProgressionList} component={ProgressionListScreen} />
       <Screen name={Screens.ChordFlashcards} component={Todo} />
-      <Screen name={Screens.ProgressionList} component={Todo} />
       <Screen name={Screens.CreateAChart} component={ChartCreatorScreen} />
       <Screen name={Screens.Settings} component={Todo} />
     </Navigator>
