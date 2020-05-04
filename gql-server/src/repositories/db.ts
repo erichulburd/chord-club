@@ -79,7 +79,7 @@ export class TestDBClientManager extends DBClientManager {
     }
     if (this.txManager == undefined) {
       const txManager = new DBTxManager(this.client);
-      await txManager.begin();
+      // await txManager.begin();
       this.txManager = txManager;
     }
     return [this.client, this.txManager];
