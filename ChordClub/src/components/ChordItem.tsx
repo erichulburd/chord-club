@@ -13,6 +13,7 @@ import { TagCollection } from './TagCollection';
 import { withAuth, AuthConsumerProps } from './AuthProvider';
 import ChartReactions from './ChartReactions';
 import ChartOwnerMenu from './ChartOwnerMenu';
+import { ChartFooter } from './ChartFooter';
 
 interface ManualProps {
   chart: Chart;
@@ -22,7 +23,7 @@ interface ManualProps {
 }
 interface Props extends ManualProps, AuthConsumerProps {}
 
-const ChartItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) => {
+const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) => {
 
   const Header = (props?: ViewProps) => (
     <View {...props} style={styles.headerAndFooter}>
@@ -34,22 +35,18 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) 
         <ChartOwnerMenu
           chart={chart}
           editChart={editChart}
-          onDeleteChart={onDeleteChart}
+          deleteChart={onDeleteChart}
         />
       }
     </View>
   );
   const Footer = (props?: ViewProps) => (
-    <View {...props} style={[props?.style || {}, styles.headerAndFooter]}>
-      <ChartReactions chart={chart} />
-      <Button
-        appearance={'ghost'}
-        status={'basic'}
-        size={'small'}
-        onPress={next}
-        accessoryLeft={ThemedIcon('arrow-circle-right')}
-      />
-    </View>
+    <ChartFooter
+      viewProps={props}
+      chart={chart}
+      next={next}
+      openImage={openImage}
+    />
   );
   const [accordionState, setAccordionState] = useState<AccordionState>({
     description: false,
@@ -67,6 +64,7 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) 
   };
   return (
     <Card
+      disabled
       style={styles.card}
       status="success"
       footer={Footer}
@@ -74,13 +72,6 @@ const ChartItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) 
     >
       <View>
         <AudioPlayer audio={chart} />
-        {chart.imageURL &&
-          <Button
-            appearance="ghost"
-            status="warning"
-            onPress={openImage}
-          >View chart</Button>
-        }
       </View>
       <TagCollection
         tags={chart.tags}
@@ -168,6 +159,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 15,
   },
   attributeHeader: {
     display: 'flex',
@@ -180,4 +172,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default withAuth<ManualProps>(ChartItem);
+export default withAuth<ManualProps>(ChordItem);

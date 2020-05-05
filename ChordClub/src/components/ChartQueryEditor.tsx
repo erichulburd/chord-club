@@ -14,21 +14,23 @@ import { Button, Card, Text } from '@ui-kitten/components';
 import { ThemedIcon } from './FontAwesomeIcons';
 
 interface ManualProps {
-  onChange: (q: ChartQuery) => void;
-  query: ChartQuery;
+  save: (q: ChartQuery) => void;
+  cancel: () => void;
+  initialQuery: ChartQuery;
 }
 
 interface Props extends ManualProps, AuthConsumerProps {}
 
-const ChartQueryComponent = ({ onChange, query, authState }: Props) => {
+const ChartQueryEditor = ({ initialQuery, authState, save, cancel }: Props) => {
   const [tags, setTags] = useState<Tag[]>([]);
+  const [query, setQuery] = useState<ChartQuery>(initialQuery);
   const addTag = (tag: Tag) => {
     if (tags.some(t => areTagsEqual(t, tag))) {
       return;
     }
     const tagUpdate = [...tags, tag];
     setTags(tagUpdate);
-    onChange({
+    setQuery({
       ...query,
       tagIDs: tagUpdate.map(t => t.id),
     });
@@ -41,26 +43,11 @@ const ChartQueryComponent = ({ onChange, query, authState }: Props) => {
     const tagUpdate = [...tags];
     tagUpdate.splice(index, 1);
     setTags(tagUpdate);
-    onChange({
+    setQuery({
       ...query,
       tagIDs: tagUpdate.map(t => t.id),
     });
   };
-  const toggleChartType = (ct: ChartType, checked: boolean) => {
-    const index = query.chartTypes.indexOf(ct);
-    if (!checked && index >= 0) {
-      if (query.chartTypes.length > 1) {
-        const chartTypes = [...query.chartTypes];
-        chartTypes.splice(index, 1);
-        onChange({ ...query, chartTypes, });
-      }
-    } else if (checked && index < 0) {
-      onChange({
-        ...query,
-        chartTypes: [...query.chartTypes, ct],
-      });
-    }
-  }
   const selectedScopes: string[] = [];
   if (query.scopes?.includes(BaseScopes.Public)) selectedScopes.push('Public');
   if (query.scopes?.includes(authState.uid)) selectedScopes.push('Private');
@@ -69,42 +56,46 @@ const ChartQueryComponent = ({ onChange, query, authState }: Props) => {
     let index = query.scopes?.indexOf(scope);
     if (index === undefined) index = -1;
     if (checked && index < 0) {
-      onChange({
+      setQuery({
         ...query,
         scopes: [...query.scopes || [], scope],
       });
     } else if (!checked && index >= 0) {
       const scopes = [...query.scopes || []];
       scopes.splice(index, 1);
-      onChange({ ...query, scopes });
+      setQuery({ ...query, scopes });
     }
-  }
-  const reverseDirection = () => {
-    onChange({ ...query, asc: !query.asc });
   }
   const Header = (props: ViewProps | undefined) => (
     <View {...props}><Text category="h6">Query</Text></View>
+  )
+  const resetAndCancel = () => {
+    setQuery(initialQuery);
+    cancel();
+  }
+  const Footer = (props: ViewProps | undefined) => (
+    <View {...props} style={[(props?.style || {}), styles.footer]}>
+      <Button
+        size="small"
+        status="primary"
+        appearance="outline"
+        onPress={() => save(query)}
+      >Save</Button>
+      <Button
+        size="small"
+        status="warning"
+        appearance="outline"
+        onPress={resetAndCancel}
+      >Cancel</Button>
+    </View>
   )
   return (
     <Card
       style={styles.container}
       header={Header}
+      footer={Footer}
       status="basic"
     >
-      <Row>
-        <ChartTypeCheckboxGroup
-          multi
-          choices={[ChartType.Chord, ChartType.Progression]}
-          display={ct => capitalize(ct)}
-          selected={query.chartTypes}
-          onToggle={toggleChartType}
-        />
-        <Button
-          appearance={'ghost'}
-          accessoryLeft={ThemedIcon(query.asc ? 'sort-amount-up' : 'sort-amount-down')}
-          onPress={reverseDirection}
-        />
-      </Row>
       <Row>
         <StringCheckboxGroup
           multi
@@ -133,8 +124,14 @@ const ChartQueryComponent = ({ onChange, query, authState }: Props) => {
 const styles = StyleSheet.create({
   container: {
     margin: 10,
-
+    alignSelf: 'stretch',
+    flex: 2,
+  },
+  footer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around'
   }
 })
 
-export default withAuth<ManualProps>(ChartQueryComponent);
+export default withAuth<ManualProps>(ChartQueryEditor);
