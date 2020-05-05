@@ -215,7 +215,18 @@ enum ChartQueryOrder {
   RANDOM,
 }
 
-input ChartQuery {
+type ChartQuery {
+  id: Int
+  tagIDs: [Int!]
+  chartTypes: [ChartType!]!
+  after: Int
+  order: ChartQueryOrder
+  asc: Boolean
+  limit: Int
+  scopes: [String!]
+}
+
+input ChartQueryInput {
   id: Int
   tagIDs: [Int!]
   chartTypes: [ChartType!]!
@@ -230,10 +241,33 @@ interface UserBase {
   username: String!
 }
 
+type ChartViewSetting {
+  query: ChartQuery!
+  compact: Boolean
+}
+
+input ChartViewSettingInput {
+  query: ChartQueryInput!
+  compact: Boolean
+}
+
+type UserSettings {
+  chords: ChartViewSetting
+  progressions: ChartViewSetting
+  flashcards: ChartViewSetting
+}
+
+input UserSettingsInput {
+  chords: ChartViewSettingInput
+  progressions: ChartViewSettingInput
+  flashcards: ChartViewSettingInput
+}
+
 type User implements UserBase {
   uid: String!
   username: String!
   createdAt: String!
+  settings: UserSettings!
 }
 
 input UserNew {
@@ -242,6 +276,7 @@ input UserNew {
 
 input UserUpdate {
   username: String!
+  settings: UserSettingsInput
 }
 
 enum UserQueryOrder {
@@ -287,7 +322,7 @@ type ErrorExtensions {
 type Query {
   me: User!
   users(query: UserQuery!): [User!]!
-  charts(query: ChartQuery!): [Chart!]!
+  charts(query: ChartQueryInput!): [Chart!]!
   tags(query: TagQuery!): [Tag!]!
   extensions: [Extension!]!
 }

@@ -227,6 +227,18 @@ export enum ChartQueryOrder {
 }
 
 export type ChartQuery = {
+   __typename?: 'ChartQuery';
+  id?: Maybe<Scalars['Int']>;
+  tagIDs?: Maybe<Array<Scalars['Int']>>;
+  chartTypes: Array<ChartType>;
+  after?: Maybe<Scalars['Int']>;
+  order?: Maybe<ChartQueryOrder>;
+  asc?: Maybe<Scalars['Boolean']>;
+  limit?: Maybe<Scalars['Int']>;
+  scopes?: Maybe<Array<Scalars['String']>>;
+};
+
+export type ChartQueryInput = {
   id?: Maybe<Scalars['Int']>;
   tagIDs?: Maybe<Array<Scalars['Int']>>;
   chartTypes: Array<ChartType>;
@@ -241,11 +253,36 @@ export type UserBase = {
   username: Scalars['String'];
 };
 
+export type ChartViewSetting = {
+   __typename?: 'ChartViewSetting';
+  query: ChartQuery;
+  compact?: Maybe<Scalars['Boolean']>;
+};
+
+export type ChartViewSettingInput = {
+  query: ChartQueryInput;
+  compact?: Maybe<Scalars['Boolean']>;
+};
+
+export type UserSettings = {
+   __typename?: 'UserSettings';
+  chords?: Maybe<ChartViewSetting>;
+  progressions?: Maybe<ChartViewSetting>;
+  flashcards?: Maybe<ChartViewSetting>;
+};
+
+export type UserSettingsInput = {
+  chords?: Maybe<ChartViewSettingInput>;
+  progressions?: Maybe<ChartViewSettingInput>;
+  flashcards?: Maybe<ChartViewSettingInput>;
+};
+
 export type User = UserBase & {
    __typename?: 'User';
   uid: Scalars['String'];
   username: Scalars['String'];
   createdAt: Scalars['String'];
+  settings: UserSettings;
 };
 
 export type UserNew = {
@@ -254,6 +291,7 @@ export type UserNew = {
 
 export type UserUpdate = {
   username: Scalars['String'];
+  settings?: Maybe<UserSettingsInput>;
 };
 
 export enum UserQueryOrder {
@@ -312,7 +350,7 @@ export type QueryUsersArgs = {
 
 
 export type QueryChartsArgs = {
-  query: ChartQuery;
+  query: ChartQueryInput;
 };
 
 

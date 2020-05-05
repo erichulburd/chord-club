@@ -16,14 +16,14 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: citext; Type: EXTENSION; Schema: -; Owner: 
+-- Name: citext; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
@@ -306,6 +306,7 @@ ALTER SEQUENCE public.tag_id_seq OWNED BY public.tag.id;
 CREATE TABLE public.userr (
     uid character varying(180) NOT NULL,
     username public.citext NOT NULL,
+    settings JSONB NOT NULL DEFAULT '{}',
     created_at timestamp with time zone DEFAULT now()
 );
 

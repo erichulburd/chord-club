@@ -38,7 +38,7 @@ const Q: Partial<QueryResolvers> = {};
 Q.me = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: {}, context: Context): Promise<User> => {
   let me = await findUserByUID(context.uid, context.db);
   if (!me) {
-    me = { uid: context.uid, username: '', createdAt: '' };
+    me = { uid: context.uid, username: '', createdAt: '', settings: {} };
   }
   return me;
 });
