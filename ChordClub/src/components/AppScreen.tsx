@@ -1,11 +1,12 @@
 import React, { PropsWithChildren } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
-import Title from './Title';
+import Title, { MenuItemData } from './Title';
 import { Divider, Layout } from '@ui-kitten/components';
 import { ChordClubShim } from '../../types/ChordClubShim'
 
 interface Props {
   title: string;
+  menuItems?: MenuItemData[];
 }
 
 export interface ScreenProps {
@@ -20,10 +21,10 @@ export enum Screens {
   Settings = 'Settings',
 }
 
-export const AppScreen = ({ title, children }: PropsWithChildren<Props>) => {
+export const AppScreen = ({ title, menuItems, children }: PropsWithChildren<Props>) => {
   return (
     <SafeAreaView style={styles.layout}>
-      <Title title={title} />
+      <Title title={title} menuItems={menuItems} />
       <Divider />
       <Layout style={styles.layout}>
         {children}

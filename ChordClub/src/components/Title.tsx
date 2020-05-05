@@ -5,32 +5,30 @@ import {
 } from '@ui-kitten/components';
 import { withAuth, AuthConsumerProps } from './AuthProvider';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { ThemedIcon } from './FontAwesomeIcons';
 
 
 const MenuIcon = (props: Partial<ImageProps> = {}) => (
   <Icon {...props} name='ellipsis-v'/>
 );
 
-const InfoIcon = (props: Partial<ImageProps> = {}) => (
-  <Icon {...props} name='info'/>
-);
-
-const LogoutIcon = (props: Partial<ImageProps> = {}) => (
-  <Icon {...props} name='sign-out-alt'/>
-);
+export interface MenuItemData {
+  title: string;
+  themedIconName: string;
+  onPress: () => void;
+}
 
 interface ManualProps {
   title?: string;
-  renderMenu?: boolean;
+  menuItems?: MenuItemData[];
+
 }
 
 interface Props extends AuthConsumerProps, ManualProps {}
 
 export const Title = ({
-  authState,
-  authActions: { logout },
   title = 'Chord Club',
-  renderMenu,
+  menuItems,
 }: Props) => {
 
   const [menuVisible, setMenuVisible] = React.useState(false);
@@ -41,7 +39,7 @@ export const Title = ({
     </View>
   );
 
-  if (!renderMenu) {
+  if (!menuItems) {
     return (
       <TopNavigation
         title={renderTitle}
@@ -57,22 +55,29 @@ export const Title = ({
     <TopNavigationAction icon={MenuIcon} onPress={toggleMenu}/>
   );
 
+  const closeMenuAndExec = (fn: () => void) => {
+    setMenuVisible(false);
+    fn();
+  }
+
   const renderOverflowMenuAction = () => (
     <React.Fragment>
       <OverflowMenu
         anchor={renderMenuAction}
         visible={menuVisible}
-        onBackdropPress={toggleMenu}>
-        {authState.token &&
+        onBackdropPress={toggleMenu}
+      >
+        {menuItems.map(({ title, themedIconName, onPress }) => (
           <TouchableOpacity
-            onPress={logout}
+            key={title}
+            onPress={() => closeMenuAndExec(onPress)}
           >
             <MenuItem
-              accessoryLeft={LogoutIcon}
-              title='Logout'
+              accessoryLeft={ThemedIcon(themedIconName)}
+              title={title}
             />
           </TouchableOpacity>
-        }
+        ))}
       </OverflowMenu>
     </React.Fragment>
   );

@@ -18,7 +18,7 @@ const ChartOwnerMenu = ({ chart, deleteChart, editChart }: Props) => {
   const renderActionMenu = () => (
     <TopNavigationAction
       onPress={toggleMenu}
-      icon={ThemedIcon('ellipsis-v')}
+      icon={ThemedIcon('caret-down')}
     />
   );
   const onEditChart = () => {
