@@ -119,6 +119,7 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
       query: {
         scopes: defaultScopes,
         chartTypes: [ChartType.Chord],
+        limit: 10,
       },
       compact: false,
     };

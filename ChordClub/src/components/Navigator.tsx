@@ -22,6 +22,7 @@ import Title from './Title';
 import {ChartCreatorScreen} from './ChartCreatorScreen';
 import {Screens} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
+import { FlashcardsScreen } from './FlashcardsScreen';
 
 const {Navigator, Screen} = createDrawerNavigator();
 
@@ -89,7 +90,7 @@ export const AppNavigator = () => (
       initialRouteName={Screens.Chords}>
       <Screen name={Screens.Chords} component={ChordListScreen} />
       <Screen name={Screens.Progressions} component={ProgressionListScreen} />
-      <Screen name={Screens.ChordFlashcards} component={Todo} />
+      <Screen name={Screens.ChordFlashcards} component={FlashcardsScreen} />
       <Screen name={Screens.CreateAChart} component={ChartCreatorScreen} />
       <Screen name={Screens.Settings} component={Todo} />
     </Navigator>
