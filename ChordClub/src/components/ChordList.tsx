@@ -9,6 +9,7 @@ import ChordItem from './ChordItem';
 import { View, RefreshControl, StyleSheet } from 'react-native';
 import { withModalContext, ModalContextProps } from './ModalProvider';
 import { ChordClubShim } from '../../types/ChordClubShim';
+import omit from 'lodash/omit';
 
 const ListEmptyComponent = () => (
   <View style={styles.emptyList}>
@@ -18,15 +19,18 @@ const ListEmptyComponent = () => (
 
 interface ManualProps {
   query: ChartQuery;
+  compact: boolean;
   editChart: (chart: Chart) => void;
 }
 
 interface Props extends ModalContextProps, ManualProps {}
 
-const ChordList = ({ query, editChart, modalCtx }: Props) => {
+const ChordList = ({ query, compact, editChart, modalCtx }: Props) => {
   const { data, loading, refetch, fetchMore } =
-    useQuery<ChartsQueryResponse, ChartsQueryVariables>(CHARTS_QUERY, { variables: { query } });
-
+    useQuery<ChartsQueryResponse, ChartsQueryVariables>(CHARTS_QUERY, { variables: {
+       query: omit(query, ['__typename'])
+      }
+    });
 
   const loadMore = () => fetchMore({
     variables: {
@@ -74,8 +78,10 @@ const ChordList = ({ query, editChart, modalCtx }: Props) => {
         onScrollToIndexFailed={() => undefined}
         data={charts}
         keyExtractor={chart => chart.id.toString()}
+        ListEmptyComponent={ListEmptyComponent}
         renderItem={(item) => (
           <ChordItem
+            compact={compact}
             next={() => next(item.index)}
             chart={item.item}
             editChart={editChart}

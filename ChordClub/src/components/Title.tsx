@@ -3,7 +3,7 @@ import { StyleSheet, View, ImageProps } from 'react-native';
 import {
   Icon, MenuItem, OverflowMenu, Text, TopNavigation, TopNavigationAction, TextProps
 } from '@ui-kitten/components';
-import { withAuth, AuthConsumerProps } from './AuthProvider';
+import { withUser, UserConsumerProps } from './UserContext';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ThemedIcon } from './FontAwesomeIcons';
 
@@ -24,7 +24,7 @@ interface ManualProps {
 
 }
 
-interface Props extends AuthConsumerProps, ManualProps {}
+interface Props extends UserConsumerProps, ManualProps {}
 
 export const Title = ({
   title = 'Chord Club',
@@ -39,7 +39,7 @@ export const Title = ({
     </View>
   );
 
-  if (!menuItems) {
+  if (!menuItems || menuItems.length < 1) {
     return (
       <TopNavigation
         title={renderTitle}
@@ -100,4 +100,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withAuth<ManualProps>(Title);
+export default withUser<ManualProps>(Title);

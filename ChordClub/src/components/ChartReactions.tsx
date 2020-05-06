@@ -3,17 +3,17 @@ import { Button } from '@ui-kitten/components';
 import { ThemedIcon } from './FontAwesomeIcons';
 import { ReactionType, Chart } from '../types';
 import { View, StyleSheet } from 'react-native';
-import { withAuth, AuthConsumerProps } from './AuthProvider';
+import { withUser, UserConsumerProps } from './UserContext';
 import { useMutation } from 'react-apollo';
 import { REACT_TO_CHART, ReactToChartResponse, ReactToChartVariables } from '../gql/chart';
 
 interface ManualProps {
   chart: Chart;
 }
-interface Props extends ManualProps, AuthConsumerProps {}
+interface Props extends ManualProps, UserConsumerProps {}
 
-const ChartReactions = ({ chart, authState }: Props) => {
-  const { uid } = authState;
+const ChartReactions = ({ chart, userCtx }: Props) => {
+  const { uid } = userCtx.authState;
   const [reactToChart, reaction] = useMutation<ReactToChartResponse, ReactToChartVariables>(REACT_TO_CHART);
   const react = (reactionType: ReactionType) => {
     if (chart.createdBy === uid) {
@@ -67,4 +67,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default withAuth<ManualProps>(ChartReactions);
+export default withUser<ManualProps>(ChartReactions);

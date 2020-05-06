@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Text, Button, Input, TabBar, Tab, CheckBox } from '@ui-kitten/components';
 import { View, Image, StyleSheet } from 'react-native';
 import { TouchableHighlight, ScrollView } from 'react-native-gesture-handler';
-import { withAuth, AuthConsumerProps } from './AuthProvider';
+import { withUser, UserConsumerProps } from './UserContext';
 import { makeChartNew, ChartURLs, areTagsEqual } from '../util/forms';
 import { ChartType, Extension, Note, BaseScopes, ChartNew, TagNew, Tag } from '../types';
 import { Row } from './shared/Row';
@@ -27,10 +27,10 @@ interface ManualProps {
   close: () => void;
 }
 
-interface Props extends ManualProps, AuthConsumerProps, ModalContextProps {}
+interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 
-const ChartCreator = ({ close, modalCtx, authState }: Props) => {
-  const { uid } = authState;
+const ChartCreator = ({ close, modalCtx, userCtx }: Props) => {
+  const { uid } = userCtx.authState;
   const [newChart, setChart] = useState(makeChartNew(uid));
   const updateChartType = (ct: ChartType) => setChart({ ...newChart, chartType: ct });
   const updateChartRoot = (n: Note) => setChart({ ...newChart, root: n });
@@ -289,5 +289,5 @@ const styles = StyleSheet.create({
   }
 });
 
-export default withModalContext(withAuth<ManualProps & ModalContextProps>(ChartCreator));
+export default withModalContext(withUser<ManualProps & ModalContextProps>(ChartCreator));
 

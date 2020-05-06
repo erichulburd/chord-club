@@ -17,7 +17,7 @@ import client from './client';
 import logger from './util/logger';
 import { FontAwesome5IconsPack } from './components/FontAwesomeIcons';
 import AuthModal from './components/AuthModal';
-import { AuthProvider } from './components/AuthProvider';
+import { UserProvider } from './components/UserContext';
 import { ModalProvider } from './components/ModalProvider';
 
 if(__DEV__) {
@@ -33,12 +33,12 @@ const App = ({}) => {
       <IconRegistry icons={FontAwesome5IconsPack} />
       <ApolloProvider client={client}>
         <ApplicationProvider {...eva} theme={eva.dark}>
-          <AuthProvider>
+          <UserProvider>
             <ModalProvider>
               <AppNavigator/>
             </ModalProvider>
             <AuthModal />
-          </AuthProvider>
+          </UserProvider>
         </ApplicationProvider>
       </ApolloProvider>
     </>

@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { Card, Text, Button } from '@ui-kitten/components';
 import { ThemedIcon } from './FontAwesomeIcons';
 import moment from 'moment';
-import { Chart, ChartType } from '../types';
+import { Chart } from '../types';
 import { View, ViewProps, StyleSheet } from 'react-native';
-import { ChartExtensions } from './ChartExtensions';
-import { displayNote } from '../util/strings';
 import { ModalImage } from './shared/ModalImage';
 import { ResizableImage } from '../util/imagePicker';
 import AudioPlayer from './AudioPlayer1';
-import { TagCollection } from './TagCollection';
-import { withAuth, AuthConsumerProps } from './AuthProvider';
+import { UserConsumerProps, withUser } from './UserContext';
 import ChartOwnerMenu from './ChartOwnerMenu';
 import { ChartFooter } from './ChartFooter';
 
@@ -20,10 +17,10 @@ interface ManualProps {
   onDeleteChart: (chartID: number) => void;
   next: () => void;
 }
-interface Props extends ManualProps, AuthConsumerProps {}
+interface Props extends ManualProps, UserConsumerProps {}
 
-const ProgressionItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) => {
-
+const ProgressionItem = ({ chart, userCtx, editChart, onDeleteChart, next }: Props) => {
+  const { authState } = userCtx;
   const Header = (props?: ViewProps) => (
     <View {...props} style={styles.headerAndFooter}>
       <View style={styles.chartCreatorAndTime}>
@@ -115,4 +112,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default withAuth<ManualProps>(ProgressionItem);
+export default withUser<ManualProps>(ProgressionItem);

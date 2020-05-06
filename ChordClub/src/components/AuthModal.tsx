@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Card, Modal, Text, Spinner } from '@ui-kitten/components';
 import { StyleSheet, ViewProps, View } from 'react-native';
-import { AuthConsumerProps, withAuth } from './AuthProvider';
+import { UserConsumerProps, withUser } from './UserContext';
 import UsernameModal from './UsernameModal';
 
 const styles = StyleSheet.create({
@@ -14,7 +14,8 @@ const styles = StyleSheet.create({
 });
 
 
-const AuthModal = ({ authState, authActions: { login } }: AuthConsumerProps) => {
+const AuthModal = ({ userCtx }: UserConsumerProps) => {
+  const { authState, authActions: { login } } = userCtx;
   const { token, sessionExpired, initialized } = authState;
   const isLoggedIn = Boolean(token);
   if (isLoggedIn) {
@@ -52,4 +53,4 @@ const AuthModal = ({ authState, authActions: { login } }: AuthConsumerProps) => 
   );
 };
 
-export default withAuth<{}>(AuthModal);
+export default withUser<{}>(AuthModal);

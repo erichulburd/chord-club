@@ -2,6 +2,13 @@ import gql from 'graphql-tag';
 import { ChartNew, Chart, ChartQuery, ChartType, ChartUpdate, ReactionNew } from '../types';
 import { tagDBFields } from './tag';
 
+export const chartQueryFields = gql`
+  fragment ChartQueryFields on ChartQuery {
+    id tagIDs chartTypes after order asc
+    limit scopes
+  }
+`;
+
 export const chartDBFields = gql`
   fragment ChartDBFields on Chart {
     id name audioURL audioLength imageURL hint description
@@ -46,7 +53,7 @@ export interface UpdateChartResponse {
 }
 
 export const CHARTS_QUERY = gql`
-  query ChartsQuery($query: ChartQuery!) {
+  query ChartsQuery($query: ChartQueryInput!) {
     charts(query: $query) {
       ...ChartDBFields
       userReactionType

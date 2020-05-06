@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Text, Button, Input, TabBar, Tab, CheckBox, Toggle } from '@ui-kitten/components';
 import { View, Image, StyleSheet } from 'react-native';
 import { TouchableHighlight, ScrollView } from 'react-native-gesture-handler';
-import { withAuth, AuthConsumerProps } from './AuthProvider';
+import { withUser, UserConsumerProps } from './UserContext';
 import { areTagsEqual } from '../util/forms';
 import { ChartType, Extension, Note, BaseScopes, TagNew, Tag, Chart, ChartUpdate } from '../types';
 import { Row } from './shared/Row';
@@ -30,10 +30,10 @@ interface ManualProps {
   close: () => void;
 }
 
-interface Props extends ManualProps, AuthConsumerProps, ModalContextProps {}
+interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 
-const ChartEditor = ({ close, modalCtx, authState, chart }: Props) => {
-  const { uid } = authState;
+const ChartEditor = ({ close, modalCtx, userCtx, chart }: Props) => {
+  const { uid } = userCtx.authState;
 
   const [chartUpdate, setChart] = useState<ChartUpdate>(
     omit(chart, [
@@ -305,5 +305,5 @@ const styles = StyleSheet.create({
   }
 });
 
-export default withModalContext(withAuth<ManualProps & ModalContextProps>(ChartEditor));
+export default withModalContext(withUser<ManualProps & ModalContextProps>(ChartEditor));
 

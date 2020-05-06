@@ -38,7 +38,6 @@ const TOKEN_ASYNC_KEY = '@ChordClub:token';
 const initialize = async () => {
   try {
     const token = await AsyncStorage.getItem(TOKEN_ASYNC_KEY);
-    logger.info('TOKEN', token);
     if (token) {
       authState.token = token;
       const claims = parseJWT(token);

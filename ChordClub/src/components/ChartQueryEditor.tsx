@@ -1,17 +1,15 @@
 import React from 'react';
 import { View, StyleSheet, ViewProps } from 'react-native';
-import { ChartQuery, Tag, ChartType, BaseScopes } from '../types';
+import { ChartQuery, Tag, BaseScopes } from '../types';
 import TagAutocomplete from './TagAutocomplete';
 import { TagCollection } from './TagCollection';
 import { useState } from 'react';
 import { areTagsEqual } from '../util/forms';
-import { ChartTypeCheckboxGroup, StringCheckboxGroup } from './shared/CheckboxGroup';
-import { AuthConsumerProps, withAuth } from './AuthProvider';
-import capitalize from 'lodash/capitalize';
+import { StringCheckboxGroup } from './shared/CheckboxGroup';
+import { UserConsumerProps, withUser } from './UserContext';
 import identity from 'lodash/identity';
 import { Row } from './shared/Row';
 import { Button, Card, Text } from '@ui-kitten/components';
-import { ThemedIcon } from './FontAwesomeIcons';
 
 interface ManualProps {
   save: (q: ChartQuery) => void;
@@ -19,9 +17,10 @@ interface ManualProps {
   initialQuery: ChartQuery;
 }
 
-interface Props extends ManualProps, AuthConsumerProps {}
+interface Props extends ManualProps, UserConsumerProps {}
 
-const ChartQueryEditor = ({ initialQuery, authState, save, cancel }: Props) => {
+const ChartQueryEditor = ({ initialQuery, userCtx, save, cancel }: Props) => {
+  const { authState } = userCtx;
   const [tags, setTags] = useState<Tag[]>([]);
   const [query, setQuery] = useState<ChartQuery>(initialQuery);
   const addTag = (tag: Tag) => {
@@ -134,4 +133,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default withAuth<ManualProps>(ChartQueryEditor);
+export default withUser<ManualProps>(ChartQueryEditor);

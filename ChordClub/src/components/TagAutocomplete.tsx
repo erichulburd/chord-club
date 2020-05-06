@@ -6,7 +6,7 @@ import { TagQuery, BaseScopes, TagType, TagNew, Tag } from '../types';
 import { ThemedIcon } from './FontAwesomeIcons';
 import throttle from 'lodash/throttle';
 import { makeTagNew, getTagMunge } from '../util/forms';
-import { withAuth, AuthConsumerProps } from './AuthProvider';
+import { withUser, UserConsumerProps } from './UserContext';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import ErrorText from './ErrorText';
 import { ApolloError } from 'apollo-client';
@@ -23,7 +23,7 @@ interface ManualProps {
   containerStyle?: StyleProp<ViewStyle>;
 }
 
-interface Props extends WithApolloClient<{}>, ManualProps, AuthConsumerProps {}
+interface Props extends WithApolloClient<{}>, ManualProps, UserConsumerProps {}
 
 interface State {
   query: TagQuery;
@@ -92,8 +92,8 @@ export class TagAutocomplete extends React.Component<Props> {
 
   private updateOptions = (data: GetTagsData, errors: readonly GraphQLError[] | undefined) => {
     const { query } = this.state;
-    const { authState, allowNewTags = true } = this.props;
-    const { uid } = authState
+    const { userCtx, allowNewTags = true } = this.props;
+    const { uid } = userCtx.authState
     let error = undefined;
     if (errors && errors.length > 0) {
       error = new ApolloError({ graphQLErrors: errors });
@@ -181,4 +181,4 @@ export class TagAutocomplete extends React.Component<Props> {
   }
 }
 
-export default withApollo<ManualProps>(withAuth<WithApolloClient<ManualProps>>(TagAutocomplete));
+export default withApollo<ManualProps>(withUser<WithApolloClient<ManualProps>>(TagAutocomplete));

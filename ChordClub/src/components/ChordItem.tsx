@@ -10,21 +10,21 @@ import { ModalImage } from './shared/ModalImage';
 import { ResizableImage } from '../util/imagePicker';
 import AudioPlayer from './AudioPlayer1';
 import { TagCollection } from './TagCollection';
-import { withAuth, AuthConsumerProps } from './AuthProvider';
-import ChartReactions from './ChartReactions';
+import { UserConsumerProps, withUser } from './UserContext';
 import ChartOwnerMenu from './ChartOwnerMenu';
 import { ChartFooter } from './ChartFooter';
 
 interface ManualProps {
   chart: Chart;
+  compact: boolean,
   editChart: (chart: Chart) => void;
   onDeleteChart: (chartID: number) => void;
   next: () => void;
 }
-interface Props extends ManualProps, AuthConsumerProps {}
+interface Props extends ManualProps, UserConsumerProps {}
 
-const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) => {
-
+const ChordItem = ({ compact, chart, userCtx, editChart, onDeleteChart, next }: Props) => {
+  const { authState } = userCtx;
   const Header = (props?: ViewProps) => (
     <View {...props} style={styles.headerAndFooter}>
       <View style={styles.chartCreatorAndTime}>
@@ -67,8 +67,8 @@ const ChordItem = ({ chart, authState, editChart, onDeleteChart, next }: Props) 
       disabled
       style={styles.card}
       status="success"
-      footer={Footer}
-      header={Header}
+      footer={compact ? undefined : Footer}
+      header={compact ? undefined : Header}
     >
       <View>
         <AudioPlayer audio={chart} />
@@ -172,4 +172,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default withAuth<ManualProps>(ChordItem);
+export default withUser<ManualProps>(ChordItem);
