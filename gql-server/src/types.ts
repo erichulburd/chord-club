@@ -53,7 +53,7 @@ export enum TagQueryOrder {
 
 export type TagQuery = {
   displayName?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
+  ids?: Maybe<Array<Scalars['Int']>>;
   tagTypes: Array<TagType>;
   scopes: Array<Scalars['String']>;
   order?: Maybe<TagQueryOrder>;

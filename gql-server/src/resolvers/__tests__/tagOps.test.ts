@@ -103,6 +103,37 @@ describe('tag ops', () => {
     ).toEqual(true);
   });
 
+  test('query by tag ids', async () => {
+    const tagss = await Promise.all(['uid', 'uid1'].map(async (uid) => {
+      return insertNewTags([
+        makeTagNew({ tagType: TagType.List, scope: BaseScopes.Public }),
+        makeTagNew({ tagType: TagType.Descriptor, scope: BaseScopes.Public }),
+        makeTagNew({ tagType: TagType.List, scope: uid }),
+        makeTagNew({ tagType: TagType.Descriptor, scope: uid }),
+      ], uid, client);
+    }));
+    const tagIDs = tagss[0].map(t => t.id).slice(0, 3);
+    const query: TagQuery = {
+      ids: tagIDs,
+      scopes: ['uid', BaseScopes.Public],
+      tagTypes: [TagType.Descriptor, TagType.List]
+    }
+    const res1 = await graphql().send({
+      query: `
+        query ($query: TagQuery!){
+          tags(query: $query) {
+            id munge displayName tagType scope
+          }
+        }
+      `,
+      variables: { query },
+    }).expect(200);
+    const { data, errors } = res1.body;
+    expect(errors).toEqual(undefined);
+    expect(data.tags.length).toEqual(3);
+    expect(data.tags.every((t: Tag) => tagIDs.some(tagID => tagID === t.id))).toEqual(true);
+  });
+
   test('CRUD mutations', async () => {
     const tagNews: TagNew[] = [
       makeTagNew(),
