@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from '@ui-kitten/components';
-import { View, StyleSheet } from 'react-native';
+import {Button} from '@ui-kitten/components';
+import {View, StyleSheet} from 'react-native';
 
 interface Props<T> {
   options: T[];
@@ -21,15 +21,17 @@ const styles = StyleSheet.create({
   },
   button: {
     margin: 5,
-  }
+  },
 });
 
 export const ButtonPallette = <T extends any>({
-  options, selected, onSelect, size = 'small',
+  options,
+  selected,
+  onSelect,
+  size = 'small',
   getUniqKey = (val) => val.toString(),
-  displayValue = (val) => val.toString()
+  displayValue = (val) => val.toString(),
 }: Props<T>) => {
-
   return (
     <View style={styles.container}>
       {options.map((value) => (
@@ -37,10 +39,13 @@ export const ButtonPallette = <T extends any>({
           key={getUniqKey(value)}
           size={size}
           style={styles.button}
-          appearance={selected.some(e => e.id === value.id) ? 'filled' : 'outline'}
-          onPress={() => onSelect(value)}
-        >{displayValue(value)}</Button>
+          appearance={
+            selected.some((e) => e.id === value.id) ? 'filled' : 'outline'
+          }
+          onPress={() => onSelect(value)}>
+          {displayValue(value)}
+        </Button>
       ))}
     </View>
-  )
+  );
 };

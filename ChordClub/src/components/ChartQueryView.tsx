@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { ChartQueryModal } from './ChartQueryModal';
-import { View, StyleSheet } from 'react-native';
-import { ChartQuery, ChartViewSetting } from '../types';
-import { AppScreen, Screens } from './AppScreen';
+import React, {useState} from 'react';
+import {ChartQueryModal} from './ChartQueryModal';
+import {View, StyleSheet} from 'react-native';
+import {ChartQuery, ChartViewSetting} from '../types';
+import {AppScreen, Screens} from './AppScreen';
 import ErrorText from './ErrorText';
-import { Spinner } from '@ui-kitten/components';
-import { withUser, SettingsPath, UserConsumerProps } from './UserContext';
-import { MenuItemData } from './Title';
+import {Spinner} from '@ui-kitten/components';
+import {withUser, SettingsPath, UserConsumerProps} from './UserContext';
+import {MenuItemData} from './Title';
 
 interface ManualProps {
   title: Screens;
@@ -18,51 +18,57 @@ interface ManualProps {
 interface Props extends ManualProps, UserConsumerProps {}
 
 const ChartQueryView = ({
-  title, renderQueryResults, userCtx, settingsPath, expandable = true,
+  title,
+  renderQueryResults,
+  userCtx,
+  settingsPath,
+  expandable = true,
 }: Props) => {
-
   const settings = userCtx.user?.settings[settingsPath];
 
-  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false)
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
   const save = (q: ChartQuery) => {
     userCtx.updateChartQuery(settingsPath, q);
     setIsEditorOpen(false);
   };
   let menuItems: MenuItemData[] = [];
   if (expandable && settings) {
-    const { query, compact } = settings;
+    const {query, compact} = settings;
     menuItems = [
       {
         title: 'Filter',
         themedIconName: 'filter',
         onPress: () => setIsEditorOpen(!isEditorOpen),
-      }, {
+      },
+      {
         title: 'Reverse',
         themedIconName: query.asc ? 'sort-amount-up' : 'sort-amount-down',
-        onPress: () => userCtx.updateChartQuery(settingsPath, { ...query, asc: !query.asc }),
-      }, {
+        onPress: () =>
+          userCtx.updateChartQuery(settingsPath, {...query, asc: !query.asc}),
+      },
+      {
         title: compact ? 'Expand' : 'Compact',
         themedIconName: compact ? 'expand' : 'compress',
         onPress: () => userCtx.updateCompact(settingsPath, !compact),
-      }
+      },
     ];
   }
-  const { userError, userLoading } = userCtx;
+  const {userError, userLoading} = userCtx;
 
   return (
     <AppScreen title={title} menuItems={menuItems}>
       <View>
         {userError && <ErrorText error={userError} />}
         {userLoading && <Spinner />}
-        {(!userLoading && !userError && settings) && renderQueryResults(settings)}
-        {settings &&
+        {!userLoading && !userError && settings && renderQueryResults(settings)}
+        {settings && (
           <ChartQueryModal
             query={settings.query}
             save={save}
             close={() => setIsEditorOpen(false)}
             isOpen={isEditorOpen}
           />
-        }
+        )}
       </View>
     </AppScreen>
   );
@@ -70,8 +76,8 @@ const ChartQueryView = ({
 
 const styles = StyleSheet.create({
   queryControls: {
-    justifyContent: 'space-around'
-  }
+    justifyContent: 'space-around',
+  },
 });
 
 export default withUser<ManualProps>(ChartQueryView);

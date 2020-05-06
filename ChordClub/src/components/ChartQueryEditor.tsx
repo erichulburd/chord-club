@@ -1,15 +1,13 @@
 import React from 'react';
-import { View, StyleSheet, ViewProps } from 'react-native';
-import { ChartQuery, Tag, BaseScopes } from '../types';
-import TagAutocomplete from './TagAutocomplete';
-import { TagCollection } from './TagCollection';
-import { useState } from 'react';
-import { areTagsEqual } from '../util/forms';
-import { StringCheckboxGroup } from './shared/CheckboxGroup';
-import { UserConsumerProps, withUser } from './UserContext';
+import {View, StyleSheet, ViewProps} from 'react-native';
+import {ChartQuery, Tag, BaseScopes} from '../types';
+import {useState} from 'react';
+import {StringCheckboxGroup} from './shared/CheckboxGroup';
+import {UserConsumerProps, withUser} from './UserContext';
 import identity from 'lodash/identity';
-import { Row } from './shared/Row';
-import { Button, Card, Text } from '@ui-kitten/components';
+import {Row} from './shared/Row';
+import {Button, Card, Text} from '@ui-kitten/components';
+import {TagIDCollectionEditor} from './TagCollectionEditor';
 
 interface ManualProps {
   save: (q: ChartQuery) => void;
@@ -19,106 +17,88 @@ interface ManualProps {
 
 interface Props extends ManualProps, UserConsumerProps {}
 
-const ChartQueryEditor = ({ initialQuery, userCtx, save, cancel }: Props) => {
-  const { authState } = userCtx;
-  const [tags, setTags] = useState<Tag[]>([]);
+const ChartQueryEditor = ({initialQuery, userCtx, save, cancel}: Props) => {
+  const {authState} = userCtx;
   const [query, setQuery] = useState<ChartQuery>(initialQuery);
-  const addTag = (tag: Tag) => {
-    if (tags.some(t => areTagsEqual(t, tag))) {
-      return;
-    }
-    const tagUpdate = [...tags, tag];
-    setTags(tagUpdate);
-    setQuery({
-      ...query,
-      tagIDs: tagUpdate.map(t => t.id),
-    });
-  };
-  const removeTag = (tag: Tag) => {
-    const index = tags.findIndex(t => t.id === tag.id);
-    if (index === -1) {
-      return;
-    }
-    const tagUpdate = [...tags];
-    tagUpdate.splice(index, 1);
-    setTags(tagUpdate);
-    setQuery({
-      ...query,
-      tagIDs: tagUpdate.map(t => t.id),
-    });
-  };
+  const setTags = (tags: Tag[]) =>
+    setQuery({...query, tagIDs: tags.map((t) => t.id)});
   const selectedScopes: string[] = [];
-  if (query.scopes?.includes(BaseScopes.Public)) selectedScopes.push('Public');
-  if (query.scopes?.includes(authState.uid)) selectedScopes.push('Private');
+  if (query.scopes?.includes(BaseScopes.Public)) {
+    selectedScopes.push('Public');
+  }
+  if (query.scopes?.includes(authState.uid)) {
+    selectedScopes.push('Private');
+  }
   const toggleScopes = (s: string, checked: boolean) => {
     const scope = s === 'Private' ? authState.uid : BaseScopes.Public;
     let index = query.scopes?.indexOf(scope);
-    if (index === undefined) index = -1;
+    if (index === undefined) {
+      index = -1;
+    }
     if (checked && index < 0) {
       setQuery({
         ...query,
-        scopes: [...query.scopes || [], scope],
+        scopes: [...(query.scopes || []), scope],
       });
     } else if (!checked && index >= 0) {
-      const scopes = [...query.scopes || []];
+      const scopes = [...(query.scopes || [])];
       scopes.splice(index, 1);
-      setQuery({ ...query, scopes });
+      setQuery({...query, scopes});
     }
-  }
+  };
   const Header = (props: ViewProps | undefined) => (
-    <View {...props}><Text category="h6">Query</Text></View>
-  )
+    <View {...props}>
+      <Text category="h6">Query</Text>
+    </View>
+  );
   const resetAndCancel = () => {
     setQuery(initialQuery);
     cancel();
-  }
+  };
   const Footer = (props: ViewProps | undefined) => (
-    <View {...props} style={[(props?.style || {}), styles.footer]}>
+    <View {...props} style={[props?.style || {}, styles.footer]}>
       <Button
         size="small"
         status="primary"
         appearance="outline"
-        onPress={() => save(query)}
-      >Save</Button>
+        onPress={() => save(query)}>
+        Save
+      </Button>
       <Button
         size="small"
         status="warning"
         appearance="outline"
-        onPress={resetAndCancel}
-      >Cancel</Button>
+        onPress={resetAndCancel}>
+        Cancel
+      </Button>
     </View>
-  )
+  );
   return (
     <Card
       style={styles.container}
       header={Header}
       footer={Footer}
-      status="basic"
-    >
+      status="basic">
       <Row>
         <StringCheckboxGroup
           multi
-          display={ct => identity(ct)}
+          display={(ct) => identity(ct)}
           choices={['Public', 'Private']}
           selected={selectedScopes}
           onToggle={toggleScopes}
         />
       </Row>
       <View>
-        <TagAutocomplete
-          placeholder={'Select tags'}
-          includePublic={query.scopes?.includes(BaseScopes.Public) || false}
+        <TagIDCollectionEditor
+          ids={query.tagIDs || []}
+          onChange={setTags}
+          scopes={query.scopes || []}
           allowNewTags={false}
-          onSelect={addTag}
-        />
-        <TagCollection
-          tags={tags}
-          onDelete={removeTag}
         />
       </View>
     </Card>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -129,8 +109,8 @@ const styles = StyleSheet.create({
   footer: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-around'
-  }
-})
+    justifyContent: 'space-around',
+  },
+});
 
 export default withUser<ManualProps>(ChartQueryEditor);

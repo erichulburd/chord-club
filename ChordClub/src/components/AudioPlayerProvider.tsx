@@ -1,8 +1,7 @@
-import React, { PropsWithChildren } from 'react';
-import AudioRecorderPlayer from "react-native-audio-recorder-player";
-import { getCalRatio } from '../util/screen';
-import { GestureResponderEvent } from 'react-native';
-
+import React, {PropsWithChildren} from 'react';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import {getCalRatio} from '../util/screen';
+import {GestureResponderEvent} from 'react-native';
 
 export interface Audioable {
   audioURL: string;
@@ -19,7 +18,7 @@ interface State {
 
 interface SeekEvent {
   nativeEvent: {
-    locationX: number
+    locationX: number;
   };
 }
 
@@ -42,18 +41,36 @@ const initialState: State = {
   currentDurationSec: 0,
 };
 
-const AudioPlayerNotInitializedError = new Error('Audio player not initialized');
+const AudioPlayerNotInitializedError = new Error(
+  'Audio player not initialized',
+);
 
 const AudioPlayerContext = React.createContext<AudioPlayerContextValue>({
   state: initialState,
-  play: (url: Audioable) => { throw AudioPlayerNotInitializedError },
-  pause: () => { throw AudioPlayerNotInitializedError },
-  resume: () => { throw AudioPlayerNotInitializedError },
-  stop: () => { throw AudioPlayerNotInitializedError },
-  seek: (e: GestureResponderEvent) => { throw AudioPlayerNotInitializedError },
-  isPlaying: (url: string) => { throw AudioPlayerNotInitializedError },
-  isPaused: (url: string) => { throw AudioPlayerNotInitializedError },
-  playRatio: () => { throw AudioPlayerNotInitializedError },
+  play: (url: Audioable) => {
+    throw AudioPlayerNotInitializedError;
+  },
+  pause: () => {
+    throw AudioPlayerNotInitializedError;
+  },
+  resume: () => {
+    throw AudioPlayerNotInitializedError;
+  },
+  stop: () => {
+    throw AudioPlayerNotInitializedError;
+  },
+  seek: (e: GestureResponderEvent) => {
+    throw AudioPlayerNotInitializedError;
+  },
+  isPlaying: (url: string) => {
+    throw AudioPlayerNotInitializedError;
+  },
+  isPaused: (url: string) => {
+    throw AudioPlayerNotInitializedError;
+  },
+  playRatio: () => {
+    throw AudioPlayerNotInitializedError;
+  },
 });
 
 export class AudioPlayerProvider extends React.Component<{}, State> {
@@ -72,14 +89,14 @@ export class AudioPlayerProvider extends React.Component<{}, State> {
   }
 
   private isPlaying = (audioURL: string) => {
-    const { currentURL, isPlaying } = this.state;
+    const {currentURL, isPlaying} = this.state;
     return currentURL === audioURL && isPlaying;
-  }
+  };
 
   private isPaused = (audioURL: string) => {
-    const { currentURL, isPlayingPaused } = this.state;
+    const {currentURL, isPlayingPaused} = this.state;
     return currentURL === audioURL && isPlayingPaused;
-  }
+  };
 
   private play = async (url: Audioable) => {
     if (this.state.isPlaying) {
@@ -90,7 +107,7 @@ export class AudioPlayerProvider extends React.Component<{}, State> {
       currentPositionSec: 0,
       currentDurationSec: url.audioLength * 1000,
     });
-    const {audioRecorderPlayer } = this;
+    const {audioRecorderPlayer} = this;
     audioRecorderPlayer.startPlayer(url.audioURL);
     audioRecorderPlayer.setVolume(1.0);
 
@@ -99,17 +116,17 @@ export class AudioPlayerProvider extends React.Component<{}, State> {
         currentPositionSec: parseFloat(e.current_position),
         currentDurationSec: parseFloat(e.duration),
         isPlaying: true,
-      }
+      };
       if (parseFloat(e.current_position) >= parseFloat(e.duration)) {
         audioRecorderPlayer.stopPlayer();
-        update.isPlaying = false
+        update.isPlaying = false;
       }
       this.setState(update);
     });
-  }
+  };
 
   private pause = async () => {
-    this.setState({ isPlaying: false, isPlayingPaused: true });
+    this.setState({isPlaying: false, isPlayingPaused: true});
     await this.audioRecorderPlayer.pausePlayer();
   };
 
@@ -117,13 +134,13 @@ export class AudioPlayerProvider extends React.Component<{}, State> {
     if (!this.state.isPlayingPaused) {
       return;
     }
-    this.setState({ isPlaying: true, isPlayingPaused: false });
+    this.setState({isPlaying: true, isPlayingPaused: false});
     await this.audioRecorderPlayer.resumePlayer();
   };
 
   private stop = async () => {
     return new Promise((resolve) => {
-      this.setState({ isPlaying: false, isPlayingPaused: false }, () => {
+      this.setState({isPlaying: false, isPlayingPaused: false}, () => {
         this.audioRecorderPlayer.stopPlayer();
         this.audioRecorderPlayer.removePlayBackListener();
         resolve();
@@ -133,7 +150,7 @@ export class AudioPlayerProvider extends React.Component<{}, State> {
 
   private seek = (e: GestureResponderEvent) => {
     const touchX = e.nativeEvent.locationX;
-    const dims = getCalRatio()
+    const dims = getCalRatio();
     const playWidth =
       (this.state.currentPositionSec / this.state.currentDurationSec) *
       (dims.width - 56 * dims.ratio);
@@ -150,7 +167,7 @@ export class AudioPlayerProvider extends React.Component<{}, State> {
   };
 
   private playRatio() {
-    const { currentPositionSec, currentDurationSec } = this.state;
+    const {currentPositionSec, currentDurationSec} = this.state;
     if (currentDurationSec <= 0) {
       return 0;
     }
@@ -178,19 +195,17 @@ export class AudioPlayerProvider extends React.Component<{}, State> {
   }
 }
 
-
 export interface AudioPlayerContextProps {
   audioCtx: AudioPlayerContextValue;
 }
 
-export const withAudioPlayerContext = <P extends {}>(Component: React.ComponentType<P & AudioPlayerContextProps>) => {
+export const withAudioPlayerContext = <P extends {}>(
+  Component: React.ComponentType<P & AudioPlayerContextProps>,
+) => {
   return (props: PropsWithChildren<P>) => (
     <AudioPlayerContext.Consumer>
       {(value: AudioPlayerContextValue) => (
-        <Component
-          audioCtx={value}
-          {...props}
-        />
+        <Component audioCtx={value} {...props} />
       )}
     </AudioPlayerContext.Consumer>
   );

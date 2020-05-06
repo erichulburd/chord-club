@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
-import { UserNew, User, UserUpdate } from '../types';
-import { chartQueryFields } from './chart';
+import {UserNew, User, UserUpdate} from '../types';
+import {chartQueryFields} from './chart';
 
 const settingsFields = gql`
   fragment ChartViewSettingFields on ChartViewSetting {
@@ -14,7 +14,9 @@ const settingsFields = gql`
 
 const userDBFields = gql`
   fragment UserDBFields on User {
-     uid username settings {
+    uid
+    username
+    settings {
       chords {
         ...ChartViewSettingFields
       }

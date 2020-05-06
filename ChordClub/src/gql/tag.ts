@@ -1,6 +1,5 @@
 import gql from 'graphql-tag';
-import { TagQuery, Tag } from '../types';
-
+import {TagQuery, Tag} from '../types';
 
 export const tagDBFields = gql`
   fragment TagDBFields on Tag {
@@ -13,12 +12,12 @@ export const tagDBFields = gql`
 `;
 
 export const GET_TAGS = gql`
-query GetTags($query: TagQuery!) {
-  tags(query: $query) {
-    ...TagDBFields
+  query GetTags($query: TagQuery!) {
+    tags(query: $query) {
+      ...TagDBFields
+    }
   }
-}
-${tagDBFields}
+  ${tagDBFields}
 `;
 
 export interface GetTagsData {

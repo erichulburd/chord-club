@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { Card, Text, Button } from '@ui-kitten/components';
-import { ThemedIcon } from './FontAwesomeIcons';
+import React, {useState} from 'react';
+import {Card, Text, Button} from '@ui-kitten/components';
+import {ThemedIcon} from './FontAwesomeIcons';
 import moment from 'moment';
-import { Chart } from '../types';
-import { View, ViewProps, StyleSheet } from 'react-native';
-import { ModalImage } from './shared/ModalImage';
-import { ResizableImage } from '../util/imagePicker';
+import {Chart} from '../types';
+import {View, ViewProps, StyleSheet} from 'react-native';
+import {ModalImage} from './shared/ModalImage';
+import {ResizableImage} from '../util/imagePicker';
 import AudioPlayer from './AudioPlayer1';
-import { UserConsumerProps, withUser } from './UserContext';
+import {UserConsumerProps, withUser} from './UserContext';
 import ChartOwnerMenu from './ChartOwnerMenu';
-import { ChartFooter } from './ChartFooter';
+import {ChartFooter} from './ChartFooter';
 
 interface ManualProps {
   chart: Chart;
@@ -19,21 +19,27 @@ interface ManualProps {
 }
 interface Props extends ManualProps, UserConsumerProps {}
 
-const ProgressionItem = ({ chart, userCtx, editChart, onDeleteChart, next }: Props) => {
-  const { authState } = userCtx;
+const ProgressionItem = ({
+  chart,
+  userCtx,
+  editChart,
+  onDeleteChart,
+  next,
+}: Props) => {
+  const {authState} = userCtx;
   const Header = (props?: ViewProps) => (
     <View {...props} style={styles.headerAndFooter}>
       <View style={styles.chartCreatorAndTime}>
         <Text>{chart.creator?.username}</Text>
         <Text>{moment(parseInt(chart.createdAt, 10)).fromNow()}</Text>
       </View>
-      {chart.createdBy === authState.uid &&
+      {chart.createdBy === authState.uid && (
         <ChartOwnerMenu
           chart={chart}
           editChart={editChart}
           deleteChart={onDeleteChart}
         />
-      }
+      )}
     </View>
   );
   const [image, setImage] = useState<ResizableImage | undefined>(undefined);
@@ -60,19 +66,18 @@ const ProgressionItem = ({ chart, userCtx, editChart, onDeleteChart, next }: Pro
       style={styles.card}
       status="success"
       footer={Footer}
-      header={Header}
-    >
+      header={Header}>
       <View>
         <Text>{chart.name || 'Unnamed'}</Text>
         <AudioPlayer audio={chart} />
       </View>
-      {image &&
+      {image && (
         <ModalImage
           visible={imageIsOpen}
           image={image}
           close={() => toggleImage(false)}
         />
-      }
+      )}
     </Card>
   );
 };
@@ -82,13 +87,13 @@ interface CaretToggleProps {
   toggle: (on: boolean) => void;
 }
 
-const CaretToggle = ({ isOpen, toggle }: CaretToggleProps) => (
+const CaretToggle = ({isOpen, toggle}: CaretToggleProps) => (
   <Button
     appearance="ghost"
     accessoryLeft={isOpen ? ThemedIcon('angle-up') : ThemedIcon('angle-down')}
     onPress={() => toggle(!isOpen)}
   />
-)
+);
 
 const styles = StyleSheet.create({
   card: {
@@ -109,7 +114,7 @@ const styles = StyleSheet.create({
   },
   chartCreatorAndTime: {
     marginLeft: 10,
-  }
-})
+  },
+});
 
 export default withUser<ManualProps>(ProgressionItem);

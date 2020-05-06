@@ -1,10 +1,12 @@
 import gql from 'graphql-tag';
-import { Extension } from '../types';
+import {Extension} from '../types';
 
 export const GET_EXTENSIONS = gql`
   query Extensions {
     extensions {
-      id degree extensionType
+      id
+      degree
+      extensionType
     }
   }
 `;

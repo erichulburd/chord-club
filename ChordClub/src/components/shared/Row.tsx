@@ -1,5 +1,5 @@
-import React, { PropsWithChildren } from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import React, {PropsWithChildren} from 'react';
+import {View, StyleSheet, ViewStyle} from 'react-native';
 
 interface ManualProps {
   style?: ViewStyle;
@@ -17,6 +17,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export const Row = ({ style = {}, children }: Props) =>  (
+export const Row = ({style = {}, children}: Props) => (
   <View style={[styles.row, style]}>{children}</View>
-)
+);

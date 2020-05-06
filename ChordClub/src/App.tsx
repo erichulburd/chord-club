@@ -9,21 +9,20 @@
  */
 import React from 'react';
 import 'react-native-gesture-handler';
-import { ApolloProvider } from '@apollo/react-hooks';
-import { ApplicationProvider, IconRegistry } from '@ui-kitten/components';
-import { AppNavigator } from './components/Navigator';
+import {ApolloProvider} from '@apollo/react-hooks';
+import {ApplicationProvider, IconRegistry} from '@ui-kitten/components';
+import {AppNavigator} from './components/Navigator';
 import * as eva from '@eva-design/eva';
 import client from './client';
 import logger from './util/logger';
-import { FontAwesome5IconsPack } from './components/FontAwesomeIcons';
+import {FontAwesome5IconsPack} from './components/FontAwesomeIcons';
 import AuthModal from './components/AuthModal';
-import { UserProvider } from './components/UserContext';
-import { ModalProvider } from './components/ModalProvider';
+import {UserProvider} from './components/UserContext';
+import {ModalProvider} from './components/ModalProvider';
 
-if(__DEV__) {
-  import('./util/reactotron').then(() => logger.info('Reactotron Configured'))
+if (__DEV__) {
+  import('./util/reactotron').then(() => logger.info('Reactotron Configured'));
 }
-
 
 declare const global: {HermesInternal: null | {}};
 
@@ -35,7 +34,7 @@ const App = ({}) => {
         <ApplicationProvider {...eva} theme={eva.dark}>
           <UserProvider>
             <ModalProvider>
-              <AppNavigator/>
+              <AppNavigator />
             </ModalProvider>
             <AuthModal />
           </UserProvider>

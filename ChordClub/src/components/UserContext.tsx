@@ -1,9 +1,23 @@
-import React, { createContext, PropsWithChildren } from 'react';
-import auth, { AuthState, AuthActions, AuthEventType } from '../util/auth';
-import { User, ChartQuery, UserUpdate, UserSettings, ChartViewSetting, BaseScopes, ChartType } from '../types';
-import { WithApolloClient, withApollo } from 'react-apollo';
-import { ApolloError } from 'apollo-client';
-import { GET_ME, GetMeData, UPDATE_USER, UpdateUserResponse, UpdateUserVariables } from '../gql/user';
+import React, {createContext, PropsWithChildren} from 'react';
+import auth, {AuthState, AuthActions, AuthEventType} from '../util/auth';
+import {
+  User,
+  ChartQuery,
+  UserUpdate,
+  UserSettings,
+  ChartViewSetting,
+  BaseScopes,
+  ChartType,
+} from '../types';
+import {WithApolloClient, withApollo} from 'react-apollo';
+import {ApolloError} from 'apollo-client';
+import {
+  GET_ME,
+  GetMeData,
+  UPDATE_USER,
+  UpdateUserResponse,
+  UpdateUserVariables,
+} from '../gql/user';
 import omit from 'lodash/omit';
 import pickBy from 'lodash/pickBy';
 import get from 'lodash/get';
@@ -29,7 +43,8 @@ export interface UserContextValue extends UserContextState {
   updateUsername: (username: string) => void;
 }
 
-const userContextInitializedError = () => new Error('User context not initialized');
+const userContextInitializedError = () =>
+  new Error('User context not initialized');
 
 const initialState = {
   authState: auth.currentState(),
@@ -47,9 +62,17 @@ export const AuthContext = createContext<UserContextValue>({
   updateUsername: userContextInitializedError,
 });
 
-const coalesceUserAndUpdate = (user: User | undefined, update: Partial<UserUpdate>): UserUpdate => {
+const coalesceUserAndUpdate = (
+  user: User | undefined,
+  update: Partial<UserUpdate>,
+): UserUpdate => {
   const coalesced = {
-    ...omit(pickBy(user || {}), ['__typename', 'uid', 'created', 'settings']) as UserUpdate,
+    ...(omit(pickBy(user || {}), [
+      '__typename',
+      'uid',
+      'created',
+      'settings',
+    ]) as UserUpdate),
     ...update,
   };
   // Clean settings of __typenames
@@ -70,8 +93,8 @@ const coalesceUserAndUpdate = (user: User | undefined, update: Partial<UserUpdat
 };
 
 const ensureDefaultChartViewSettings = (user: User): UserSettings => {
-  const { uid } = user;
-  const settings = { ...user.settings };
+  const {uid} = user;
+  const settings = {...user.settings};
   const defaultScopes = uid ? [BaseScopes.Public, uid] : [BaseScopes.Public];
   if (!settings.chords) {
     settings.chords = {
@@ -80,7 +103,7 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
         chartTypes: [ChartType.Chord],
       },
       compact: false,
-    }
+    };
   }
   if (!settings.progressions) {
     settings.progressions = {
@@ -98,7 +121,7 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
         chartTypes: [ChartType.Chord],
       },
       compact: false,
-    }
+    };
   }
   return settings;
 };
@@ -121,41 +144,48 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
     await auth.actions.initialize();
     this.subscription = auth.observable.subscribe({
       next: (e) => {
-        this.setState({ authState: e.state });
-        if (Boolean(e.state.token) && !this.state.user && !this.state.userLoading) {
+        this.setState({authState: e.state});
+        if (
+          Boolean(e.state.token) &&
+          !this.state.user &&
+          !this.state.userLoading
+        ) {
           this.loadUser();
         }
       },
-    })
+    });
   }
 
   private loadUser = async () => {
-    const { client } = this.props;
-    const { data, errors } = await client.query<GetMeData>({
-      query: GET_ME
+    const {client} = this.props;
+    const {data, errors} = await client.query<GetMeData>({
+      query: GET_ME,
     });
     const user = data.me;
     user.settings = ensureDefaultChartViewSettings(user);
-    const update: Partial<UserContextState> = { user: data.me };
+    const update: Partial<UserContextState> = {user: data.me};
     if (errors && errors.length > 0) {
-      update.userError = new ApolloError({ graphQLErrors: errors });
+      update.userError = new ApolloError({graphQLErrors: errors});
     }
     this.setState(update as UserContextState);
-  }
+  };
 
   private updateUser = async (update: Partial<UserUpdate>) => {
-    const { client } = this.props;
-    const { user } = this.state;
-    this.setState({ userUpdateLoading: true });
-    const { data, errors } = await client.mutate<UpdateUserResponse, UpdateUserVariables>({
+    const {client} = this.props;
+    const {user} = this.state;
+    this.setState({userUpdateLoading: true});
+    const {data, errors} = await client.mutate<
+      UpdateUserResponse,
+      UpdateUserVariables
+    >({
       mutation: UPDATE_USER,
       variables: {
         userUpdate: coalesceUserAndUpdate(user, update),
-      }
+      },
     });
     if (errors && errors.length > 0) {
       this.setState({
-        userUpdateError: new ApolloError({ graphQLErrors: errors }),
+        userUpdateError: new ApolloError({graphQLErrors: errors}),
         userUpdateLoading: false,
       });
     } else {
@@ -164,26 +194,32 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
         userUpdateLoading: false,
       });
     }
-  }
+  };
 
-  private updateChartQuery = async (settingsPath: SettingsPath, query: ChartQuery) => {
+  private updateChartQuery = async (
+    settingsPath: SettingsPath,
+    query: ChartQuery,
+  ) => {
     const settings = this.state.user?.settings || {};
-    settings[settingsPath] = { ...(settings[settingsPath] || {}), query };
-    this.updateUser({ settings });
-  }
+    settings[settingsPath] = {...(settings[settingsPath] || {}), query};
+    this.updateUser({settings});
+  };
 
-  private updateCompact = async (settingsPath: SettingsPath, compact: boolean) => {
+  private updateCompact = async (
+    settingsPath: SettingsPath,
+    compact: boolean,
+  ) => {
     const settings = this.state.user?.settings || {};
     const chartViewSetting = (settings[settingsPath] || {}) as ChartViewSetting;
-    settings[settingsPath] = { ...chartViewSetting, compact };
-    this.updateUser({ settings });
-  }
+    settings[settingsPath] = {...chartViewSetting, compact};
+    this.updateUser({settings});
+  };
 
   private updateUsername = async (username: string) => {
     this.updateUser({
       username,
     });
-  }
+  };
 
   public render() {
     const value = {
@@ -192,7 +228,7 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
       updateUsername: this.updateUsername,
       updateChartQuery: this.updateChartQuery,
       updateCompact: this.updateCompact,
-    }
+    };
     return (
       <AuthContext.Provider value={value}>
         {this.props.children}
@@ -207,15 +243,12 @@ export interface UserConsumerProps {
   userCtx: UserContextValue;
 }
 
-export const withUser = <P extends {}>(Component: React.ComponentType<P & UserConsumerProps>) => {
+export const withUser = <P extends {}>(
+  Component: React.ComponentType<P & UserConsumerProps>,
+) => {
   return (props: PropsWithChildren<P>) => (
     <AuthContext.Consumer>
-      {(value: UserContextValue) => (
-        <Component
-          userCtx={value}
-          {...props}
-        />
-      )}
+      {(value: UserContextValue) => <Component userCtx={value} {...props} />}
     </AuthContext.Consumer>
   );
 };

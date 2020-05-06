@@ -1,25 +1,31 @@
-import React, { createElement } from 'react';
-import { Autocomplete, AutocompleteItem, IconProps } from '@ui-kitten/components';
-import { Note } from '../../types';
+import React, {createElement} from 'react';
+import {Autocomplete, AutocompleteItem, IconProps} from '@ui-kitten/components';
+import {Note} from '../../types';
 import zip from 'lodash/zip';
 import flatten from 'lodash/flatten';
 import trim from 'lodash/trim';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import { ThemedIcon } from '../FontAwesomeIcons';
-import { StyleProp, TextStyle } from 'react-native';
+import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
+import {ThemedIcon} from '../FontAwesomeIcons';
+import {StyleProp, TextStyle} from 'react-native';
 
 const flatRegex = /^[A-z](b|f)/;
 const sharpRegex = /^[A-z](#|s)/;
 const naturals = 'ABCDEFG'.split('');
-const sharps = naturals.map(l => `${l}#`);
-const flats = naturals.map(l => `${l}b`);
+const sharps = naturals.map((l) => `${l}#`);
+const flats = naturals.map((l) => `${l}b`);
 const allNotes = flatten(zip(naturals, sharps, flats)) as string[];
 const filterNotes = (query: string) => {
-  if (!query) return allNotes;
+  if (!query) {
+    return allNotes;
+  }
   const trimmed = trim(query);
   const natural = trimmed[0];
   if (trimmed.length === 1) {
-    return [natural.toUpperCase(), `${natural.toUpperCase()}#`, `${natural.toUpperCase()}b`];
+    return [
+      natural.toUpperCase(),
+      `${natural.toUpperCase()}#`,
+      `${natural.toUpperCase()}b`,
+    ];
   } else if (flatRegex.test(trimmed)) {
     return [`${natural.toUpperCase()}b`];
   } else if (sharpRegex.test(trimmed)) {
@@ -28,7 +34,8 @@ const filterNotes = (query: string) => {
   return [];
 };
 
-const strToNote = (n: string) => (sharpRegex.test(n) ? n.replace('#', 's') : n) as Note;
+const strToNote = (n: string) =>
+  (sharpRegex.test(n) ? n.replace('#', 's') : n) as Note;
 
 interface Props {
   onSelect: (note: Note) => void;
@@ -39,7 +46,11 @@ interface Props {
 }
 
 export const NoteAutocomplete = ({
-  onSelect, initialValue, disabled, placeholder = 'Note', style = {}
+  onSelect,
+  initialValue,
+  disabled,
+  placeholder = 'Note',
+  style = {},
 }: Props) => {
   const [query, setQuery] = React.useState(initialValue?.toString() || '');
   const [notes, setNotes] = React.useState(allNotes);
@@ -63,7 +74,7 @@ export const NoteAutocomplete = ({
   const updateSelection = (index: number) => {
     onSelect(strToNote(notes[index]));
     setQuery(notes[index]);
-  }
+  };
 
   return (
     <Autocomplete
@@ -74,14 +85,10 @@ export const NoteAutocomplete = ({
       disabled={disabled}
       accessoryRight={renderCloseIcon}
       onChangeText={onChangeText}
-      onSelect={updateSelection}
-    >
-      {notes.map((note) =>(
-        <AutocompleteItem
-          key={note}
-          title={note}
-        />
+      onSelect={updateSelection}>
+      {notes.map((note) => (
+        <AutocompleteItem key={note} title={note} />
       ))}
     </Autocomplete>
   );
-}
+};

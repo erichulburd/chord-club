@@ -1,9 +1,9 @@
 import React from 'react';
-import { ViewProps, StyleSheet, View } from 'react-native';
-import { ThemedIcon } from './FontAwesomeIcons';
-import { Chart } from '../types';
+import {ViewProps, StyleSheet, View} from 'react-native';
+import {ThemedIcon} from './FontAwesomeIcons';
+import {Chart} from '../types';
 import ChartReactions from './ChartReactions';
-import { Button } from '@ui-kitten/components';
+import {Button} from '@ui-kitten/components';
 
 interface Props {
   chart: Chart;
@@ -12,18 +12,18 @@ interface Props {
   next?: () => void;
 }
 
-export const ChartFooter = ({ viewProps, chart, openImage, next }: Props) => (
+export const ChartFooter = ({viewProps, chart, openImage, next}: Props) => (
   <View {...viewProps} style={[viewProps?.style || {}, styles.headerAndFooter]}>
     <ChartReactions chart={chart} />
     <View style={styles.rightControls}>
-      {chart.imageURL &&
+      {chart.imageURL && (
         <Button
           appearance="ghost"
           status="basic"
           onPress={openImage}
           accessoryLeft={ThemedIcon('music')}
         />
-      }
+      )}
       <Button
         appearance={'ghost'}
         status={'basic'}
@@ -34,7 +34,6 @@ export const ChartFooter = ({ viewProps, chart, openImage, next }: Props) => (
     </View>
   </View>
 );
-
 
 const styles = StyleSheet.create({
   rightControls: {

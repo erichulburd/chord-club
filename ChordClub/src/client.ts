@@ -1,12 +1,15 @@
-import { ApolloClient } from 'apollo-client';
-import { InMemoryCache, IntrospectionFragmentMatcher } from 'apollo-cache-inmemory';
+import {ApolloClient} from 'apollo-client';
+import {
+  InMemoryCache,
+  IntrospectionFragmentMatcher,
+} from 'apollo-cache-inmemory';
 import link from './links';
 import introspectionQueryResultData from './fragmentTypes.json';
-import { User } from './types';
+import {User} from './types';
 
 const fragmentMatcher = new IntrospectionFragmentMatcher({
   introspectionQueryResultData,
-})
+});
 
 const cache = new InMemoryCache({
   // fragmentMatcher,
@@ -15,7 +18,7 @@ const cache = new InMemoryCache({
       return (obj as User).uid;
     }
     return obj.id;
-  }
+  },
 });
 
 export default new ApolloClient({

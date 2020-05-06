@@ -1,16 +1,16 @@
 import React from 'react';
 import ChordList from './ChordList';
 import ChartQueryView from './ChartQueryView';
-import { Screens } from './AppScreen';
+import {Screens} from './AppScreen';
 
 export const ChordListScreen = () => {
   return (
     <ChartQueryView
       title={Screens.Chords}
       settingsPath={'chords'}
-      renderQueryResults={({ query, compact }) => (
+      renderQueryResults={({query, compact}) => (
         <ChordList
-          compact={(compact === null || compact === undefined) ? false : compact}
+          compact={compact === null || compact === undefined ? false : compact}
           query={query}
           editChart={(chart) => undefined /* TODO */}
         />
