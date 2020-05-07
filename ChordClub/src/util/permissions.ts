@@ -1,11 +1,8 @@
-import {
-  PermissionsAndroid,
-  Platform,
-} from 'react-native';
+import {PermissionsAndroid, Platform} from 'react-native';
 
 export const getRecordingPermissions = async () => {
   if (Platform.OS === 'android') {
-    let granted = await getRecordPermissionsAndroid()
+    let granted = await getRecordPermissionsAndroid();
     if (granted) {
       granted = await getWritePermissionsAndroid();
     }
@@ -35,7 +32,7 @@ const getRecordPermissionsAndroid = async () => {
     return false;
   }
   return true;
-}
+};
 
 const getWritePermissionsAndroid = async () => {
   try {
@@ -57,6 +54,5 @@ const getWritePermissionsAndroid = async () => {
     console.warn(err);
     return false;
   }
-  return true
+  return true;
 };
-

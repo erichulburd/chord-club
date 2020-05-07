@@ -3,6 +3,7 @@ CREATE EXTENSION IF NOT EXISTS citext;
 CREATE TABLE userr (
   uid VARCHAR(180) NOT NULL PRIMARY KEY,
   username citext NOT NULL,
+  settings JSONB NOT NULL DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
   CONSTRAINT userr_unique UNIQUE(uid),

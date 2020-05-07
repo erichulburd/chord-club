@@ -1,6 +1,9 @@
 scalar ConstraintString
 scalar ConstraintNumber
 
+scalar JSON
+scalar JSONObject
+
 directive @constraint(
   # String constraints
   minLength: Int
@@ -65,7 +68,7 @@ enum TagQueryOrder {
 
 input TagQuery {
   displayName: String
-  id: Int
+  ids: [Int!]
   tagTypes: [TagType!]!
   scopes: [String!]!
   order: TagQueryOrder
@@ -234,6 +237,7 @@ type User implements UserBase {
   uid: String!
   username: String!
   createdAt: String!
+  settings: JSONObject!
 }
 
 input UserNew {
@@ -242,6 +246,7 @@ input UserNew {
 
 input UserUpdate {
   username: String!
+  settings: JSONObject
 }
 
 enum UserQueryOrder {
@@ -269,6 +274,7 @@ enum ErrorType {
   INVALID_CHART_SCOPE,
   INVALID_CHART_REACTION,
   INVALID_TAG_POSITION_UPDATE,
+  DUPLICATE_USERNAME,
   UNHANDLED,
   INTERNAL_SERVER_ERROR,
   FORBIDDEN_RESOURCE_OPERATION,

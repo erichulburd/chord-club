@@ -1,18 +1,23 @@
-import { NavigationState, PartialState } from "@react-navigation/native";
-import * as gestureHandler from "react-native-gesture-handler";
+import {NavigationState, PartialState} from '@react-navigation/native';
+import * as gestureHandler from 'react-native-gesture-handler';
 
 export declare namespace ChordClubShim {
-
   interface Navigation {
-    navigate<RouteName extends string>(...args: [RouteName] | [RouteName, object | undefined]): void;
-    navigate<RouteName_1 extends string>(route: {
-        key: string;
-        params?: object | undefined;
-    } | {
-        name: RouteName_1;
-        key?: string | undefined;
-        params: object | undefined;
-    }): void;
+    navigate<RouteName extends string>(
+      ...args: [RouteName] | [RouteName, object | undefined]
+    ): void;
+    navigate<RouteName_1 extends string>(
+      route:
+        | {
+            key: string;
+            params?: object | undefined;
+          }
+        | {
+            name: RouteName_1;
+            key?: string | undefined;
+            params: object | undefined;
+          },
+    ): void;
     reset(state: NavigationState | PartialState<NavigationState>): void;
     goBack(): void;
     isFocused(): boolean;
@@ -20,7 +25,6 @@ export declare namespace ChordClubShim {
   }
 
   class FlatList<T> extends gestureHandler.FlatList<T> {
-    scrollToIndex({}: { index: number }): void;
+    scrollToIndex({}: {index: number}): void;
   }
-
 }

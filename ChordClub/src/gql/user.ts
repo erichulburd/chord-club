@@ -1,12 +1,21 @@
 import gql from 'graphql-tag';
-import { UserNew, User } from '../types';
+import {UserNew, User, UserUpdate} from '../types';
+
+const userDBFields = gql`
+  fragment UserDBFields on User {
+    uid
+    username
+    settings
+  }
+`;
 
 export const GET_ME = gql`
   query Me {
     me {
-      uid username createdAt
+      ...UserDBFields
     }
   }
+  ${userDBFields}
 `;
 
 export interface GetMeData {
@@ -16,11 +25,35 @@ export interface GetMeData {
 export const CREATE_USER = gql`
   mutation CreateUser($newUser: UserNew!) {
     createUser(newUser: $newUser) {
-      uid username createdAt
+      ...UserDBFields
     }
   }
+  ${userDBFields}
 `;
 
 export interface CreateUserVariables {
   newUser: UserNew;
 }
+
+export const UPDATE_USER = gql`
+  mutation UpdateUser($userUpdate: UserUpdate!) {
+    updateUser(userUpdate: $userUpdate) {
+      ...UserDBFields
+    }
+  }
+  ${userDBFields}
+`;
+
+export interface UpdateUserVariables {
+  userUpdate: UserUpdate;
+}
+
+export interface UpdateUserResponse {
+  updateUser: User;
+}
+
+export const DELETE_USER = gql`
+  mutation DeleteUser {
+    deleteUser { empty }
+  }
+`;

@@ -1,4 +1,4 @@
-import { ExtensionType, ExtensionNew } from "../types";
+import {ExtensionType, ExtensionNew} from '../types';
 
 export const extensions: ExtensionNew[] = [
   [9, ExtensionType.Flat],
@@ -13,6 +13,10 @@ export const extensions: ExtensionNew[] = [
   [13, ExtensionType.Plain],
   [7, ExtensionType.Flat],
   [7, ExtensionType.Plain],
-].map(([degree, extensionType]) => ({
-  degree, extensionType,
-} as ExtensionNew));
+].map(
+  ([degree, extensionType]) =>
+    ({
+      degree,
+      extensionType,
+    } as ExtensionNew),
+);

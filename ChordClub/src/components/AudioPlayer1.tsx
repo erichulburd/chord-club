@@ -1,12 +1,25 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Button, withStyles, ThemedComponentProps, Text } from '@ui-kitten/components';
-import { ThemedIcon } from './FontAwesomeIcons';
-import { TouchableOpacity, TapGestureHandler } from 'react-native-gesture-handler';
-import { getCalRatio } from '../util/screen';
-import { AudioStateObserver, Audioable, AudioEventType, audioStateObservable, State as AudioState } from '../util/audio';
+import {View, StyleSheet} from 'react-native';
+import {
+  Button,
+  withStyles,
+  ThemedComponentProps,
+  Text,
+} from '@ui-kitten/components';
+import {ThemedIcon} from './FontAwesomeIcons';
+import {
+  TouchableOpacity,
+  TapGestureHandler,
+} from 'react-native-gesture-handler';
+import {getCalRatio} from '../util/screen';
+import {
+  AudioStateObserver,
+  Audioable,
+  AudioEventType,
+  audioStateObservable,
+  State as AudioState,
+} from '../util/audio';
 import last from 'lodash/last';
-
 
 interface Props extends ThemedComponentProps {
   audio: Audioable;
@@ -22,7 +35,7 @@ const getColors = (theme: Record<string, string>) => ({
   lighter: theme['border-basic-color-2'],
   recording: theme['border-danger-color-4'],
   played: theme['border-primary-color-1'],
-})
+});
 
 export class AudioPlayer extends React.Component<Props> {
   private subscription?: ZenObservable.Subscription;
@@ -41,39 +54,48 @@ export class AudioPlayer extends React.Component<Props> {
   private _unsubscribe() {
     if (this.state.subscription) {
       this.state.subscription.unsubscribe();
-      this.setState({ subscription: undefined });
+      this.setState({subscription: undefined});
     }
   }
 
   private _play = () => {
-    const { audio } = this.props;
+    const {audio} = this.props;
     if (!this.state.subscription) {
       const subscription = this.audioStateObserver.subscribe({
         next: (audioEvent) => {
-          console.info(audioEvent.type, last(audio.audioURL.split('/')))
-          if (audioEvent.type === AudioEventType.PLAY && audioEvent.state.currentURL !== audio.audioURL) {
+          console.info(audioEvent.type, last(audio.audioURL.split('/')));
+          if (
+            audioEvent.type === AudioEventType.PLAY &&
+            audioEvent.state.currentURL !== audio.audioURL
+          ) {
             this._unsubscribe();
           } else {
             this.audioStateObserver.state = audioEvent.state;
-            this.setState({ audioState: audioEvent.state })
+            this.setState({audioState: audioEvent.state});
           }
-        }
+        },
       });
-      this.setState({ subscription });
+      this.setState({subscription});
     }
     this.audioStateObserver.play(audio);
-  }
+  };
 
   public render() {
-    const { audioStateObserver } = this;
-    const { audio, eva } = this.props;
+    const {audioStateObserver} = this;
+    const {audio, eva} = this.props;
 
     let playWidth = 0;
     const dims = getCalRatio();
     const fullWidth = dims.width - 100 * dims.ratio;
-    if (audioStateObserver.isPlaying(audio.audioURL) || audioStateObserver.isPaused(audio.audioURL)) {
-      playWidth = audioStateObserver.playRatio() * (dims.width - 100 * dims.ratio);
-      if (!playWidth) playWidth = 0;
+    if (
+      audioStateObserver.isPlaying(audio.audioURL) ||
+      audioStateObserver.isPaused(audio.audioURL)
+    ) {
+      playWidth =
+        audioStateObserver.playRatio() * (dims.width - 100 * dims.ratio);
+      if (!playWidth) {
+        playWidth = 0;
+      }
     }
     const colors = getColors(eva?.theme || {});
     let actionIcon = ThemedIcon('play');
@@ -96,19 +118,16 @@ export class AudioPlayer extends React.Component<Props> {
             accessoryLeft={actionIcon}
             onPress={action}
           />
-          <TouchableOpacity
-            onPress={audioStateObserver.seek}
-          >
+          <TouchableOpacity onPress={audioStateObserver.seek}>
             <View
               style={[
                 styles.viewBar,
-                { width: fullWidth, backgroundColor: colors.lighter }
-              ]}
-            >
+                {width: fullWidth, backgroundColor: colors.lighter},
+              ]}>
               <View
                 style={[
                   styles.viewBarPlay,
-                  { width: playWidth, backgroundColor: colors.played }
+                  {width: playWidth, backgroundColor: colors.played},
                 ]}
               />
             </View>
@@ -138,6 +157,6 @@ const styles = StyleSheet.create({
     height: 20 * initialDims.ratio,
     width: 0,
   },
-})
+});
 
 export default withStyles(AudioPlayer);

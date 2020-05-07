@@ -2,8 +2,8 @@ import Auth0 from 'react-native-auth0';
 import AsyncStorage from '@react-native-community/async-storage';
 import Observable from 'zen-observable';
 import logger from './logger';
-import { Buffer } from 'buffer';
-import { ObservableState } from './observableState';
+import {Buffer} from 'buffer';
+import {ObservableState} from './observableState';
 
 export enum AuthEventType {
   INITIALIZED,
@@ -38,7 +38,6 @@ const TOKEN_ASYNC_KEY = '@ChordClub:token';
 const initialize = async () => {
   try {
     const token = await AsyncStorage.getItem(TOKEN_ASYNC_KEY);
-    logger.info('TOKEN', token);
     if (token) {
       authState.token = token;
       const claims = parseJWT(token);
@@ -48,18 +47,19 @@ const initialize = async () => {
     logger.error(err);
   }
   authState.initialized = true;
-  publish({ state: { ...authState }, type: AuthEventType.INITIALIZED });
+  publish({state: {...authState}, type: AuthEventType.INITIALIZED});
 };
 
 const sessionExpired = () => {
   authState.token = undefined;
   publish({
-    state: { sessionExpired: true, ...authState },
-    type: AuthEventType.SESSION_EXPIRED });
+    state: {sessionExpired: true, ...authState},
+    type: AuthEventType.SESSION_EXPIRED,
+  });
 };
 
 const login = async () => {
-  if (Boolean(authState.token)) {
+  if (authState.token) {
     return;
   }
   try {
@@ -67,20 +67,26 @@ const login = async () => {
     authState.token = credentials.accessToken;
     const claims = parseJWT(authState.token);
     authState.uid = claims.sub;
-    publish({ state: { sessionExpired: false, ...authState }, type: AuthEventType.USER_LOGIN });
+    publish({
+      state: {sessionExpired: false, ...authState},
+      type: AuthEventType.USER_LOGIN,
+    });
     AsyncStorage.setItem(TOKEN_ASYNC_KEY, authState.token);
   } catch (err) {
     logger.error(err);
-    publish({ state: { ...authState }, type: AuthEventType.USER_LOGIN_ERROR });
+    publish({state: {...authState}, type: AuthEventType.USER_LOGIN_ERROR});
   }
 };
 
 export const logout = async () => {
-  if (!Boolean(authState.token)) {
+  if (!authState.token) {
     return;
   }
   authState.token = undefined;
-  publish({ state: { sessionExpired: false, ...authState }, type: AuthEventType.USER_LOGOUT });
+  publish({
+    state: {sessionExpired: false, ...authState},
+    type: AuthEventType.USER_LOGOUT,
+  });
   auth0Logout();
   AsyncStorage.removeItem(TOKEN_ASYNC_KEY);
 };
@@ -95,7 +101,7 @@ const publish = (event: AuthEvent) => {
   });
 };
 
-export const observable = new Observable<AuthEvent>(observer => {
+export const observable = new Observable<AuthEvent>((observer) => {
   subscribers.add(observer);
   observer.next({
     type: AuthEventType.SUBSCRIBED,
@@ -117,15 +123,16 @@ interface Auth0Credentials {
   idToken: string;
 }
 
-const auth0Login = (): Promise<Auth0Credentials> => auth0.webAuth.authorize({
-  scope: 'openid',
-  audience: 'https://api.chordclub.app',
-});
-const auth0Logout = () => auth0.webAuth.clearSession({ federated: true });
+const auth0Login = (): Promise<Auth0Credentials> =>
+  auth0.webAuth.authorize({
+    scope: 'openid',
+    audience: 'https://api.chordclub.app',
+  });
+const auth0Logout = () => auth0.webAuth.clearSession({federated: true});
 
 export interface AuthActions {
-  login: () => void;
-  logout: () => void;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
   initialize: () => void;
   sessionExpired: () => void;
 }
@@ -138,7 +145,7 @@ const observableState: ObservableState<AuthActions, AuthState, AuthEvent> = {
     logout,
     initialize,
     sessionExpired,
-  }
+  },
 };
 
 const parseJWT = (token: string) => {
@@ -147,4 +154,4 @@ const parseJWT = (token: string) => {
   return JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
 };
 
-export default observableState
+export default observableState;

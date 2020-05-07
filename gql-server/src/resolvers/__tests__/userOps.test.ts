@@ -6,6 +6,7 @@ import { getTestKey, signWithTestKey } from '../../../tests/testingKeys';
 import { makeUserNew } from '../../../tests/factories';
 import { insertUserNew, findUserByUID } from '../../repositories/user';
 import express from 'express';
+import { UserUpdate, ChartType, ChartQueryOrder } from '../../types';
 
 
 describe('user queries', () => {
@@ -110,22 +111,36 @@ describe('user queries', () => {
     expect(data.createUser.uid).toEqual('uid');
     expect(data.createUser.username).toEqual('yada');
 
+    const userUpdate: UserUpdate = {
+      username: 'yada2',
+      settings: {
+        chords: { query: { chartTypes: [ChartType.Chord], asc: true }, compact: true },
+        progressions: { query: { chartTypes: [ChartType.Progression], asc: true } },
+        flashcards: {
+          query: {
+            chartTypes: [ChartType.Chord],
+            order: ChartQueryOrder.Random
+          },
+        },
+      },
+    };
     const res2 = await graphql().send({
       query: `
         mutation ($userUpdate: UserUpdate!) {
           updateUser(userUpdate: $userUpdate) {
-            uid username
+            uid username settings
           }
         }
       `,
-      variables: {
-        userUpdate: { username: 'yada2'  }
-      },
+      variables: { userUpdate },
     }).expect(200);
     const body2 = res2.body;
     expect(body2.errors).toEqual(undefined);
     expect(body2.data.updateUser.uid).toEqual('uid');
     expect(body2.data.updateUser.username).toEqual('yada2');
+    expect(body2.data.updateUser.settings.chords.query.asc).toEqual(true);
+    expect(body2.data.updateUser.settings.chords.compact).toEqual(true);
+    expect(body2.data.updateUser.settings.progressions.query.asc).toEqual(true);
 
     const res3 = await graphql().send({
       query: `

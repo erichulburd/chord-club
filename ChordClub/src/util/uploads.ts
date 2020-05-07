@@ -1,4 +1,4 @@
-import { upload } from './api';
+import {upload} from './api';
 
 export interface FileURLCache {
   [key: string]: string;
@@ -25,7 +25,7 @@ export const uploadFilesIfNecessary = async <T extends Record<string, string>>(
   let cache = existingUploadCache;
   let didUpload = false;
   if (Object.keys(filesToUpload).length > 0) {
-    cache = { ...existingUploadCache };
+    cache = {...existingUploadCache};
     const newURLs = await upload(filesToUpload);
     Object.keys(newURLs).forEach((key) => {
       const filePath = fileLocalPaths[key];
@@ -35,5 +35,5 @@ export const uploadFilesIfNecessary = async <T extends Record<string, string>>(
     });
     didUpload = true;
   }
-  return { didUpload, urls: urls as T, cache };
-}
+  return {didUpload, urls: urls as T, cache};
+};

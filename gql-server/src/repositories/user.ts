@@ -1,9 +1,10 @@
 import { UserQuery, UserQueryOrder, User, UserNew, UserUpdate } from '../types';
 import { PoolClient } from 'pg';
-import { makeDBFields, makeSelectFields, makeDBDataToObject } from './db';
+import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBUpdate } from './db';
+import without from 'lodash/without';
 
 const attrs = [
-  'uid', 'createdAt', 'username',
+  'uid', 'createdAt', 'username', 'settings',
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 'u');
@@ -98,13 +99,14 @@ export const insertUserNew = async (
 
 export const updateUser = async (
   update: UserUpdate, uid: string, client: PoolClient) => {
+    const { prep, values } = prepareDBUpdate(update, without(dbFields, 'uid'));
     const result = await client.query(`
       UPDATE
         userr
-        SET username = $1
-        WHERE uid = $2
+        SET ${prep}
+        WHERE uid = $${values.length + 1}
         RETURNING ${dbFields.join(', ')}
-    `, [update.username, uid]);
+    `, [...values, uid]);
     return dbDataToUser(result.rows[0]) as User;
 };
 

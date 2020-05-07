@@ -1,9 +1,9 @@
-
-import { Dimensions } from 'react-native';
+import {Dimensions} from 'react-native';
 
 export const getCalRatio = () => {
-  const { width, height } = Dimensions.get('window');
-  let calRatio = width <= height ? 16 * (width / height) : 16 * (height / width);
+  const {width, height} = Dimensions.get('window');
+  let calRatio =
+    width <= height ? 16 * (width / height) : 16 * (height / width);
   if (width <= height) {
     if (calRatio < 9) {
       calRatio = width / 9;
@@ -19,6 +19,8 @@ export const getCalRatio = () => {
   }
 
   return {
-    width, height, ratio: calRatio / (360 / 9),
+    width,
+    height,
+    ratio: calRatio / (360 / 9),
   };
 };

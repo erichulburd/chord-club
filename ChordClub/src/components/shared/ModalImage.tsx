@@ -1,7 +1,7 @@
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
-import { Modal } from '@ui-kitten/components';
-import { ResizableImage } from '../../util/imagePicker';
+import {Image, StyleSheet, View} from 'react-native';
+import {Modal} from '@ui-kitten/components';
+import {ResizableImage} from '../../util/imagePicker';
 
 interface Props {
   visible: boolean;
@@ -9,7 +9,7 @@ interface Props {
   close: () => void;
 }
 
-export const ModalImage = ({ image, visible, close }: Props) => {
+export const ModalImage = ({image, visible, close}: Props) => {
   return (
     <Modal
       visible={visible}
@@ -18,13 +18,13 @@ export const ModalImage = ({ image, visible, close }: Props) => {
       <View>
         <Image
           resizeMode={'contain'}
-          source={{ uri: image.uri }}
+          source={{uri: image.uri}}
           style={[image.coverDimensions()]}
         />
       </View>
     </Modal>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   backdrop: {

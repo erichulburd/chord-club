@@ -1,10 +1,10 @@
-import React, { createElement } from 'react';
-import { Autocomplete, AutocompleteItem, IconProps } from '@ui-kitten/components';
-import { ChartQuality } from '../../types';
+import React, {createElement} from 'react';
+import {Autocomplete, AutocompleteItem, IconProps} from '@ui-kitten/components';
+import {ChartQuality} from '../../types';
 import zip from 'lodash/zip';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import { ThemedIcon } from '../FontAwesomeIcons';
-import { TextStyle, StyleProp } from 'react-native';
+import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
+import {ThemedIcon} from '../FontAwesomeIcons';
+import {TextStyle, StyleProp} from 'react-native';
 
 const allChartQualities = Object.keys(ChartQuality);
 const qualityRegexs = allChartQualities.map((cq) => new RegExp(cq, 'i'));
@@ -14,10 +14,13 @@ const filterQualities = (query: string) => {
     .filter(([_chartQuality, re]) => re.test(query))
     .map(([chartQuality, _re]) => chartQuality);
 };
-const strToChartQuality: { [k: string]: ChartQuality } = allChartQualities.reduce((prev, cq) => ({
-  ...prev,
-  [cq]: cq.toUpperCase(),
-}), {});
+const strToChartQuality: {[k: string]: ChartQuality} = allChartQualities.reduce(
+  (prev, cq) => ({
+    ...prev,
+    [cq]: cq.toUpperCase(),
+  }),
+  {},
+);
 
 interface Props {
   onSelect: (note: ChartQuality) => void;
@@ -28,7 +31,10 @@ interface Props {
 }
 
 export const ChartQualityAutocomplete = ({
-  onSelect, initialValue, disabled, style,
+  onSelect,
+  initialValue,
+  disabled,
+  style,
   placeholder = 'Chord quality',
 }: Props) => {
   const [query, setQuery] = React.useState(initialValue?.toString() || '');
@@ -53,7 +59,7 @@ export const ChartQualityAutocomplete = ({
   const updateSelection = (index: number) => {
     onSelect(strToChartQuality[qualities[index]]);
     setQuery(qualities[index]);
-  }
+  };
 
   return (
     <Autocomplete
@@ -64,14 +70,10 @@ export const ChartQualityAutocomplete = ({
       disabled={disabled}
       accessoryRight={renderCloseIcon}
       onChangeText={onChangeText}
-      onSelect={updateSelection}
-    >
-      {qualities.map((quality) =>(
-        <AutocompleteItem
-          key={quality}
-          title={quality}
-        />
+      onSelect={updateSelection}>
+      {qualities.map((quality) => (
+        <AutocompleteItem key={quality} title={quality} />
       ))}
     </Autocomplete>
   );
-}
+};

@@ -1,34 +1,39 @@
 import React from 'react';
-import { Audioable, withAudioPlayerContext, AudioPlayerContextProps } from './AudioPlayerProvider';
-import { View, StyleSheet } from 'react-native';
-import { Button, withStyles, ThemedComponentProps } from '@ui-kitten/components';
-import { ThemedIcon } from './FontAwesomeIcons';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { getCalRatio } from '../util/screen';
+import {
+  Audioable,
+  withAudioPlayerContext,
+  AudioPlayerContextProps,
+} from './AudioPlayerProvider';
+import {View, StyleSheet} from 'react-native';
+import {Button, withStyles, ThemedComponentProps} from '@ui-kitten/components';
+import {ThemedIcon} from './FontAwesomeIcons';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import {getCalRatio} from '../util/screen';
 
 interface ManualProps {
   audio: Audioable;
 }
 
-interface Props extends AudioPlayerContextProps, ManualProps, ThemedComponentProps {
-}
-
+interface Props
+  extends AudioPlayerContextProps,
+    ManualProps,
+    ThemedComponentProps {}
 
 const getColors = (theme: Record<string, string>) => ({
   default: theme['border-basic-color-2'],
   lighter: theme['border-basic-color-2'],
   recording: theme['border-danger-color-4'],
   played: theme['border-primary-color-1'],
-})
+});
 
-const AudioPlayer = ({
-  audio, audioCtx, eva
-}: Props) => {
+const AudioPlayer = ({audio, audioCtx, eva}: Props) => {
   const dims = getCalRatio();
   let playWidth = 0;
   if (audioCtx.isPlaying(audio.audioURL) || audioCtx.isPaused(audio.audioURL)) {
     playWidth = audioCtx.playRatio() * (dims.width - 56 * dims.ratio);
-    if (!playWidth) playWidth = 0;
+    if (!playWidth) {
+      playWidth = 0;
+    }
   }
   const colors = getColors(eva?.theme || {});
   let actionIcon = ThemedIcon('play');
@@ -56,24 +61,18 @@ const AudioPlayer = ({
         <View>
           <TouchableOpacity
             style={styles.viewBarWrapper}
-            onPress={audioCtx.seek}
-          >
-            <View
-              style={[
-                styles.viewBar,
-                { backgroundColor: colors.lighter }
-              ]}
-            >
+            onPress={audioCtx.seek}>
+            <View style={[styles.viewBar, {backgroundColor: colors.lighter}]}>
               <View
                 style={[
                   styles.viewBarPlay,
-                  { width: playWidth, backgroundColor: colors.played }
+                  {width: playWidth, backgroundColor: colors.played},
                 ]}
               />
             </View>
           </TouchableOpacity>
         </View>
-        <View></View>
+        <View />
       </View>
     </View>
   );
@@ -107,6 +106,6 @@ const styles = StyleSheet.create({
     height: 20 * initialDims.ratio,
     width: 0,
   },
-})
+});
 
 export default withAudioPlayerContext<ManualProps>(withStyles(AudioPlayer));

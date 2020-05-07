@@ -8,7 +8,13 @@ export type Scalars = {
   Float: number;
   ConstraintString: any;
   ConstraintNumber: any;
+  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
+  JSON: any;
+  /** The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
+  JSONObject: any;
 };
+
+
 
 
 
@@ -53,7 +59,7 @@ export enum TagQueryOrder {
 
 export type TagQuery = {
   displayName?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
+  ids?: Maybe<Array<Scalars['Int']>>;
   tagTypes: Array<TagType>;
   scopes: Array<Scalars['String']>;
   order?: Maybe<TagQueryOrder>;
@@ -246,6 +252,7 @@ export type User = UserBase & {
   uid: Scalars['String'];
   username: Scalars['String'];
   createdAt: Scalars['String'];
+  settings: Scalars['JSONObject'];
 };
 
 export type UserNew = {
@@ -254,6 +261,7 @@ export type UserNew = {
 
 export type UserUpdate = {
   username: Scalars['String'];
+  settings?: Maybe<Scalars['JSONObject']>;
 };
 
 export enum UserQueryOrder {
@@ -279,6 +287,7 @@ export enum ErrorType {
   InvalidChartScope = 'INVALID_CHART_SCOPE',
   InvalidChartReaction = 'INVALID_CHART_REACTION',
   InvalidTagPositionUpdate = 'INVALID_TAG_POSITION_UPDATE',
+  DuplicateUsername = 'DUPLICATE_USERNAME',
   Unhandled = 'UNHANDLED',
   InternalServerError = 'INTERNAL_SERVER_ERROR',
   ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION'

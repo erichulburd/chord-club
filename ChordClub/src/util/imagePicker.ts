@@ -1,5 +1,5 @@
-import ImagePicker, { Options } from 'react-native-image-crop-picker';
-import { Image, Dimensions, ScaledSize } from 'react-native';
+import ImagePicker, {Options} from 'react-native-image-crop-picker';
+import {Image, Dimensions, ScaledSize} from 'react-native';
 
 interface Size {
   height: number;
@@ -24,7 +24,7 @@ export const pickSingleImage = async (opts: Partial<Options> = {}) => {
     return ResizableImage.new(res.path);
   }
   return null;
-}
+};
 
 export class ResizableImage {
   public uri: string;
@@ -40,7 +40,7 @@ export class ResizableImage {
   }
 
   public coverDimensions(size: Partial<Size> = {}): Size {
-    const { height, width } = {
+    const {height, width} = {
       ...Dimensions.get('window'),
       ...size,
     };
@@ -48,25 +48,31 @@ export class ResizableImage {
     return {
       width: this.width * resizeRatio,
       height: this.height * resizeRatio,
-    }
+    };
   }
 
   static async new(filePath: string): Promise<ResizableImage> {
     return new Promise((resolve, reject) => {
-      Image.getSize(filePath, (width, height) => {
-        resolve(new ResizableImage(`file://${filePath}`, width, height));
-      }, reject);
+      Image.getSize(
+        filePath,
+        (width, height) => {
+          resolve(new ResizableImage(`file://${filePath}`, width, height));
+        },
+        reject,
+      );
     });
   }
 
   static async newFromURL(url: string): Promise<ResizableImage> {
-    console.log('newFromURL', url)
+    console.log('newFromURL', url);
     return new Promise((resolve, reject) => {
-      Image.getSize(url, (width, height) => {
-        resolve(new ResizableImage(url, width, height));
-      }, reject);
+      Image.getSize(
+        url,
+        (width, height) => {
+          resolve(new ResizableImage(url, width, height));
+        },
+        reject,
+      );
     });
   }
 }
-
-

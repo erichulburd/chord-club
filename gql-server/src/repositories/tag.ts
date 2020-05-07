@@ -32,6 +32,16 @@ const searchForTag = async (displayName: string, query: BaseTagQuery, client: Po
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
+export const findTagsByID = async (ids: number[], scopes: string[], client: PoolClient) => {
+  const result = await client.query(`
+    SELECT
+      ${selectFields}
+      FROM tag t
+      WHERE t.id = ANY ($1) AND t.scope = ANY ($2)
+  `, [ids, scopes]);
+  return result.rows.map(dbDataToTag);
+};
+
 export const findTagByID = async (id: number, scopes: string[], client: PoolClient) => {
   const result = await client.query(`
     SELECT
@@ -261,10 +271,8 @@ export const validateNewTagsScopes = (tags: TagNew[], uid: string): TagNew[] => 
 export const executeTagQuery = async (
   rawQuery: TagQuery, uid: string, client: PoolClient): Promise<Tag[]> => {
     validatedTagQueryScopes(rawQuery.scopes, uid);
-  if (rawQuery.id) {
-    const tag = await findTagByID(rawQuery.id, rawQuery.scopes, client);
-    if (!tag) return [];
-    return [tag];
+  if (rawQuery.ids) {
+    return findTagsByID(rawQuery.ids, rawQuery.scopes, client);
   }
   const order = (rawQuery.order || TagQueryOrder.DisplayName).toLowerCase();
   const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';

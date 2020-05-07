@@ -1,7 +1,9 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import FontAwesome5, { FontAwesome5IconProps } from 'react-native-vector-icons/FontAwesome5';
-import { IconProps, Icon } from '@ui-kitten/components';
+import {StyleSheet} from 'react-native';
+import FontAwesome5, {
+  FontAwesome5IconProps,
+} from 'react-native-vector-icons/FontAwesome5';
+import {IconProps, Icon} from '@ui-kitten/components';
 
 export const FontAwesome5IconsPack = {
   name: 'fontAwesome5',
@@ -9,20 +11,26 @@ export const FontAwesome5IconsPack = {
 };
 
 function createIconsMap() {
-  return new Proxy({}, {
-    get(_target, name: string) {
-      return IconProvider(name);
+  return new Proxy(
+    {},
+    {
+      get(_target, name: string) {
+        return IconProvider(name);
+      },
     },
-  });
+  );
 }
 
 const IconProvider = (name: string) => ({
-  toReactElement: (props: IconProps) => FontAwesomeIcon({ name, ...props }),
+  toReactElement: (props: IconProps) => FontAwesomeIcon({name, ...props}),
 });
 
-
-function FontAwesomeIcon({ name, style, ...props }: IconProps & FontAwesome5IconProps) {
-  const { height, tintColor, ...iconStyle } = StyleSheet.flatten(style);
+function FontAwesomeIcon({
+  name,
+  style,
+  ...props
+}: IconProps & FontAwesome5IconProps) {
+  const {height, tintColor, ...iconStyle} = StyleSheet.flatten(style);
   return (
     <FontAwesome5
       {...props}
@@ -36,7 +44,7 @@ function FontAwesomeIcon({ name, style, ...props }: IconProps & FontAwesome5Icon
 
 export const ThemedIcon = (
   name: string,
-  overrides: Partial<IconProps & FontAwesome5IconProps> = {}) =>
-(props: Partial<IconProps & FontAwesome5IconProps> = {}) => (
+  overrides: Partial<IconProps & FontAwesome5IconProps> = {},
+) => (props: Partial<IconProps & FontAwesome5IconProps> = {}) => (
   <Icon {...props} {...overrides} name={name} />
 );

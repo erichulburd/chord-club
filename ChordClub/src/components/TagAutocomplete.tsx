@@ -1,18 +1,24 @@
-import React, { createElement } from 'react';
-import { Autocomplete, AutocompleteItem, CheckBox, IconProps, Spinner, Text } from '@ui-kitten/components';
-import { View, StyleProp, ViewStyle } from 'react-native';
-import { GET_TAGS, GetTagsData, GetTagsVariables } from '../gql/tag';
-import { TagQuery, BaseScopes, TagType, TagNew, Tag } from '../types';
-import { ThemedIcon } from './FontAwesomeIcons';
+import React, {createElement} from 'react';
+import {
+  Autocomplete,
+  AutocompleteItem,
+  CheckBox,
+  IconProps,
+  Spinner,
+} from '@ui-kitten/components';
+import {View, StyleProp, ViewStyle} from 'react-native';
+import {GET_TAGS, GetTagsData, GetTagsVariables} from '../gql/tag';
+import {TagQuery, BaseScopes, TagType, TagNew, Tag} from '../types';
+import {ThemedIcon} from './FontAwesomeIcons';
 import throttle from 'lodash/throttle';
-import { makeTagNew, getTagMunge } from '../util/forms';
-import { withAuth, AuthConsumerProps } from './AuthProvider';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import {makeTagNew, getTagMunge, areTagsEqual} from '../util/forms';
+import {withUser, UserConsumerProps} from './UserContext';
+import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import ErrorText from './ErrorText';
-import { ApolloError } from 'apollo-client';
+import {ApolloError} from 'apollo-client';
 
-import { WithApolloClient, withApollo } from 'react-apollo';
-import { GraphQLError } from 'graphql';
+import {WithApolloClient, withApollo} from 'react-apollo';
+import {GraphQLError} from 'graphql';
 import logger from '../util/logger';
 
 interface ManualProps {
@@ -23,7 +29,7 @@ interface ManualProps {
   containerStyle?: StyleProp<ViewStyle>;
 }
 
-interface Props extends WithApolloClient<{}>, ManualProps, AuthConsumerProps {}
+interface Props extends WithApolloClient<{}>, ManualProps, UserConsumerProps {}
 
 interface State {
   query: TagQuery;
@@ -31,7 +37,7 @@ interface State {
   loading: boolean;
   options: any[];
   queryTs?: number;
-  includePublic: boolean
+  includePublic: boolean;
 }
 
 const fauxResult = makeTagNew('No results', false, 'FAUX');
@@ -47,7 +53,7 @@ export class TagAutocomplete extends React.Component<Props> {
     loading: false,
     options: [],
     includePublic: false,
-  }
+  };
   private throttleQuery: () => Promise<void>;
 
   constructor(props: Props) {
@@ -57,89 +63,97 @@ export class TagAutocomplete extends React.Component<Props> {
   }
 
   private includePublic() {
-    return this.props.includePublic === undefined ?
-      this.state.includePublic :
-      this.props.includePublic;
+    return this.props.includePublic === undefined
+      ? this.state.includePublic
+      : this.props.includePublic;
   }
 
   private execQuery = async () => {
-    const { query } = this.state;
-    const { client, authState } = this.props;
+    const {query} = this.state;
+    const {client, userCtx} = this.props;
+    const {authState} = userCtx;
     const queryTs = Date.now();
-    this.setState({ loading: true, queryTs });
+    this.setState({loading: true, queryTs});
     const scopes = [authState.uid];
     if (this.includePublic()) {
       scopes.push(BaseScopes.Public);
     }
     try {
-      const { data, errors } = await client.query<GetTagsData, GetTagsVariables>({
+      const {data, errors} = await client.query<GetTagsData, GetTagsVariables>({
         query: GET_TAGS,
-        variables: { query: { ...query, scopes } },
+        variables: {query: {...query, scopes}},
       });
       if (this.state.queryTs !== queryTs) {
         return;
       }
       this.updateOptions(data, errors);
-
     } catch (err) {
       logger.error(err);
       const error = new ApolloError({
-        errorMessage: 'We received an unexpeted error while connecting to our server.',
+        errorMessage:
+          'We received an unexpeted error while connecting to our server.',
       });
-      this.setState({ error, loading: false, queryTs: undefined });
+      this.setState({error, loading: false, queryTs: undefined});
     }
-  }
+  };
 
-  private updateOptions = (data: GetTagsData, errors: readonly GraphQLError[] | undefined) => {
-    const { query } = this.state;
-    const { authState, allowNewTags = true } = this.props;
-    const { uid } = authState
-    let error = undefined;
+  private updateOptions = (
+    data: GetTagsData,
+    errors: readonly GraphQLError[] | undefined,
+  ) => {
+    const {query} = this.state;
+    const {userCtx, allowNewTags = true} = this.props;
+    const {uid} = userCtx.authState;
+    let error;
     if (errors && errors.length > 0) {
-      error = new ApolloError({ graphQLErrors: errors });
+      error = new ApolloError({graphQLErrors: errors});
     }
     let options: any[] = data.tags;
     if (allowNewTags && query.displayName) {
-      const tagExists = options.some(t => t.munge !== getTagMunge(query.displayName || ''));
+      const tagExists = options.some(
+        (t) => t.munge !== getTagMunge(query.displayName || ''),
+      );
       if (!tagExists) {
         const tagNew = makeTagNew(query.displayName, this.includePublic(), uid);
-        options = [ tagNew, ...options ];
+        options = [tagNew, ...options];
       }
     }
-    this.setState({ options, error, loading: false, queryTs: undefined });
-  }
+    this.setState({options, error, loading: false, queryTs: undefined});
+  };
 
   private updateQueryDisplayName = (displayName: string) => {
-    this.setState({ query: { ...this.state.query, displayName } }, () => {
+    this.setState({query: {...this.state.query, displayName}}, () => {
       this.throttleQuery();
     });
-  }
+  };
 
   private clearText = () => {
-    const { query } = this.state;
-    this.setState({ query: { ...query, displayName: '' }, options: [] });
-  }
+    const {query} = this.state;
+    this.setState({query: {...query, displayName: ''}, options: []});
+  };
 
   private onSelect = (index: number) => {
-    const { query, options } = this.state;
-    const { onSelect } = this.props;
+    const {query, options} = this.state;
+    const {onSelect} = this.props;
     const tag = options[index];
-    if (tag === fauxResult) {
+    if (tag === undefined || areTagsEqual(tag, fauxResult)) {
       return;
     }
     onSelect(tag);
     this.setState({
-      query: { ...query, displayName: '' },
+      query: {...query, displayName: ''},
       options: [],
     });
-  }
+  };
 
   public render() {
-    const { placeholder = 'Add tag', containerStyle = {} } = this.props;
-    const { query, error, options, includePublic, loading } = this.state;
+    const {placeholder = 'Add tag', containerStyle = {}} = this.props;
+    const {query, error, options, includePublic, loading} = this.state;
 
     const renderCloseIcon = (props: IconProps) =>
-      loading ? <Spinner /> : (
+      loading ? (
+        <Spinner />
+      ) : (
         <TouchableWithoutFeedback onPress={this.clearText}>
           {createElement(ThemedIcon('times'), props)}
         </TouchableWithoutFeedback>
@@ -159,26 +173,30 @@ export class TagAutocomplete extends React.Component<Props> {
           value={query.displayName || ''}
           accessoryRight={renderCloseIcon}
           onChangeText={this.updateQueryDisplayName}
-          onSelect={this.onSelect}
-        >
-          {data.map((tag) =>(
+          onSelect={this.onSelect}>
+          {data.map((tag) => (
             <AutocompleteItem
               key={getTagMunge(tag)}
               title={tag.displayName}
-              accessoryLeft={ThemedIcon(tag.scope === BaseScopes.Public ? 'users' : 'user')}
+              accessoryLeft={ThemedIcon(
+                tag.scope === BaseScopes.Public ? 'users' : 'user',
+              )}
             />
           ))}
         </Autocomplete>
-        {this.props.includePublic === undefined &&
+        {this.props.includePublic === undefined && (
           <CheckBox
             status="control"
             checked={includePublic}
-            onChange={c => this.setState({ includePublic: c })}
-          >Include public?</CheckBox>
-        }
+            onChange={(c) => this.setState({includePublic: c})}>
+            Include public?
+          </CheckBox>
+        )}
       </View>
     );
   }
 }
 
-export default withApollo<ManualProps>(withAuth<WithApolloClient<ManualProps>>(TagAutocomplete));
+export default withApollo<ManualProps>(
+  withUser<WithApolloClient<ManualProps>>(TagAutocomplete),
+);

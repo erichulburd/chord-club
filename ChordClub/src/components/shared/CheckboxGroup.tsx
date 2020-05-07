@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleProp, ViewStyle, StyleSheet } from 'react-native';
-import { CheckBox, Radio } from '@ui-kitten/components';
-import { ChartType } from '../../types';
+import {View, StyleProp, ViewStyle, StyleSheet} from 'react-native';
+import {CheckBox, Radio} from '@ui-kitten/components';
+import {ChartType} from '../../types';
 
 interface Props<T> {
   choices: T[];
@@ -27,33 +27,35 @@ function CheckboxGroup<T>({
           <CheckBox
             key={display(c)}
             checked={selected instanceof Array ? selected.includes(c) : false}
-            onChange={checked => onToggle(c, checked)}
-          >{display(c)}</CheckBox>
-        ))
-      }
+            onChange={(checked) => onToggle(c, checked)}>
+            {display(c)}
+          </CheckBox>
+        ))}
       {!multi &&
         choices.map((c) => (
           <Radio
             key={display(c)}
             checked={selected === c}
-            onChange={checked => onToggle(c, checked)}
-          >{display(c)}</Radio>
-        ))
-      }
+            onChange={(checked) => onToggle(c, checked)}>
+            {display(c)}
+          </Radio>
+        ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  }
-})
+  },
+});
 
-
-export const ChartTypeCheckboxGroup = CheckboxGroup as React.FunctionComponent<Props<ChartType>>;
-export const StringCheckboxGroup = CheckboxGroup as React.FunctionComponent<Props<string>>;
+export const ChartTypeCheckboxGroup = CheckboxGroup as React.FunctionComponent<
+  Props<ChartType>
+>;
+export const StringCheckboxGroup = CheckboxGroup as React.FunctionComponent<
+  Props<string>
+>;

@@ -166,14 +166,14 @@ describe('tag repository', () => {
       expect(tags.every((tag) => tag.displayName === 'yADa')).toEqual(true);
     });
     test('findByID', async () => {
-      const query: TagQuery = {
-        id: publicTags[0].id,
+      const query = {
+        ids: [publicTags[0].id],
         tagTypes: [TagType.Descriptor, TagType.List],
         scopes: [BaseScopes.Public, 'uid1']
       };
       const tags = await executeTagQuery(query, 'uid1', client);
       expect(tags.length).toEqual(1);
-      expect(tags[0].id).toEqual(query.id);
+      expect(tags[0].id).toEqual(query.ids[0]);
 
     });
     test('findTags and paginate after', async () => {

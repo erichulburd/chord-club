@@ -1,9 +1,8 @@
 import Observable from 'zen-observable';
-import { ObservableState } from './observableState';
-import AudioRecorderPlayer from "react-native-audio-recorder-player";
-import { getCalRatio } from '../util/screen';
-import { GestureResponderEvent } from 'react-native';
-
+import {ObservableState} from './observableState';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import {getCalRatio} from '../util/screen';
+import {GestureResponderEvent} from 'react-native';
 
 export interface Audioable {
   audioURL: string;
@@ -18,7 +17,6 @@ export interface State {
   currentPositionSec: number;
   currentDurationSec: number;
 }
-
 
 interface Actions {
   play: (url: Audioable) => void;
@@ -64,7 +62,7 @@ class AudioObservable {
   constructor() {
     this.subscribers = new Set<ZenObservable.Observer<AudioEvent>>();
     const subscribers = this.subscribers;
-    this.observable = new Observable<AudioEvent>(observer => {
+    this.observable = new Observable<AudioEvent>((observer) => {
       subscribers.add(observer);
       return () => {
         subscribers.delete(observer);
@@ -73,11 +71,11 @@ class AudioObservable {
           audioRecorderPlayer.removePlayBackListener();
         }
       };
-    })
+    });
   }
 
   public publish = (update: Partial<State>, eventType: AudioEventType) => {
-    currentState = Object.freeze({ ...currentState, ...update});
+    currentState = Object.freeze({...currentState, ...update});
     console.info('PUBLISH', eventType, this.subscribers.size);
     this.subscribers.forEach((observer) => {
       if (observer.next) {
@@ -87,7 +85,7 @@ class AudioObservable {
         });
       }
     });
-  }
+  };
 }
 
 export const audioStateObservable = new AudioObservable();
@@ -102,38 +100,41 @@ export class AudioStateObserver {
 
   public subscribe = (observer: ZenObservable.Observer<AudioEvent>) => {
     return this.audioObversable.observable.subscribe(observer);
-  }
+  };
 
   public isPlaying = (audioURL: string) => {
-    const { currentURL, isPlaying } = this.state;
+    const {currentURL, isPlaying} = this.state;
     return currentURL === audioURL && isPlaying;
-  }
+  };
 
   public isPaused = (audioURL: string) => {
-    const { currentURL, isPlayingPaused } = this.state;
+    const {currentURL, isPlayingPaused} = this.state;
     return currentURL === audioURL && isPlayingPaused;
-  }
+  };
 
   public playRatio = () => {
-    const { currentPositionSec, currentDurationSec } = this.state;
+    const {currentPositionSec, currentDurationSec} = this.state;
     if (currentDurationSec <= 0) {
       return 0;
     }
     return currentPositionSec / currentDurationSec;
-  }
+  };
 
   public play = async (url: Audioable) => {
     if (this.state.isPlaying) {
       await this.stop();
     }
-    this.audioObversable.publish({
-      currentURL: url.audioURL,
-      currentPositionSec: 0,
-      currentDurationSec: url.audioLength * 1000,
-      isPlaying: true,
-      isPlayingPaused: false,
-    }, AudioEventType.PLAY);
-    const { audioRecorderPlayer } = this.state;
+    this.audioObversable.publish(
+      {
+        currentURL: url.audioURL,
+        currentPositionSec: 0,
+        currentDurationSec: url.audioLength * 1000,
+        isPlaying: true,
+        isPlayingPaused: false,
+      },
+      AudioEventType.PLAY,
+    );
+    const {audioRecorderPlayer} = this.state;
     audioRecorderPlayer.startPlayer(url.audioURL);
     audioRecorderPlayer.setVolume(1.0);
 
@@ -142,36 +143,45 @@ export class AudioStateObserver {
         currentPositionSec: parseFloat(e.current_position),
         currentDurationSec: parseFloat(e.duration),
         isPlaying: true,
-      }
+      };
       let eventType = AudioEventType.UPDATE;
       if (parseFloat(e.current_position) >= parseFloat(e.duration)) {
         audioRecorderPlayer.stopPlayer();
-        update.isPlaying = false
+        update.isPlaying = false;
         eventType = AudioEventType.FINISHED;
       }
       this.audioObversable.publish(update, eventType);
     });
-  }
+  };
 
   public pause = async () => {
-    this.audioObversable.publish({ isPlaying: false, isPlayingPaused: true }, AudioEventType.PAUSE);
+    this.audioObversable.publish(
+      {isPlaying: false, isPlayingPaused: true},
+      AudioEventType.PAUSE,
+    );
     await this.state.audioRecorderPlayer.pausePlayer();
   };
 
   public resume = async () => {
-    this.audioObversable.publish({ isPlaying: true, isPlayingPaused: false }, AudioEventType.RESUME);
+    this.audioObversable.publish(
+      {isPlaying: true, isPlayingPaused: false},
+      AudioEventType.RESUME,
+    );
     await this.state.audioRecorderPlayer.resumePlayer();
   };
 
   public stop = async () => {
-    this.audioObversable.publish({ isPlaying: false, isPlayingPaused: false }, AudioEventType.STOP);
+    this.audioObversable.publish(
+      {isPlaying: false, isPlayingPaused: false},
+      AudioEventType.STOP,
+    );
     this.state.audioRecorderPlayer.stopPlayer();
     this.state.audioRecorderPlayer.removePlayBackListener();
   };
 
   public seek = (e: GestureResponderEvent) => {
     const touchX = e.nativeEvent.locationX;
-    const dims = getCalRatio()
+    const dims = getCalRatio();
     const playWidth =
       (this.state.currentPositionSec / this.state.currentDurationSec) *
       (dims.width - 56 * dims.ratio);
@@ -188,5 +198,4 @@ export class AudioStateObserver {
     // position will be updated in addPlayBackListener.
     this.audioObversable.publish({}, AudioEventType.SEEK);
   };
-
 }

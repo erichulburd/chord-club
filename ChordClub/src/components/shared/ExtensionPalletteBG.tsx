@@ -1,19 +1,19 @@
 import React from 'react';
-import { useQuery } from '@apollo/react-hooks';
-import { GET_EXTENSIONS, GetExtensionsData } from '../../gql/extension';
-import { ButtonPallette } from './ButtonPallette';
-import { Extension } from '../../types';
-import { Spinner } from '@ui-kitten/components';
+import {useQuery} from '@apollo/react-hooks';
+import {GET_EXTENSIONS, GetExtensionsData} from '../../gql/extension';
+import {ButtonPallette} from './ButtonPallette';
+import {Extension} from '../../types';
+import {Spinner} from '@ui-kitten/components';
 import ErrorText from '../ErrorText';
-import { displayExtension } from '../../util/strings';
+import {displayExtension} from '../../util/strings';
 
 interface Props {
   selected: Extension[];
   onExtensionUpdate: (e: Extension) => void;
 }
 
-export const ExtensionPalletteBG = ({ selected, onExtensionUpdate }: Props) => {
-  const { data, loading, error } = useQuery<GetExtensionsData>(GET_EXTENSIONS)
+export const ExtensionPalletteBG = ({selected, onExtensionUpdate}: Props) => {
+  const {data, loading, error} = useQuery<GetExtensionsData>(GET_EXTENSIONS);
   if (loading) {
     return <Spinner />;
   }
@@ -22,7 +22,7 @@ export const ExtensionPalletteBG = ({ selected, onExtensionUpdate }: Props) => {
   }
   return (
     <ButtonPallette
-      getUniqKey={(e => displayExtension(e))}
+      getUniqKey={(e) => displayExtension(e)}
       options={data?.extensions || []}
       selected={selected}
       displayValue={displayExtension}
@@ -30,4 +30,3 @@ export const ExtensionPalletteBG = ({ selected, onExtensionUpdate }: Props) => {
     />
   );
 };
-
