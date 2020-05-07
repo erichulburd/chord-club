@@ -18,7 +18,9 @@ import {
 } from '../gql/user';
 import omit from 'lodash/omit';
 import pickBy from 'lodash/pickBy';
-import { UserSettings, SettingsPath, ChartViewSetting, FlashcardOptions, FlashcardViewSetting } from '../util/settings';
+import { UserSettings, SettingsPath, ChartViewSetting, FlashcardViewSetting } from '../util/settings';
+import logger from '../util/logger';
+import { GraphQLError } from 'graphql';
 
 interface Props extends WithApolloClient<{}> {}
 
@@ -160,24 +162,45 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
   private updateUser = async (update: Partial<UserUpdate>) => {
     const {client} = this.props;
     const {user} = this.state;
-    this.setState({userUpdateLoading: true});
-    const {data, errors} = await client.mutate<
-      UpdateUserResponse,
-      UpdateUserVariables
-    >({
-      mutation: UPDATE_USER,
-      variables: {
-        userUpdate: coalesceUserAndUpdate(user, update),
-      },
-    });
-    if (errors && errors.length > 0) {
-      this.setState({
-        userUpdateError: new ApolloError({graphQLErrors: errors}),
-        userUpdateLoading: false,
+    this.setState({userUpdateLoading: true, userUpdateError: undefined});
+    try {
+      const {data, errors} = await client.mutate<
+        UpdateUserResponse,
+        UpdateUserVariables
+      >({
+        mutation: UPDATE_USER,
+        variables: {
+          userUpdate: coalesceUserAndUpdate(user, update),
+        },
       });
-    } else {
+      if (errors && errors.length > 0) {
+        this.setState({
+          userUpdateError: new ApolloError({graphQLErrors: errors}),
+          userUpdateLoading: false,
+        });
+      } else {
+        this.setState({
+          user: data?.updateUser || user,
+          userUpdateLoading: false,
+        });
+      }
+    } catch (err) {
+      logger.error(err);
+      let userUpdateError = new ApolloError({
+        errorMessage: 'User update failed',
+        extraInfo: {}
+      });
+      if (err instanceof GraphQLError) {
+        userUpdateError = new ApolloError({
+          graphQLErrors: [err],
+          extraInfo: {}
+        });
+      } else if (err instanceof ApolloError) {
+        userUpdateError = err;
+      }
+
       this.setState({
-        user: data?.userUpdate || user,
+        userUpdateError,
         userUpdateLoading: false,
       });
     }

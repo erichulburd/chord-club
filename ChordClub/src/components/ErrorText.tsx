@@ -18,7 +18,7 @@ const unhandledErrors = new Set([
 ]);
 
 const getErrorText = (error: ApolloError | string) => {
-  if (error instanceof ApolloError) {
+  if (error instanceof ApolloError && error.graphQLErrors.length > 0) {
     return error.graphQLErrors
       .map((err) => {
         const code = err.extensions?.code;
@@ -29,7 +29,7 @@ const getErrorText = (error: ApolloError | string) => {
       })
       .join(' ');
   }
-  return error;
+  return defaultServerMessage;
 };
 
 export default ({error, retry}: ErrorTextProps) => (
@@ -51,5 +51,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'flex-start',
     alignItems: 'center',
+    margin: 10,
   },
 });

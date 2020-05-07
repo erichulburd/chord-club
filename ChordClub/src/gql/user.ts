@@ -49,5 +49,11 @@ export interface UpdateUserVariables {
 }
 
 export interface UpdateUserResponse {
-  userUpdate: User;
+  updateUser: User;
 }
+
+export const DELETE_USER = gql`
+  mutation DeleteUser {
+    deleteUser { empty }
+  }
+`;

@@ -23,6 +23,7 @@ import {ChartCreatorScreen} from './ChartCreatorScreen';
 import {Screens} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
 import { FlashcardsScreen } from './FlashcardsScreen';
+import { AccountScreen } from './AccountScreen';
 
 const {Navigator, Screen} = createDrawerNavigator();
 
@@ -66,7 +67,7 @@ const DrawerContent = ({
         accessoryLeft={ThemedIcon('circle', {solid: true})}
         title={Screens.CreateAChart}
       />
-      <DrawerItem accessoryLeft={ThemedIcon('cog')} title={Screens.Settings} />
+      <DrawerItem accessoryLeft={ThemedIcon('user-cog')} title={Screens.Account} />
     </SafeAreaView>
   </Drawer>
 );
@@ -92,7 +93,7 @@ export const AppNavigator = () => (
       <Screen name={Screens.Progressions} component={ProgressionListScreen} />
       <Screen name={Screens.ChordFlashcards} component={FlashcardsScreen} />
       <Screen name={Screens.CreateAChart} component={ChartCreatorScreen} />
-      <Screen name={Screens.Settings} component={Todo} />
+      <Screen name={Screens.Account} component={AccountScreen} />
     </Navigator>
   </NavigationContainer>
 );

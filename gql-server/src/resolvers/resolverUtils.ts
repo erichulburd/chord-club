@@ -1,7 +1,7 @@
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
 import { ApolloError } from 'apollo-server-express';
-import { unauthenticatedError } from '../util/errors';
+import { unauthenticatedError, coerceUnhandledError } from '../util/errors';
 import { ErrorType } from '../types';
 
 export type Resolver<T, U, V = TopLevelRootValue> =
@@ -23,13 +23,13 @@ export const wrapTopLevelOp =
     logger.child({ ms: Date.now() - start, success: true, }).info('success');
     return res;
   } catch (err) {
+    logger.error(err);
+    const apolloError = coerceUnhandledError(err);
     logger = logger.child({
       ms: Date.now() - start,
       success: false,
-      errorCode: (err instanceof ApolloError ?
-        err.code : ErrorType.Unhandled),
+      errorCode: apolloError.code,
     });
-    logger.error(err);
-    throw err;
+    throw apolloError;
   }
 };

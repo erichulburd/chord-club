@@ -18,7 +18,7 @@ export enum Screens {
   ChordFlashcards = 'Chord Flashcards',
   Progressions = 'Progressions',
   CreateAChart = 'Create a Chart',
-  Settings = 'Settings',
+  Account = 'Account',
 }
 
 export const AppScreen = ({

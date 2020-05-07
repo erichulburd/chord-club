@@ -33,8 +33,26 @@ export const invalidChartScope = (scope: string) => new ApolloError(
 
 export const pgReactionUniqueError = /duplicate key value violates unique constraint "reaction_unique"/i;
 
+export const pgUsernameUniqueError = /duplicate key value violates unique constraint "userr_username_unique"/i;
+
+export const coerceUnhandledError = (err: Error) => {
+  if (err instanceof ApolloError) {
+    return err;
+  }
+  if (pgUsernameUniqueError.test(err.message)) {
+    return usernameUniqueError();
+  }
+  if (pgReactionUniqueError.test(err.message)) {
+    return invalidChartReactionError(0);
+  }
+  return new ApolloError(err.message, ErrorType.Unhandled);
+}
+
 export const invalidChartReactionError = (chartID: number) => new ApolloError(
   'You have already reacted to this chart.', ErrorType.InvalidChartTagError, { chartID });
 
 export const forbiddenResourceOpError = (data: any = {}) => new ApolloError(
   'You are not authorized to perform this operation.', ErrorType.ForbiddenResourceOperation, data);
+
+export const usernameUniqueError = () => new ApolloError(
+  'This username has already been taken.', ErrorType.DuplicateUsername);
