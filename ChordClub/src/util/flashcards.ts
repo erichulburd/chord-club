@@ -28,7 +28,7 @@ export const getAnswerStatus = <T>(
   const isCorrect = answerIncludes(option, expectedAnswer);
   if (isSelected) {
     if (!revealed) {
-      return 'primary'
+      return 'basic'
     } else if (isCorrect) {
       return 'success';
     }
@@ -38,7 +38,7 @@ export const getAnswerStatus = <T>(
       return 'danger';
     }
   }
-  return 'primary';
+  return 'basic';
 };
 
 const answerIncludes = <T>(userAnswer: T | undefined | T[], expectedAnswer: T | T[]) => {

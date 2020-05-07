@@ -1,7 +1,8 @@
 import React from 'react';
 import { FlatList } from 'react-native-gesture-handler';
-import { Button } from '@ui-kitten/components';
+import { Button, StyleService, Text } from '@ui-kitten/components';
 import { ThemedIcon } from './FontAwesomeIcons';
+import { View, StyleSheet } from 'react-native';
 
 interface ScoreProps {
   correct: (boolean | undefined);
@@ -34,13 +35,26 @@ interface Props {
 }
 
 export const FlashcardsScores = ({ scores, currentIndex }: Props) => {
-  const scoresWithIndex: [(boolean | undefined), number][] = scores.map((s, i) => [s, i]);
   return (
-    <FlatList
-      horizontal
-      data={scoresWithIndex}
-      keyExtractor={([_correct, index]) => index.toString()}
-      renderItem={(item) => (<Score isCurrent={item.item[1] === currentIndex} correct={item.item[0]} />)}
-    />
-  )
+    <View style={styles.container}>
+      {scores.map((score, i) => (
+        <Score
+          key={i}
+          isCurrent={i === currentIndex}
+          correct={score}
+        />
+      ))}
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    width: '100%',
+  }
+})

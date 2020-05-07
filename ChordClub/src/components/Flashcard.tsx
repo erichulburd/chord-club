@@ -16,8 +16,9 @@ interface Props {
   chart: Chart;
   flashcardSettings: FlashcardSettings;
   answer: FlashcardAnswer;
-  revealed: boolean;
+  score: boolean | undefined;
   extensions: QueryResult<GetExtensionsData, Record<string, any>>;
+  headerContent: React.ReactElement;
   reveal: () => void;
   next: () => void;
   back: () => void;
@@ -25,9 +26,12 @@ interface Props {
 }
 
 export const Flashcard = ({
-  chart, reveal, next, back, flashcardSettings, answer, revealed,
-  updateAnswer, extensions,
+  chart, reveal, next, back, flashcardSettings, answer, score,
+  updateAnswer, extensions, headerContent,
 }: Props) => {
+  const Header = (props?: ViewProps) => (
+    <View {...props} style={[props?.style, styles.header]}>{headerContent}</View>
+  );
   const Footer = (props?: ViewProps) => (
     <View {...props} style={[props?.style, styles.footer]}>
       <Button
@@ -39,7 +43,7 @@ export const Flashcard = ({
       <Button
         appearance="outline"
         size="small"
-        disabled={revealed}
+        disabled={score !== undefined}
         onPress={reveal}
         accessoryLeft={ThemedIcon('eye')}
       />
@@ -61,10 +65,17 @@ export const Flashcard = ({
     }
     updateAnswer({ ...answer, extensions: extensionAnswer });
   }
+  let status = 'basic';
+  if (score === false) {
+    status = 'danger';
+  } else if (score === true) {
+    status = 'success';
+  }
   return (
     <Card
       disabled
-      status="basic"
+      status={status}
+      header={Header}
       footer={Footer}
     >
       <View>
@@ -75,7 +86,7 @@ export const Flashcard = ({
           <FlashcardQuality
             userAnswer={answer.quality}
             expectedAnswer={chart.quality}
-            revealed={revealed}
+            revealed={score !== undefined}
             onSelect={quality => updateAnswer({ ...answer, quality })}
           />
         </View>
@@ -85,7 +96,7 @@ export const Flashcard = ({
           <FlashcardTone
             userAnswer={answer.tone}
             expectedAnswer={chart.root}
-            revealed={revealed}
+            revealed={score !== undefined}
             onSelect={tone => updateAnswer({ ...answer, tone })}
           />
         </View>
@@ -99,7 +110,7 @@ export const Flashcard = ({
               extensions={extensions.data.extensions}
               userAnswer={answer.extensions || []}
               expectedAnswer={chart.extensions || []}
-              revealed={revealed}
+              revealed={score !== undefined}
               onSelect={toggleExtension}
             />
           }
@@ -114,5 +125,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-around',
+  },
+  header: {
   }
 });

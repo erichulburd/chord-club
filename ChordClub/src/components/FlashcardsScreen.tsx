@@ -6,6 +6,8 @@ import { Flashcards } from './Flashcards';
 export const FlashcardsScreen = () => {
   return (
     <ChartQueryView
+      expandable={false}
+      reversable={false}
       title={Screens.ChordFlashcards}
       settingsPath={'flashcards'}
       renderQueryResults={({query}) => (

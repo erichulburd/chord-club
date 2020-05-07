@@ -3,13 +3,14 @@ import { ChartQuery } from '../types';
 import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables } from '../gql/chart';
 import { useQuery } from 'react-apollo';
 import { FlashcardsScores } from './FlashcardsScores';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Flashcard } from './Flashcard';
 import { FlashcardsSettings } from './FlashcardsSettings';
-import { Spinner, Button, Text } from '@ui-kitten/components';
+import { Spinner, Button, Text, Card } from '@ui-kitten/components';
 import { FlashcardAnswer, FlashcardSettings, isAnswerCorrect } from '../util/flashcards';
 import { GET_EXTENSIONS, GetExtensionsData } from '../gql/extension';
 import omit from 'lodash/omit';
+import { FlashcardTotalScore } from './FlashcardTotalScore';
 
 
 interface Props {
@@ -94,52 +95,43 @@ export const Flashcards = ({ query }: Props) => {
     );
   }
   return (
-    <View>
+    <View style={styles.container}>
       {chartIndex === undefined && (
-        <>
-          <FlashcardsSettings
-            settings={settings}
-            setFlashcardSettings={setFlashcardSettings}
-          />
-          <Button
-            size="giant"
-            appearance="outline"
-            onPress={() => setChartIndex(0)}
-          >Begin!</Button>
-        </>
+        <FlashcardsSettings
+          settings={settings}
+          updateFlashcardSettings={setFlashcardSettings}
+          done={() => setChartIndex(0)}
+        />
       )}
       {(chartIndex !== undefined && chartIndex < scores.length) && (
-        <>
-          <FlashcardsScores currentIndex={chartIndex} scores={scores} />
-          <Flashcard
-            extensions={extensionsResult}
-            revealed={revealed}
-            chart={charts[chartIndex]}
-            next={next}
-            reveal={reveal}
-            answer={answers[chartIndex]}
-            updateAnswer={updateAnswer}
-            flashcardSettings={settings}
-          />
-        </>
+        <Flashcard
+          extensions={extensionsResult}
+          score={scores[chartIndex]}
+          chart={charts[chartIndex]}
+          headerContent={<FlashcardsScores currentIndex={chartIndex} scores={scores} />}
+          next={next}
+          back={back}
+          reveal={reveal}
+          answer={answers[chartIndex]}
+          updateAnswer={updateAnswer}
+          flashcardSettings={settings}
+        />
       )}
       {chartIndex === scores.length && (
-        <View>
-          <Text category="h1">{getTotalScore(scores)}%</Text>
-          <Button
-            size="giant"
-            appearance="outline"
-            onPress={reset}
-          >Go Again!</Button>
-        </View>
+        <FlashcardTotalScore
+          reset={reset}
+          scores={scores}
+        />
       )}
     </View>
 
   );
 };
 
-const getTotalScore = (scores: (boolean | undefined)[]) => {
-  const correctCt = scores.reduce((prev, score) => prev + (score === true ? 1 : 0), 0);
-  const total = scores.reduce((prev) => prev + 1, 0);
-  return Math.round(100 * correctCt / total).toString();
-}
+const styles = StyleSheet.create({
+  container: {
+    paddingTop: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
+  }
+});

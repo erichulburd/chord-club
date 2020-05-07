@@ -12,6 +12,7 @@ interface ManualProps {
   title: Screens;
   settingsPath: SettingsPath;
   expandable?: boolean;
+  reversable?: boolean;
   renderQueryResults: (setting: ChartViewSetting) => React.ReactElement;
 }
 
@@ -22,6 +23,7 @@ const ChartQueryView = ({
   renderQueryResults,
   userCtx,
   settingsPath,
+  reversable = true,
   expandable = true,
 }: Props) => {
   const settings = userCtx.user?.settings[settingsPath];
@@ -32,7 +34,7 @@ const ChartQueryView = ({
     setIsEditorOpen(false);
   };
   let menuItems: MenuItemData[] = [];
-  if (expandable && settings) {
+  if (settings) {
     const {query, compact} = settings;
     menuItems = [
       {
@@ -40,18 +42,22 @@ const ChartQueryView = ({
         themedIconName: 'filter',
         onPress: () => setIsEditorOpen(!isEditorOpen),
       },
-      {
+    ]
+    if (reversable) {
+      menuItems.push({
         title: 'Reverse',
         themedIconName: query.asc ? 'sort-amount-up' : 'sort-amount-down',
         onPress: () =>
           userCtx.updateChartQuery(settingsPath, {...query, asc: !query.asc}),
-      },
-      {
+      });
+    }
+    if (expandable) {
+      menuItems.push({
         title: compact ? 'Expand' : 'Compact',
         themedIconName: compact ? 'expand' : 'compress',
         onPress: () => userCtx.updateCompact(settingsPath, !compact),
-      },
-    ];
+      });
+    }
   }
   const {userError, userLoading} = userCtx;
 
