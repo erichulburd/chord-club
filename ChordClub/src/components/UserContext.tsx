@@ -1,11 +1,9 @@
 import React, {createContext, PropsWithChildren} from 'react';
-import auth, {AuthState, AuthActions, AuthEventType} from '../util/auth';
+import auth, {AuthState, AuthActions} from '../util/auth';
 import {
   User,
   ChartQuery,
   UserUpdate,
-  UserSettings,
-  ChartViewSetting,
   BaseScopes,
   ChartType,
 } from '../types';
@@ -20,11 +18,9 @@ import {
 } from '../gql/user';
 import omit from 'lodash/omit';
 import pickBy from 'lodash/pickBy';
-import get from 'lodash/get';
+import { UserSettings, SettingsPath, ChartViewSetting, FlashcardOptions, FlashcardViewSetting } from '../util/settings';
 
 interface Props extends WithApolloClient<{}> {}
-
-export type SettingsPath = Exclude<keyof UserSettings, '__typename'>;
 
 export interface UserContextState {
   authState: AuthState;
@@ -38,6 +34,7 @@ export interface UserContextState {
 
 export interface UserContextValue extends UserContextState {
   updateUser: (update: Partial<User>) => void;
+  updateSettings: (settingsPath: SettingsPath, update: Partial<ChartViewSetting> | Partial<FlashcardViewSetting>) => void;
   updateChartQuery: (settingsPath: SettingsPath, update: ChartQuery) => void;
   updateCompact: (settingsPath: SettingsPath, compact: boolean) => void;
   updateUsername: (username: string) => void;
@@ -57,6 +54,7 @@ const initialState = {
 export const AuthContext = createContext<UserContextValue>({
   ...initialState,
   updateUser: userContextInitializedError,
+  updateSettings: userContextInitializedError,
   updateChartQuery: userContextInitializedError,
   updateCompact: userContextInitializedError,
   updateUsername: userContextInitializedError,
@@ -66,35 +64,19 @@ const coalesceUserAndUpdate = (
   user: User | undefined,
   update: Partial<UserUpdate>,
 ): UserUpdate => {
-  const coalesced = {
+  return {
     ...(omit(pickBy(user || {}), [
       '__typename',
       'uid',
-      'created',
-      'settings',
+      'createdAt',
     ]) as UserUpdate),
     ...update,
   };
-  // Clean settings of __typenames
-  const userSettings = coalesced.settings || {};
-  if (userSettings) {
-    delete (userSettings as UserSettings).__typename;
-    ['chords', 'progressions', 'flashcards'].forEach((settingPath) => {
-      const setting = get(userSettings, settingPath) as ChartViewSetting;
-      if (setting) {
-        delete setting.__typename;
-      }
-      if (setting.query) {
-        delete setting.query.__typename;
-      }
-    });
-  }
-  return coalesced;
 };
 
 const ensureDefaultChartViewSettings = (user: User): UserSettings => {
   const {uid} = user;
-  const settings = {...user.settings};
+  const settings: UserSettings = {...user.settings};
   const defaultScopes = uid ? [BaseScopes.Public, uid] : [BaseScopes.Public];
   if (!settings.chords) {
     settings.chords = {
@@ -122,7 +104,11 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
         limit: 10,
       },
       compact: false,
+      options: { tone: false, quality: true, extensions: false }
     };
+  }
+  if (!settings.flashcards.options) {
+    settings.flashcards.options = { tone: false, quality: true, extensions: false };
   }
   return settings;
 };
@@ -206,6 +192,15 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
     this.updateUser({settings});
   };
 
+  private updateSettings = async (
+    settingsPath: SettingsPath,
+    update: Partial<ChartViewSetting> | Partial<FlashcardViewSetting>,
+  ) => {
+    const settings = this.state.user?.settings || {};
+    settings[settingsPath] = {...(settings[settingsPath] || {}), ...update};
+    this.updateUser({settings});
+  };
+
   private updateCompact = async (
     settingsPath: SettingsPath,
     compact: boolean,
@@ -226,6 +221,7 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
     const value = {
       ...this.state,
       updateUser: this.updateUser,
+      updateSettings: this.updateSettings,
       updateUsername: this.updateUsername,
       updateChartQuery: this.updateChartQuery,
       updateCompact: this.updateCompact,

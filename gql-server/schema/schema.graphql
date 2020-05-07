@@ -1,6 +1,9 @@
 scalar ConstraintString
 scalar ConstraintNumber
 
+scalar JSON
+scalar JSONObject
+
 directive @constraint(
   # String constraints
   minLength: Int
@@ -215,18 +218,7 @@ enum ChartQueryOrder {
   RANDOM,
 }
 
-type ChartQuery {
-  id: Int
-  tagIDs: [Int!]
-  chartTypes: [ChartType!]!
-  after: Int
-  order: ChartQueryOrder
-  asc: Boolean
-  limit: Int
-  scopes: [String!]
-}
-
-input ChartQueryInput {
+input ChartQuery {
   id: Int
   tagIDs: [Int!]
   chartTypes: [ChartType!]!
@@ -241,33 +233,11 @@ interface UserBase {
   username: String!
 }
 
-type ChartViewSetting {
-  query: ChartQuery!
-  compact: Boolean
-}
-
-input ChartViewSettingInput {
-  query: ChartQueryInput!
-  compact: Boolean
-}
-
-type UserSettings {
-  chords: ChartViewSetting
-  progressions: ChartViewSetting
-  flashcards: ChartViewSetting
-}
-
-input UserSettingsInput {
-  chords: ChartViewSettingInput
-  progressions: ChartViewSettingInput
-  flashcards: ChartViewSettingInput
-}
-
 type User implements UserBase {
   uid: String!
   username: String!
   createdAt: String!
-  settings: UserSettings!
+  settings: JSONObject!
 }
 
 input UserNew {
@@ -276,7 +246,7 @@ input UserNew {
 
 input UserUpdate {
   username: String!
-  settings: UserSettingsInput
+  settings: JSONObject
 }
 
 enum UserQueryOrder {
@@ -322,7 +292,7 @@ type ErrorExtensions {
 type Query {
   me: User!
   users(query: UserQuery!): [User!]!
-  charts(query: ChartQueryInput!): [Chart!]!
+  charts(query: ChartQuery!): [Chart!]!
   tags(query: TagQuery!): [Tag!]!
   extensions: [Extension!]!
 }

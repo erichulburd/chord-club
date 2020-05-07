@@ -1,19 +1,21 @@
 import React, {useState} from 'react';
 import {ChartQueryModal} from './ChartQueryModal';
 import {View, StyleSheet} from 'react-native';
-import {ChartQuery, ChartViewSetting} from '../types';
+import {ChartQuery} from '../types';
 import {AppScreen, Screens} from './AppScreen';
 import ErrorText from './ErrorText';
 import {Spinner} from '@ui-kitten/components';
-import {withUser, SettingsPath, UserConsumerProps} from './UserContext';
+import {withUser, UserConsumerProps} from './UserContext';
 import {MenuItemData} from './Title';
+import { ChartViewSetting, SettingsPath, FlashcardViewSetting } from '../util/settings';
 
 interface ManualProps {
   title: Screens;
   settingsPath: SettingsPath;
   expandable?: boolean;
   reversable?: boolean;
-  renderQueryResults: (setting: ChartViewSetting) => React.ReactElement;
+  renderQueryResults: ((setting: ChartViewSetting) => React.ReactElement) |
+    ((setting: FlashcardViewSetting) => React.ReactElement);
 }
 
 interface Props extends ManualProps, UserConsumerProps {}

@@ -8,11 +8,17 @@ export type Scalars = {
   Float: number;
   ConstraintString: any;
   ConstraintNumber: any;
+  JSON: any;
+  JSONObject: any;
 };
+
+
+
+
 
 export enum TagType {
   Descriptor = 'DESCRIPTOR',
-  List = 'LIST',
+  List = 'LIST'
 }
 
 export type TagBase = {
@@ -22,7 +28,7 @@ export type TagBase = {
 };
 
 export type Tag = TagBase & {
-  __typename?: 'Tag';
+   __typename?: 'Tag';
   id: Scalars['Int'];
   munge: Scalars['String'];
   displayName: Scalars['String'];
@@ -41,12 +47,12 @@ export type TagNew = {
 };
 
 export enum BaseScopes {
-  Public = 'PUBLIC',
+  Public = 'PUBLIC'
 }
 
 export enum TagQueryOrder {
   DisplayName = 'DISPLAY_NAME',
-  CreatedAt = 'CREATED_AT',
+  CreatedAt = 'CREATED_AT'
 }
 
 export type TagQuery = {
@@ -62,11 +68,11 @@ export type TagQuery = {
 
 export enum ReactionType {
   Star = 'STAR',
-  Flag = 'FLAG',
+  Flag = 'FLAG'
 }
 
 export type Reaction = {
-  __typename?: 'Reaction';
+   __typename?: 'Reaction';
   chartID: Scalars['Int'];
   reactionType: ReactionType;
   createdBy: Scalars['String'];
@@ -81,7 +87,7 @@ export type ReactionNew = {
 
 export enum ChartType {
   Chord = 'CHORD',
-  Progression = 'PROGRESSION',
+  Progression = 'PROGRESSION'
 }
 
 export type ChartBase = {
@@ -101,13 +107,13 @@ export type ChartBase = {
 };
 
 export type ReactionCounts = {
-  __typename?: 'ReactionCounts';
+   __typename?: 'ReactionCounts';
   stars: Scalars['Int'];
   flags: Scalars['Int'];
 };
 
 export type Chart = ChartBase & {
-  __typename?: 'Chart';
+   __typename?: 'Chart';
   id: Scalars['Int'];
   audioURL: Scalars['String'];
   audioLength: Scalars['Int'];
@@ -169,7 +175,7 @@ export enum Note {
   Fs = 'Fs',
   Gs = 'Gs',
   As = 'As',
-  Bs = 'Bs',
+  Bs = 'Bs'
 }
 
 export enum ChartQuality {
@@ -178,23 +184,23 @@ export enum ChartQuality {
   Sus2 = 'SUS2',
   Sus4 = 'SUS4',
   Diminished = 'DIMINISHED',
-  Augmented = 'AUGMENTED',
+  Augmented = 'AUGMENTED'
 }
 
 export enum ExtensionType {
   Sharp = 'SHARP',
   Flat = 'FLAT',
-  Plain = 'PLAIN',
+  Plain = 'PLAIN'
 }
 
 export type ExtensionNew = {
-  __typename?: 'ExtensionNew';
+   __typename?: 'ExtensionNew';
   extensionType: ExtensionType;
   degree: Scalars['Int'];
 };
 
 export type Extension = {
-  __typename?: 'Extension';
+   __typename?: 'Extension';
   id: Scalars['Int'];
   extensionType: ExtensionType;
   degree: Scalars['Int'];
@@ -221,22 +227,10 @@ export enum ChartQueryOrder {
   ThumbsUp = 'THUMBS_UP',
   CreatedAt = 'CREATED_AT',
   TagPosition = 'TAG_POSITION',
-  Random = 'RANDOM',
+  Random = 'RANDOM'
 }
 
 export type ChartQuery = {
-  __typename?: 'ChartQuery';
-  id?: Maybe<Scalars['Int']>;
-  tagIDs?: Maybe<Array<Scalars['Int']>>;
-  chartTypes: Array<ChartType>;
-  after?: Maybe<Scalars['Int']>;
-  order?: Maybe<ChartQueryOrder>;
-  asc?: Maybe<Scalars['Boolean']>;
-  limit?: Maybe<Scalars['Int']>;
-  scopes?: Maybe<Array<Scalars['String']>>;
-};
-
-export type ChartQueryInput = {
   id?: Maybe<Scalars['Int']>;
   tagIDs?: Maybe<Array<Scalars['Int']>>;
   chartTypes: Array<ChartType>;
@@ -251,36 +245,12 @@ export type UserBase = {
   username: Scalars['String'];
 };
 
-export type ChartViewSetting = {
-  __typename?: 'ChartViewSetting';
-  query: ChartQuery;
-  compact?: Maybe<Scalars['Boolean']>;
-};
-
-export type ChartViewSettingInput = {
-  query: ChartQueryInput;
-  compact?: Maybe<Scalars['Boolean']>;
-};
-
-export type UserSettings = {
-  __typename?: 'UserSettings';
-  chords?: Maybe<ChartViewSetting>;
-  progressions?: Maybe<ChartViewSetting>;
-  flashcards?: Maybe<ChartViewSetting>;
-};
-
-export type UserSettingsInput = {
-  chords?: Maybe<ChartViewSettingInput>;
-  progressions?: Maybe<ChartViewSettingInput>;
-  flashcards?: Maybe<ChartViewSettingInput>;
-};
-
 export type User = UserBase & {
-  __typename?: 'User';
+   __typename?: 'User';
   uid: Scalars['String'];
   username: Scalars['String'];
   createdAt: Scalars['String'];
-  settings: UserSettings;
+  settings: Scalars['JSONObject'];
 };
 
 export type UserNew = {
@@ -289,12 +259,12 @@ export type UserNew = {
 
 export type UserUpdate = {
   username: Scalars['String'];
-  settings?: Maybe<UserSettingsInput>;
+  settings?: Maybe<Scalars['JSONObject']>;
 };
 
 export enum UserQueryOrder {
   CreatedBy = 'CREATED_BY',
-  Username = 'USERNAME',
+  Username = 'USERNAME'
 }
 
 export type UserQuery = {
@@ -317,23 +287,23 @@ export enum ErrorType {
   InvalidTagPositionUpdate = 'INVALID_TAG_POSITION_UPDATE',
   Unhandled = 'UNHANDLED',
   InternalServerError = 'INTERNAL_SERVER_ERROR',
-  ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION',
+  ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION'
 }
 
 export type ErrorException = {
-  __typename?: 'ErrorException';
+   __typename?: 'ErrorException';
   stacktrace?: Maybe<Array<Scalars['String']>>;
 };
 
 export type ErrorExtensions = {
-  __typename?: 'ErrorExtensions';
+   __typename?: 'ErrorExtensions';
   msgArgs?: Maybe<Array<Scalars['String']>>;
   code: ErrorType;
   exception?: Maybe<ErrorException>;
 };
 
 export type Query = {
-  __typename?: 'Query';
+   __typename?: 'Query';
   me: User;
   users: Array<User>;
   charts: Array<Chart>;
@@ -341,25 +311,28 @@ export type Query = {
   extensions: Array<Extension>;
 };
 
+
 export type QueryUsersArgs = {
   query: UserQuery;
 };
 
+
 export type QueryChartsArgs = {
-  query: ChartQueryInput;
+  query: ChartQuery;
 };
+
 
 export type QueryTagsArgs = {
   query: TagQuery;
 };
 
 export type Empty = {
-  __typename?: 'Empty';
+   __typename?: 'Empty';
   empty?: Maybe<Scalars['Boolean']>;
 };
 
 export type Mutation = {
-  __typename?: 'Mutation';
+   __typename?: 'Mutation';
   createUser?: Maybe<User>;
   updateUser?: Maybe<User>;
   deleteUser?: Maybe<Empty>;
@@ -376,60 +349,74 @@ export type Mutation = {
   setTagPositions?: Maybe<Array<Maybe<Chart>>>;
 };
 
+
 export type MutationCreateUserArgs = {
   newUser: UserNew;
 };
+
 
 export type MutationUpdateUserArgs = {
   userUpdate: UserUpdate;
 };
 
+
 export type MutationReactArgs = {
   reactionNew?: Maybe<ReactionNew>;
 };
+
 
 export type MutationCreateChartArgs = {
   chartNew: ChartNew;
 };
 
+
 export type MutationUpdateChartArgs = {
   chartUpdate: ChartUpdate;
 };
 
+
 export type MutationDeleteChartArgs = {
   chartID: Scalars['Int'];
 };
+
 
 export type MutationAddExtensionsArgs = {
   chartID: Scalars['Int'];
   extensionIDs: Array<Scalars['Int']>;
 };
 
+
 export type MutationRemoveExtensionsArgs = {
   chartID: Scalars['Int'];
   extensionIDs: Array<Scalars['Int']>;
 };
 
+
 export type MutationCreateTagsArgs = {
   tagNews: Array<TagNew>;
 };
 
+
 export type MutationDeleteTagArgs = {
   tagID: Scalars['Int'];
 };
+
 
 export type MutationAddTagsArgs = {
   chartID: Scalars['Int'];
   tags: Array<TagNew>;
 };
 
+
 export type MutationUnTagArgs = {
   chartID: Scalars['Int'];
   tagIDs: Array<Scalars['Int']>;
 };
+
 
 export type MutationSetTagPositionsArgs = {
   tagID: Scalars['Int'];
   chartIDs: Array<Scalars['Int']>;
   positions: Array<Scalars['Int']>;
 };
+

@@ -1,20 +1,21 @@
 import React from 'react';
 import { Chart, Extension } from '../types';
-import { Card, Button, Spinner, StyleService } from '@ui-kitten/components';
+import { Card, Button, Spinner } from '@ui-kitten/components';
 import { View, ViewProps, StyleSheet } from 'react-native';
 import { AudioPlayer } from './AudioPlayer1';
 import { ThemedIcon } from './FontAwesomeIcons';
-import { FlashcardSettings, FlashcardAnswer } from '../util/flashcards';
+import { FlashcardAnswer } from '../util/flashcards';
 import { FlashcardQuality } from './FlashcardQuality';
 import { FlashcardTone } from './FlashcardTone';
 import { FlashcardExtensions } from './FlashcardExtensions';
 import { GetExtensionsData } from '../gql/extension';
 import { QueryResult } from 'react-apollo';
 import ErrorText from './ErrorText';
+import { FlashcardOptions } from 'src/util/settings';
 
 interface Props {
   chart: Chart;
-  flashcardSettings: FlashcardSettings;
+  options: FlashcardOptions;
   answer: FlashcardAnswer;
   score: boolean | undefined;
   extensions: QueryResult<GetExtensionsData, Record<string, any>>;
@@ -26,7 +27,7 @@ interface Props {
 }
 
 export const Flashcard = ({
-  chart, reveal, next, back, flashcardSettings, answer, score,
+  chart, reveal, next, back, options, answer, score,
   updateAnswer, extensions, headerContent,
 }: Props) => {
   const Header = (props?: ViewProps) => (
@@ -81,7 +82,7 @@ export const Flashcard = ({
       <View>
         <AudioPlayer audio={chart} />
       </View>
-      {flashcardSettings.quality &&
+      {options.quality &&
         <View>
           <FlashcardQuality
             userAnswer={answer.quality}
@@ -91,7 +92,7 @@ export const Flashcard = ({
           />
         </View>
       }
-      {(flashcardSettings.tone && chart.root) &&
+      {(options.tone && chart.root) &&
         <View>
           <FlashcardTone
             userAnswer={answer.tone}
@@ -101,7 +102,7 @@ export const Flashcard = ({
           />
         </View>
       }
-      {(flashcardSettings.extensions) &&
+      {(options.extensions) &&
         <View>
           {extensions.loading && <Spinner />}
           {extensions.error && <ErrorText error={extensions.error} />}

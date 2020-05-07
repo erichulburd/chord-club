@@ -1,16 +1,18 @@
 import React from 'react';
-import { FlashcardSettings } from '../util/flashcards';
 import { View, ViewProps, StyleSheet } from 'react-native';
 import { CheckBox, Card, Button, Text } from '@ui-kitten/components';
+import { FlashcardOptions } from '../util/settings';
+import { UserConsumerProps, withUser } from './UserContext';
 
-interface Props {
-  settings: FlashcardSettings;
-  updateFlashcardSettings: (settings: FlashcardSettings) => void;
+interface ManualProps {
+  options: FlashcardOptions;
   done: () => void;
 }
 
-export const FlashcardsSettings = ({
-  settings, updateFlashcardSettings, done,
+interface Props extends UserConsumerProps, ManualProps {}
+
+const FlashcardsOptionsSelect = ({
+  options, done, userCtx,
 }: Props) => {
   const Footer = (props: ViewProps | undefined) => (
     <View {...props}>
@@ -21,6 +23,9 @@ export const FlashcardsSettings = ({
       >Begin!</Button>
     </View>
   );
+  const updateFlashcardOptions = (options: FlashcardOptions) => {
+    userCtx.updateSettings('flashcards', { options });
+  }
   return (
     <Card
       disabled
@@ -44,20 +49,19 @@ export const FlashcardsSettings = ({
       </View>
       <View style={styles.settings}>
         <CheckBox
-          checked={settings.tone}
-          onChange={(checked) => updateFlashcardSettings({ ...settings, tone: checked })}
+          checked={options.tone}
+          onChange={(checked) => updateFlashcardOptions({ ...options, tone: checked })}
         >Tone</CheckBox>
         <CheckBox
-          checked={settings.quality}
-          onChange={(checked) => updateFlashcardSettings({ ...settings, quality: checked })}
+          checked={options.quality}
+          onChange={(checked) => updateFlashcardOptions({ ...options, quality: checked })}
         >Quality</CheckBox>
         <CheckBox
-          checked={settings.extensions}
-          onChange={(checked) => updateFlashcardSettings({ ...settings, extensions: checked })}
+          checked={options.extensions}
+          onChange={(checked) => updateFlashcardOptions({ ...options, extensions: checked })}
         >Extensions</CheckBox>
       </View>
     </Card>
-
   );
 };
 
@@ -71,3 +75,5 @@ const styles = StyleSheet.create({
     marginBottom: 10
   }
 })
+
+export default withUser<ManualProps>(FlashcardsOptionsSelect);

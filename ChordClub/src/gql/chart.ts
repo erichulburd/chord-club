@@ -83,7 +83,7 @@ export interface UpdateChartResponse {
 }
 
 export const CHARTS_QUERY = gql`
-  query ChartsQuery($query: ChartQueryInput!) {
+  query ChartsQuery($query: ChartQuery!) {
     charts(query: $query) {
       ...ChartDBFields
       userReactionType

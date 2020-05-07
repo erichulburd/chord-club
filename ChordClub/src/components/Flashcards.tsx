@@ -1,36 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { ChartQuery } from '../types';
+import { ChartQuery, Chart } from '../types';
 import { CHARTS_QUERY, ChartsQueryResponse, ChartsQueryVariables } from '../gql/chart';
 import { useQuery } from 'react-apollo';
 import { FlashcardsScores } from './FlashcardsScores';
 import { View, StyleSheet } from 'react-native';
 import { Flashcard } from './Flashcard';
-import { FlashcardsSettings } from './FlashcardsSettings';
-import { Spinner, Button, Text, Card } from '@ui-kitten/components';
-import { FlashcardAnswer, FlashcardSettings, isAnswerCorrect } from '../util/flashcards';
+import FlashcardsOptionsSelect from './FlashcardsOptionsSelect';
+import { Spinner } from '@ui-kitten/components';
+import { FlashcardAnswer, isAnswerCorrect } from '../util/flashcards';
 import { GET_EXTENSIONS, GetExtensionsData } from '../gql/extension';
 import omit from 'lodash/omit';
 import { FlashcardTotalScore } from './FlashcardTotalScore';
+import { FlashcardOptions } from '../util/settings';
 
 
 interface Props {
   query: ChartQuery;
+  options: FlashcardOptions;
 }
 
-export const Flashcards = ({ query }: Props) => {
+export const Flashcards = ({ query, options }: Props) => {
   const extensionsResult = useQuery<GetExtensionsData>(GET_EXTENSIONS);
   const { data, loading, refetch } = useQuery<
     ChartsQueryResponse,
     ChartsQueryVariables
   >(CHARTS_QUERY, {
     variables: {
-      query: omit(query, ['__typename']),
+      query: omit(query, ['__typename']) as ChartQuery,
     },
-  });
-  const [settings, setFlashcardSettings] = useState<FlashcardSettings>({
-    quality: true,
-    tone: false,
-    extensions: false,
   });
   const [chartIndex, setChartIndex] = useState<number | undefined>(undefined);
   const queryLimit = (query.limit === null || query.limit === undefined) ? 10 : query.limit;
@@ -41,7 +38,7 @@ export const Flashcards = ({ query }: Props) => {
       extensions: [],
     })));
   const charts = (data?.charts || []);
-  const chartIDs = charts.map((c) => c.id);
+  const chartIDs = charts.map((c: Chart) => c.id);
   useEffect(() => {
     if (chartIndex === undefined) return;
     reset();
@@ -64,7 +61,7 @@ export const Flashcards = ({ query }: Props) => {
   }
   const reveal = () => {
     if (chartIndex === undefined) return;
-    const isCorrect = isAnswerCorrect(answers[chartIndex], charts[chartIndex], settings);
+    const isCorrect = isAnswerCorrect(answers[chartIndex], charts[chartIndex], options);
     const scoreUpdate = [...scores];
     scoreUpdate[chartIndex] = isCorrect;
     setScores(scoreUpdate);
@@ -90,7 +87,7 @@ export const Flashcards = ({ query }: Props) => {
     setAnswers(answers.map(() => ({
       extensions: [],
     })));
-    refetch().catch((err) => console.error(err));
+    refetch().catch((err: Error) => console.error(err));
   }
   if (loading) {
     return (
@@ -102,9 +99,8 @@ export const Flashcards = ({ query }: Props) => {
   return (
     <View style={styles.container}>
       {chartIndex === undefined && (
-        <FlashcardsSettings
-          settings={settings}
-          updateFlashcardSettings={setFlashcardSettings}
+        <FlashcardsOptionsSelect
+          options={options}
           done={() => setChartIndex(0)}
         />
       )}
@@ -119,7 +115,7 @@ export const Flashcards = ({ query }: Props) => {
           reveal={reveal}
           answer={answers[chartIndex]}
           updateAnswer={updateAnswer}
-          flashcardSettings={settings}
+          options={options}
         />
       )}
       {chartIndex === scores.length && (

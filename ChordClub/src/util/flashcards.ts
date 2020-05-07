@@ -1,16 +1,11 @@
 import { ChartQuality, Extension, Note, Chart } from "src/types";
+import { FlashcardOptions } from "./settings";
 
 
 export interface FlashcardAnswer {
   quality?: ChartQuality;
   extensions?: Extension[];
   tone?: Note;
-}
-
-export interface FlashcardSettings {
-  quality: boolean;
-  extensions: boolean;
-  tone: boolean;
 }
 
 export const getAnswerAppearance = <T>(option: T, userAnswer: T | undefined | T[]) => {
@@ -52,7 +47,7 @@ const answerIncludes = <T>(userAnswer: T | undefined | T[], expectedAnswer: T | 
   return userAnswer === expectedAnswer;
 };
 
-export const isAnswerCorrect = (answer: FlashcardAnswer, chart: Chart, settings: FlashcardSettings) => {
+export const isAnswerCorrect = (answer: FlashcardAnswer, chart: Chart, settings: FlashcardOptions) => {
   if (settings.tone && answer.tone !== chart.root) {
     return false;
   }

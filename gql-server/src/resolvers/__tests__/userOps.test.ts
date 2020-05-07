@@ -128,11 +128,7 @@ describe('user queries', () => {
       query: `
         mutation ($userUpdate: UserUpdate!) {
           updateUser(userUpdate: $userUpdate) {
-            uid username settings {
-              chords { query { asc } compact }
-              progressions { query { asc } compact }
-              flashcards { query { asc } compact }
-            }
+            uid username settings
           }
         }
       `,

@@ -3,6 +3,8 @@ import express, { Request } from 'express';
 import { IncomingForm } from 'formidable';
 import { importSchema } from 'graphql-import';
 import { makeExecutableSchema, IResolvers } from 'graphql-tools';
+import { PoolClient } from 'pg';
+import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json';
 import { makeRequestContext } from './context';
 import { getOperationAST, DocumentNode, OperationDefinitionNode } from 'graphql';
 import Maybe from 'graphql/tsutils/Maybe';
@@ -14,15 +16,19 @@ import { auth0GetKey, getUID } from './auth';
 import { MAX_FILE_SIZE_MB, upload } from './gcStorage';
 import baseLogger from './logger';
 import { ErrorType } from '../types';
-import { PoolClient } from 'pg';
 
 export type TopLevelRootValue = Maybe<OperationDefinitionNode>;
 
 export const initializeApp =
   (clientManager: DBClientManager, getKey: GetPublicKeyOrSecret = auth0GetKey): express.Express => {
   const typeDefs = importSchema(`${__dirname}/../../schema/schema.graphql`);
+  const r = {
+    ...resolvers,
+    JSON: GraphQLJSON,
+    JSONObject: GraphQLJSONObject,
+  };
   const schema = makeExecutableSchema({
-    typeDefs, resolvers: resolvers as IResolvers,
+    typeDefs, resolvers: r as IResolvers,
   });
   const server = new ApolloServer({
     schema,
