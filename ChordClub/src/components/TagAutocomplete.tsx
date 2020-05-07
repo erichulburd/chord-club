@@ -12,7 +12,7 @@ import {GET_TAGS, GetTagsData, GetTagsVariables} from '../gql/tag';
 import {TagQuery, BaseScopes, TagType, TagNew, Tag} from '../types';
 import {ThemedIcon} from './FontAwesomeIcons';
 import throttle from 'lodash/throttle';
-import {makeTagNew, getTagMunge} from '../util/forms';
+import {makeTagNew, getTagMunge, areTagsEqual} from '../util/forms';
 import {withUser, UserConsumerProps} from './UserContext';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import ErrorText from './ErrorText';
@@ -137,7 +137,7 @@ export class TagAutocomplete extends React.Component<Props> {
     const {query, options} = this.state;
     const {onSelect} = this.props;
     const tag = options[index];
-    if (tag === fauxResult) {
+    if (tag === undefined || areTagsEqual(tag, fauxResult)) {
       return;
     }
     onSelect(tag);

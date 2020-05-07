@@ -41,6 +41,11 @@ export const Flashcards = ({ query }: Props) => {
       extensions: [],
     })));
   const charts = (data?.charts || []);
+  const chartIDs = charts.map((c) => c.id);
+  useEffect(() => {
+    if (chartIndex === undefined) return;
+    reset();
+  }, [chartIDs.join(',')]);
   useEffect(() => {
     const chartsLength = data?.charts.length;
     if (chartsLength === undefined) return;
@@ -48,7 +53,7 @@ export const Flashcards = ({ query }: Props) => {
       setScores(scores.slice(0, data?.charts.length));
       setAnswers(answers.slice(0, data?.charts.length));
     }
-  }, [data?.charts.length])
+  }, [data?.charts.length]);
 
   const revealed = chartIndex !== undefined && scores[chartIndex] !== undefined;
   const updateAnswer = (a: FlashcardAnswer) => {
