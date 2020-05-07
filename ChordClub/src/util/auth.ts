@@ -131,8 +131,8 @@ const auth0Login = (): Promise<Auth0Credentials> =>
 const auth0Logout = () => auth0.webAuth.clearSession({federated: true});
 
 export interface AuthActions {
-  login: () => void;
-  logout: () => void;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
   initialize: () => void;
   sessionExpired: () => void;
 }

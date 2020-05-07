@@ -19,6 +19,7 @@ export enum Screens {
   Progressions = 'Progressions',
   CreateAChart = 'Create a Chart',
   Account = 'Account',
+  Logout = 'Logout',
 }
 
 export const AppScreen = ({

@@ -11,7 +11,7 @@ import React from 'react';
 import 'react-native-gesture-handler';
 import {ApolloProvider} from '@apollo/react-hooks';
 import {ApplicationProvider, IconRegistry} from '@ui-kitten/components';
-import {AppNavigator} from './components/Navigator';
+import AppNavigator from './components/Navigator';
 import * as eva from '@eva-design/eva';
 import client from './client';
 import logger from './util/logger';

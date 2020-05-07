@@ -5,7 +5,6 @@ import {
   CheckBox,
   IconProps,
   Spinner,
-  Text,
 } from '@ui-kitten/components';
 import {View, StyleProp, ViewStyle} from 'react-native';
 import {GET_TAGS, GetTagsData, GetTagsVariables} from '../gql/tag';

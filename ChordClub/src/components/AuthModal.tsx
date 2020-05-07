@@ -3,6 +3,7 @@ import {Button, Card, Modal, Text, Spinner} from '@ui-kitten/components';
 import {StyleSheet, ViewProps, View} from 'react-native';
 import {UserConsumerProps, withUser} from './UserContext';
 import UsernameModal from './UsernameModal';
+import { withApollo, WithApolloClient } from 'react-apollo';
 
 const styles = StyleSheet.create({
   container: {
@@ -13,7 +14,9 @@ const styles = StyleSheet.create({
   },
 });
 
-const AuthModal = ({userCtx}: UserConsumerProps) => {
+interface Props extends UserConsumerProps, WithApolloClient<{}> {}
+
+const AuthModal = ({userCtx, client}: Props) => {
   const {
     authState,
     authActions: {login},
@@ -23,9 +26,13 @@ const AuthModal = ({userCtx}: UserConsumerProps) => {
   if (isLoggedIn) {
     return <UsernameModal />;
   }
+  const onLogin = async () => {
+    await login();
+    await client.resetStore();
+  }
   const Footer = (props?: ViewProps) => (
     <View {...props}>
-      <Button status="success" onPress={login} appearance="outline">
+      <Button status="success" onPress={onLogin} appearance="outline">
         Login or sign up
       </Button>
     </View>
@@ -51,4 +58,4 @@ const AuthModal = ({userCtx}: UserConsumerProps) => {
   );
 };
 
-export default withUser<{}>(AuthModal);
+export default withUser<{}>(withApollo<UserConsumerProps>(AuthModal));
