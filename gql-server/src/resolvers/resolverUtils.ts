@@ -1,8 +1,6 @@
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
-import { ApolloError } from 'apollo-server-express';
 import { unauthenticatedError, coerceUnhandledError } from '../util/errors';
-import { ErrorType } from '../types';
 
 export type Resolver<T, U, V = TopLevelRootValue> =
   (obj: V, args: T, context: Context) => Promise<U>;
