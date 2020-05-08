@@ -67,13 +67,13 @@ export const Flashcards = ({ query, options, mountID }: Props) => {
     }
     setChartIndex(chartIndex+1);
   };
-  const reset = (shouldRefech = true) => {
+  const reset = (shouldRefetch = true) => {
     setChartIndex(undefined);
     setScores(scores.map(() => undefined));
     setAnswers(answers.map(() => ({
       extensions: [],
     })));
-    if (shouldRefech) {
+    if (shouldRefetch) {
       refetch().catch((err: Error) => console.error(err));
     }
   }
