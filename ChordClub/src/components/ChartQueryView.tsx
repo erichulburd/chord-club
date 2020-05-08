@@ -89,4 +89,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withUser<ManualProps>(ChartQueryView);
+export default withUser<ManualProps<ChartViewSetting | FlashcardViewSetting>>(ChartQueryView);
