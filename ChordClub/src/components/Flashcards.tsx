@@ -9,48 +9,34 @@ import FlashcardsOptionsSelect from './FlashcardsOptionsSelect';
 import { Spinner } from '@ui-kitten/components';
 import { FlashcardAnswer, isAnswerCorrect } from '../util/flashcards';
 import { GET_EXTENSIONS, GetExtensionsData } from '../gql/extension';
-import omit from 'lodash/omit';
 import { FlashcardTotalScore } from './FlashcardTotalScore';
 import { FlashcardOptions } from '../util/settings';
-
+import range from 'lodash/range';
 
 interface Props {
   query: ChartQuery;
   options: FlashcardOptions;
+  mountID: string;
 }
 
-export const Flashcards = ({ query, options }: Props) => {
+export const Flashcards = ({ query, options, mountID }: Props) => {
   const extensionsResult = useQuery<GetExtensionsData>(GET_EXTENSIONS);
   const { data, loading, refetch } = useQuery<
     ChartsQueryResponse,
     ChartsQueryVariables
   >(CHARTS_QUERY, {
     variables: {
-      query: omit(query, ['__typename']) as ChartQuery,
+      query,
     },
   });
   const [chartIndex, setChartIndex] = useState<number | undefined>(undefined);
   const queryLimit = (query.limit === null || query.limit === undefined) ? 10 : query.limit;
-  const [scores, setScores] = useState<(boolean | undefined)[]>(
-    Array.apply(null, Array(query.limit)).map(() => undefined));
-  const [answers, setAnswers] = useState<FlashcardAnswer[]>(
-    Array.apply(null, Array(query.limit)).map(() => ({
-      extensions: [],
-    })));
+  const [scores, setScores] = useState<(boolean | undefined)[]>(range(queryLimit).map(() => undefined));
+  const [answers, setAnswers] = useState<FlashcardAnswer[]>(range(queryLimit).map(() => ({
+    extensions: [],
+  })));
   const charts = (data?.charts || []);
   const chartIDs = charts.map((c: Chart) => c.id);
-  useEffect(() => {
-    if (chartIndex === undefined) return;
-    reset();
-  }, [chartIDs.join(',')]);
-  useEffect(() => {
-    const chartsLength = data?.charts.length;
-    if (chartsLength === undefined) return;
-    if (chartsLength < queryLimit) {
-      setScores(scores.slice(0, data?.charts.length));
-      setAnswers(answers.slice(0, data?.charts.length));
-    }
-  }, [data?.charts.length]);
 
   const revealed = chartIndex !== undefined && scores[chartIndex] !== undefined;
   const updateAnswer = (a: FlashcardAnswer) => {
@@ -81,14 +67,35 @@ export const Flashcards = ({ query, options }: Props) => {
     }
     setChartIndex(chartIndex+1);
   };
-  const reset = () => {
+  const reset = (shouldRefetch = true) => {
     setChartIndex(undefined);
     setScores(scores.map(() => undefined));
     setAnswers(answers.map(() => ({
       extensions: [],
     })));
-    refetch().catch((err: Error) => console.error(err));
+    if (shouldRefetch) {
+      refetch().catch((err: Error) => console.error(err));
+    }
   }
+  useEffect(() => {
+    reset();
+  }, [mountID]);
+  useEffect(() => {
+    if (chartIndex === undefined) return;
+    // if user changes chart query and results are returned,
+    // reset flashcards.
+    reset();
+  }, [chartIDs.join(',')]);
+  useEffect(() => {
+    const chartsLength = charts.length;
+    if (chartsLength === undefined) return;
+    if (chartsLength < queryLimit) {
+      setScores(range(charts.length).map(() => undefined));
+      setAnswers(range(charts.length).map(() => ({
+        extensions: [],
+      })));
+    }
+  }, [charts.length]);
   if (loading) {
     return (
       <View>

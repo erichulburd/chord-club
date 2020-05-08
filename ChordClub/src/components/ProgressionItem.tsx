@@ -13,6 +13,7 @@ import {ChartFooter} from './ChartFooter';
 
 interface ManualProps {
   chart: Chart;
+  compact: boolean | undefined;
   editChart: (chart: Chart) => void;
   onDeleteChart: (chartID: number) => void;
   next: () => void;
@@ -20,6 +21,7 @@ interface ManualProps {
 interface Props extends ManualProps, UserConsumerProps {}
 
 const ProgressionItem = ({
+  compact,
   chart,
   userCtx,
   editChart,
@@ -65,8 +67,9 @@ const ProgressionItem = ({
       disabled
       style={styles.card}
       status="success"
-      footer={Footer}
-      header={Header}>
+      footer={compact ? undefined : Footer}
+      header={compact ? undefined : Header}
+    >
       <View>
         <Text>{chart.name || 'Unnamed'}</Text>
         <AudioPlayer audio={chart} />

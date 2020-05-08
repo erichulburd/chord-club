@@ -1,5 +1,5 @@
-import React from 'react';
-import {View, StyleSheet} from 'react-native';
+import React, { useState } from 'react';
+import {View, StyleSheet, GestureResponderEvent} from 'react-native';
 import {
   Button,
   withStyles,
@@ -10,6 +10,7 @@ import {ThemedIcon} from './FontAwesomeIcons';
 import {
   TouchableOpacity,
   TapGestureHandler,
+  NativeViewGestureHandler,
 } from 'react-native-gesture-handler';
 import {getCalRatio} from '../util/screen';
 import {
@@ -26,6 +27,7 @@ interface Props extends ThemedComponentProps {
 }
 
 interface State {
+  width: number;
   audioState?: AudioState;
   subscription?: ZenObservable.Subscription;
 }
@@ -38,9 +40,8 @@ const getColors = (theme: Record<string, string>) => ({
 });
 
 export class AudioPlayer extends React.Component<Props> {
-  private subscription?: ZenObservable.Subscription;
   private audioStateObserver: AudioStateObserver;
-  public state: State = {};
+  public state: State = { width: getCalRatio().width };
 
   constructor(props: Props) {
     super(props);
@@ -52,6 +53,7 @@ export class AudioPlayer extends React.Component<Props> {
   }
 
   private _unsubscribe() {
+    this.audioStateObserver.close();
     if (this.state.subscription) {
       this.state.subscription.unsubscribe();
       this.setState({subscription: undefined});
@@ -108,6 +110,11 @@ export class AudioPlayer extends React.Component<Props> {
         action = () => audioStateObserver.pause();
       }
     }
+    const seek = (e: GestureResponderEvent) => {
+      const ratio = (e.nativeEvent.locationX  / this.state.width);
+      console.info('RATIO', e.nativeEvent.locationX , this.state.width, ratio);
+      audioStateObserver.seek(ratio);
+    }
     return (
       <View style={styles.container}>
         <View style={styles.innerContainer}>
@@ -118,7 +125,10 @@ export class AudioPlayer extends React.Component<Props> {
             accessoryLeft={actionIcon}
             onPress={action}
           />
-          <TouchableOpacity onPress={audioStateObserver.seek}>
+          <View
+            onTouchEndCapture={seek}
+            onLayout={(e) => this.setState({ width: e.nativeEvent.layout.width })}
+          >
             <View
               style={[
                 styles.viewBar,
@@ -131,7 +141,7 @@ export class AudioPlayer extends React.Component<Props> {
                 ]}
               />
             </View>
-          </TouchableOpacity>
+          </View>
         </View>
       </View>
     );

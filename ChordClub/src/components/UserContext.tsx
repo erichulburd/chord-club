@@ -6,6 +6,7 @@ import {
   UserUpdate,
   BaseScopes,
   ChartType,
+  ChartQueryOrder,
 } from '../types';
 import {WithApolloClient, withApollo} from 'react-apollo';
 import {ApolloError} from 'apollo-client';
@@ -84,6 +85,7 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
     settings.chords = {
       query: {
         scopes: defaultScopes,
+        order: ChartQueryOrder.CreatedAt,
         chartTypes: [ChartType.Chord],
       },
       compact: false,
@@ -93,6 +95,7 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
     settings.progressions = {
       query: {
         scopes: defaultScopes,
+        order: ChartQueryOrder.CreatedAt,
         chartTypes: [ChartType.Progression],
       },
       compact: true,
@@ -103,6 +106,7 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
       query: {
         scopes: defaultScopes,
         chartTypes: [ChartType.Chord],
+        order: ChartQueryOrder.Random,
         limit: 10,
       },
       compact: false,

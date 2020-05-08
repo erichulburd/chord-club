@@ -39,7 +39,7 @@ const strToNote = (n: string) =>
 
 interface Props {
   onSelect: (note: Note) => void;
-  initialValue?: Note | undefined | string;
+  initialValue?: Note | undefined | null;
   disabled?: boolean;
   style?: StyleProp<TextStyle>;
   placeholder?: string;

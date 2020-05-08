@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useQuery, useMutation} from '@apollo/react-hooks';
-import {ChartQuery, Chart} from '../types';
+import {ChartQuery, Chart, ChartType} from '../types';
 import last from 'lodash/last';
 import {
   CHARTS_QUERY,
@@ -10,12 +10,26 @@ import {
   DeleteChartMutationVariables,
 } from '../gql/chart';
 import {FlatList} from 'react-native-gesture-handler';
-import {Spinner, Text} from '@ui-kitten/components';
+import {Spinner, Text, Button} from '@ui-kitten/components';
 import ChordItem from './ChordItem';
 import {View, RefreshControl, StyleSheet} from 'react-native';
 import {withModalContext, ModalContextProps} from './ModalProvider';
 import {ChordClubShim} from '../../types/ChordClubShim';
-import omit from 'lodash/omit';
+import { useNavigation } from '@react-navigation/native';
+import { Screens } from './AppScreen';
+
+const CreateChordLink = () => {
+  const navigation = useNavigation();
+  return (
+    <Button
+      appearance="outline"
+      status="info"
+      onPress={() => navigation.navigate(Screens.CreateAChart, {
+        chartType: ChartType.Chord,
+      })}
+    >Create new chord!</Button>
+  );
+};
 
 const ListEmptyComponent = () => (
   <View style={styles.emptyList}>
@@ -28,27 +42,34 @@ const ListEmptyComponent = () => (
 interface ManualProps {
   query: ChartQuery;
   compact: boolean;
+  mountID: string;
   editChart: (chart: Chart) => void;
 }
 
 interface Props extends ModalContextProps, ManualProps {}
 
-const ChordList = ({query, compact, editChart, modalCtx}: Props) => {
+const ChordList = ({query, compact, mountID, editChart, modalCtx}: Props) => {
   const {data, loading, refetch, fetchMore} = useQuery<
     ChartsQueryResponse,
     ChartsQueryVariables
   >(CHARTS_QUERY, {
     variables: {
-      query: omit(query, ['__typename']),
+      query,
     },
   });
+  useEffect(() => {
+    refetch();
+  }, [mountID]);
 
+  const [deleted, setDeleted] = useState<Set<number>>(new Set());
+  const charts = (data?.charts || []).filter((chart: Chart) => !deleted.has(chart.id));
+  const lastChart: Chart | undefined = last(charts);
   const loadMore = () =>
     fetchMore({
       variables: {
-        query: {...query, after: last(data?.charts || [])?.id},
+        query: {...query, after: lastChart?.id},
       },
-      updateQuery: (prev, {fetchMoreResult}) => {
+      updateQuery: (prev: ChartsQueryResponse, {fetchMoreResult}) => {
         if (!fetchMoreResult) {
           return prev;
         }
@@ -57,7 +78,6 @@ const ChordList = ({query, compact, editChart, modalCtx}: Props) => {
         };
       },
     });
-  const [deleted, setDeleted] = useState<Set<number>>(new Set());
   const [deleteChart, {}] = useMutation<{}, DeleteChartMutationVariables>(
     DELETE_CHART_MUTATION,
   );
@@ -66,8 +86,7 @@ const ChordList = ({query, compact, editChart, modalCtx}: Props) => {
       {
         msg: 'Are you sure you want to delete this chart?',
         status: 'warning',
-      },
-      {
+      }, {
         confirm: () => {
           deleteChart({variables: {chartID}});
           setDeleted(new Set([chartID, ...Array.from(deleted)]));
@@ -76,7 +95,6 @@ const ChordList = ({query, compact, editChart, modalCtx}: Props) => {
       },
     );
   };
-  const charts = (data?.charts || []).filter((chart) => !deleted.has(chart.id));
   if (loading) {
     return (
       <View>
@@ -96,6 +114,7 @@ const ChordList = ({query, compact, editChart, modalCtx}: Props) => {
       <FlatList
         onRefresh={() => refetch()}
         refreshing={loading}
+        ListFooterComponent={<CreateChordLink />}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={() => refetch()} />
         }
@@ -104,7 +123,7 @@ const ChordList = ({query, compact, editChart, modalCtx}: Props) => {
         }}
         onScrollToIndexFailed={() => undefined}
         data={charts}
-        keyExtractor={(chart) => chart.id.toString()}
+        keyExtractor={(chart: Chart) => chart.id.toString()}
         ListEmptyComponent={ListEmptyComponent}
         renderItem={(item) => (
           <ChordItem
@@ -124,7 +143,8 @@ export default withModalContext<ManualProps>(ChordList);
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 150,
+    marginBottom: 0,
+    // flex: 1,
   },
   emptyList: {
     padding: 20,

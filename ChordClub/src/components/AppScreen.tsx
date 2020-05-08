@@ -2,7 +2,9 @@ import React, {PropsWithChildren} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import Title, {MenuItemData} from './Title';
 import {Divider, Layout} from '@ui-kitten/components';
-import {ChordClubShim} from '../../types/ChordClubShim';
+import { NavigationHelpers, RouteProp } from '@react-navigation/native';
+import { DrawerNavigationEventMap } from '@react-navigation/drawer/lib/typescript/src/types';
+import { ChartType, Chart } from 'src/types';
 
 interface Props {
   title: string;
@@ -10,7 +12,7 @@ interface Props {
 }
 
 export interface ScreenProps {
-  navigation: ChordClubShim.Navigation;
+  navigation: NavigationHelpers<Record<string, object | undefined>, DrawerNavigationEventMap>;
 }
 
 export enum Screens {
@@ -20,7 +22,25 @@ export enum Screens {
   CreateAChart = 'Create a Chart',
   Account = 'Account',
   Logout = 'Logout',
+  EditChart = 'Edit Chart',
 }
+
+interface AppParamList {
+  Chords: {};
+  ChordFlashcards: {};
+  Progressions: {};
+  CreateAChart: {
+    chartType?: ChartType
+  };
+  Account: {};
+  Logout: {};
+  EditChart: {
+    chart: Chart,
+  };
+  [key: string]: {} | undefined;
+}
+
+export type AppRouteProp<T extends keyof AppParamList> = RouteProp<AppParamList, T>;
 
 export const AppScreen = ({
   title,

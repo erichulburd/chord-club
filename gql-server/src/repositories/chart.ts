@@ -1,4 +1,4 @@
-import { BaseScopes, ChartQuery, Chart, ChartQueryOrder, ChartNew, ChartUpdate } from '../types';
+import { BaseScopes, ChartQuery, Chart, ChartQueryOrder, ChartNew, ChartUpdate, ChartType } from '../types';
 import { PoolClient } from 'pg';
 import { omit } from 'lodash';
 import {
@@ -66,6 +66,20 @@ export const findChartsByID = async (chartIDs: number[], uid: string[], client: 
       WHERE c.id = ANY ($1) AND c.scope = ANY ($2)
   `, [chartIDs, scopes]);
   return result.rows.map(dbDataToChart);
+};
+
+const findRandomCharts = async (chartTypes: ChartType[], scopes: string[], limit: number, client: PoolClient) => {
+  const result = await client.query(`
+  WITH selection AS (
+    SELECT
+    ${selectFields}
+    FROM chart c
+      WHERE c.chart_type = ANY ($1) AND c.scope = ANY ($2)
+  )
+  SELECT ${selectFields} FROM selection c ORDER BY FLOOR(RANDOM() * $3) LIMIT $3
+  `, [chartTypes, scopes, limit]);
+  const charts = result.rows.map(dbDataToChart) as Chart[];
+  return charts;
 };
 
 const findCharts = async (query: BaseChartQuery, scopes: string[], client: PoolClient) => {
@@ -193,29 +207,25 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
     return res;
   }
 
+  const limit = Math.min(100, rawQuery.limit || 50);
+  const chartTypes = rawQuery.chartTypes;
+  const scopes = rawQuery.scopes || [uid, BaseScopes.Public];
+
+  if (rawQuery.order === ChartQueryOrder.Random) {
+    return findRandomCharts(chartTypes, scopes, limit, client);
+  }
+
   let order = (rawQuery.order || ChartQueryOrder.CreatedAt).toLowerCase();
   if (rawQuery.order === ChartQueryOrder.TagPosition && rawQuery.tagIDs?.length !== 1) {
     order = ChartQueryOrder.CreatedAt.toLowerCase();
   } else if (rawQuery.order === ChartQueryOrder.TagPosition && rawQuery.tagIDs?.length === 1) {
     order = ChartQueryOrder.TagPosition.toLowerCase();
-  } else if (rawQuery.order === ChartQueryOrder.Random) {
-    order = 'RANDOM()';
   }
-  let orderBy = order;
   let direction: 'ASC' | 'DESC' = 'DESC';
-  let after = rawQuery.after;
-  if (rawQuery.order !== ChartQueryOrder.Random) {
-    direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
-    orderBy = `${order} ${direction}`;
-  } else {
-    // If order is random, ignore after id.
-    after = undefined;
-  }
+  const after = rawQuery.after;
+  direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
+  const orderBy = `${order} ${direction}`;
 
-  const scopes = rawQuery.scopes || [uid, BaseScopes.Public];
-
-  const limit = Math.min(100, rawQuery.limit || 50);
-  const chartTypes = rawQuery.chartTypes;
   const query: BaseChartQuery = { orderBy, limit, chartTypes, direction };
 
   if (rawQuery.tagIDs?.length && after) {
@@ -238,5 +248,6 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
     };
     return findChartsAfter(chartQueryAfter, scopes, client);
   }
-  return findCharts(query, scopes, client);
+  const charts = await findCharts(query, scopes, client);
+  return charts;
 };

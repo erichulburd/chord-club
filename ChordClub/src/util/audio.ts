@@ -3,6 +3,7 @@ import {ObservableState} from './observableState';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import {getCalRatio} from '../util/screen';
 import {GestureResponderEvent} from 'react-native';
+import logger from './logger';
 
 export interface Audioable {
   audioURL: string;
@@ -64,10 +65,10 @@ class AudioObservable {
     const subscribers = this.subscribers;
     this.observable = new Observable<AudioEvent>((observer) => {
       subscribers.add(observer);
-      return () => {
+      return async () => {
         subscribers.delete(observer);
         if (subscribers.size === 0) {
-          audioRecorderPlayer.stopPlayer();
+          await audioRecorderPlayer.stopPlayer();
           audioRecorderPlayer.removePlayBackListener();
         }
       };
@@ -76,7 +77,6 @@ class AudioObservable {
 
   public publish = (update: Partial<State>, eventType: AudioEventType) => {
     currentState = Object.freeze({...currentState, ...update});
-    console.info('PUBLISH', eventType, this.subscribers.size);
     this.subscribers.forEach((observer) => {
       if (observer.next) {
         observer.next({
@@ -93,9 +93,19 @@ export const audioStateObservable = new AudioObservable();
 export class AudioStateObserver {
   public state: State;
   private audioObversable: AudioObservable;
+  private subscription: ZenObservable.Subscription;
   constructor(aobs: AudioObservable = audioStateObservable) {
     this.state = currentState;
     this.audioObversable = aobs;
+    this.subscription = this.audioObversable.observable.subscribe({
+      next: (e) => {
+        this.state = e.state;
+      }
+    });
+  }
+
+  public close() {
+    this.subscription.unsubscribe();
   }
 
   public subscribe = (observer: ZenObservable.Observer<AudioEvent>) => {
@@ -121,6 +131,8 @@ export class AudioStateObserver {
   };
 
   public play = async (url: Audioable) => {
+
+    console.warn('PLAY', this.state)
     if (this.state.isPlaying) {
       await this.stop();
     }
@@ -135,10 +147,10 @@ export class AudioStateObserver {
       AudioEventType.PLAY,
     );
     const {audioRecorderPlayer} = this.state;
-    audioRecorderPlayer.startPlayer(url.audioURL);
-    audioRecorderPlayer.setVolume(1.0);
+    await audioRecorderPlayer.startPlayer(url.audioURL);
+    await audioRecorderPlayer.setVolume(1.0);
 
-    audioRecorderPlayer.addPlayBackListener((e: any) => {
+    audioRecorderPlayer.addPlayBackListener(async (e: any) => {
       const update = {
         currentPositionSec: parseFloat(e.current_position),
         currentDurationSec: parseFloat(e.duration),
@@ -146,7 +158,7 @@ export class AudioStateObserver {
       };
       let eventType = AudioEventType.UPDATE;
       if (parseFloat(e.current_position) >= parseFloat(e.duration)) {
-        audioRecorderPlayer.stopPlayer();
+        await audioRecorderPlayer.stopPlayer();
         update.isPlaying = false;
         eventType = AudioEventType.FINISHED;
       }
@@ -175,27 +187,27 @@ export class AudioStateObserver {
       {isPlaying: false, isPlayingPaused: false},
       AudioEventType.STOP,
     );
-    this.state.audioRecorderPlayer.stopPlayer();
+    await this.state.audioRecorderPlayer.stopPlayer();
     this.state.audioRecorderPlayer.removePlayBackListener();
   };
 
-  public seek = (e: GestureResponderEvent) => {
-    const touchX = e.nativeEvent.locationX;
-    const dims = getCalRatio();
-    const playWidth =
-      (this.state.currentPositionSec / this.state.currentDurationSec) *
-      (dims.width - 56 * dims.ratio);
+  public seek = async (ratio: number) => {
+    const { currentDurationSec } = this.state;
+    let newPosition = ratio * currentDurationSec;
+    newPosition = Math.min(newPosition, currentDurationSec);
+    newPosition = Math.max(newPosition, 0);
+    newPosition = Math.round(newPosition);
 
-    const currentPosition = Math.round(this.state.currentPositionSec);
-
-    if (playWidth && playWidth < touchX) {
-      const addSecs = Math.round(currentPosition + 1000);
-      this.state.audioRecorderPlayer.seekToPlayer(addSecs);
-    } else {
-      const subSecs = Math.round(currentPosition - 1000);
-      this.state.audioRecorderPlayer.seekToPlayer(subSecs);
+    awaitingSeek = true;
+    const {audioRecorderPlayer} = this.state;
+    try {
+      await audioRecorderPlayer.seekToPlayer(newPosition);
+    } catch(err) {
+      logger.error('seek failed', err);
     }
     // position will be updated in addPlayBackListener.
     this.audioObversable.publish({}, AudioEventType.SEEK);
   };
 }
+
+let awaitingSeek = false;

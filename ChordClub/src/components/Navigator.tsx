@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react';
+import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {
   createDrawerNavigator,
@@ -25,6 +25,7 @@ import { AccountScreen } from './AccountScreen';
 import { withUser, UserConsumerProps } from './UserContext';
 import { WithApolloClient, withApollo } from 'react-apollo';
 import logger from '../util/logger';
+import { ChartEditorScreen } from './ChartEditorScreen';
 
 const {Navigator, Screen} = createDrawerNavigator();
 
@@ -119,6 +120,7 @@ export const AppNavigator = ({ userCtx, client }: Props) => (
       <Screen name={Screens.CreateAChart} component={ChartCreatorScreen} />
       <Screen name={Screens.Account} component={AccountScreen} />
       <Screen name={Screens.Logout} component={AccountScreen} />
+      <Screen name={Screens.EditChart} component={ChartEditorScreen} />
     </Navigator>
   </NavigationContainer>
 );

@@ -39,6 +39,8 @@ import {withModalContext, ModalContextProps} from './ModalProvider';
 import TagAutocomplete from './TagAutocomplete';
 import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
+import { useRoute } from '@react-navigation/native';
+import { AppRouteProp } from './AppScreen';
 
 interface ManualProps {
   close: () => void;
@@ -48,7 +50,11 @@ interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 
 const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
   const {uid} = userCtx.authState;
-  const [newChart, setChart] = useState(makeChartNew(uid));
+  const route = useRoute<AppRouteProp<'CreateAChart'>>();
+  const defaultChartType = route.params?.chartType === undefined ? ChartType.Chord : ChartType.Progression;
+  const [newChart, setChart] = useState(makeChartNew(uid, {
+    chartType: defaultChartType,
+  }));
   const updateChartType = (ct: ChartType) =>
     setChart({...newChart, chartType: ct});
   const updateChartRoot = (n: Note) => setChart({...newChart, root: n});
@@ -71,6 +77,15 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
   const [image, setResizableImage] = useState<ResizableImage | null>(null);
   const [modalImageVisible, setModalImageVisible] = useState<boolean>(false);
   const [urlCache, setFileURLCache] = useState<FileURLCache>({});
+
+  const reset = () => {
+    setChart(makeChartNew(uid));
+    setExtensions([]);
+    setAudioFilePath(undefined);
+    setResizableImage(null);
+    setModalImageVisible(false);
+    setFileURLCache({});
+  };
 
   const [createChart, {}] = useMutation<
     CreateChartResponse,
@@ -103,13 +118,20 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
         setFileURLCache(cache);
       }
 
-      await createChart({variables: {chartNew: payload}});
+      await createChart({
+        variables: {chartNew: payload},
+      });
       modalCtx.wait(false);
+      reset();
       close();
     } catch (err) {
       modalCtx.wait(false);
       modalCtx.message({msg: err.message, status: 'danger'});
     }
+  };
+  const cancel = () => {
+    reset();
+    close();
   };
 
   const updateImagePath = async () => {
@@ -281,7 +303,7 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
               appearance="ghost"
               size="large"
               status="warning"
-              onPress={close}>
+              onPress={cancel}>
               Cancel
             </Button>
           </View>

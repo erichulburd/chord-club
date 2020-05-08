@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, RefreshControl, StyleSheet} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
-import {ChartQuery, Chart} from '../types';
+import {ChartQuery, Chart, ChartType} from '../types';
 import {
   ChartsQueryResponse,
   ChartsQueryVariables,
@@ -12,9 +12,24 @@ import {
 import {useQuery, useMutation} from 'react-apollo';
 import last from 'lodash/last';
 import {ModalContextProps, withModalContext} from './ModalProvider';
-import {Spinner, Text} from '@ui-kitten/components';
+import {Spinner, Text, Button} from '@ui-kitten/components';
 import {ChordClubShim} from 'types/ChordClubShim';
 import ProgressionItem from './ProgressionItem';
+import { useNavigation } from '@react-navigation/native';
+import { Screens } from './AppScreen';
+
+const CreateProgressionLink = () => {
+  const navigation = useNavigation();
+  return (
+    <Button
+      appearance="outline"
+      status="info"
+      onPress={() => navigation.navigate(Screens.CreateAChart, {
+        chartType: ChartType.Progression,
+      })}
+    >Create new progression!</Button>
+  );
+};
 
 const ListEmptyComponent = () => (
   <View style={styles.emptyList}>
@@ -26,16 +41,21 @@ const ListEmptyComponent = () => (
 
 interface ManualProps {
   query: ChartQuery;
+  mountID: string;
+  compact: boolean | undefined;
   editChart: (chart: Chart) => void;
 }
 
 interface Props extends ModalContextProps, ManualProps {}
 
-export const ProgressionList = ({query, modalCtx, editChart}: Props) => {
+export const ProgressionList = ({query, mountID, modalCtx, compact, editChart}: Props) => {
   const {data, loading, refetch, fetchMore} = useQuery<
     ChartsQueryResponse,
     ChartsQueryVariables
   >(CHARTS_QUERY, {variables: {query}});
+  useEffect(() => {
+    refetch();
+  }, [mountID]);
 
   const loadMore = () =>
     fetchMore({
@@ -100,8 +120,10 @@ export const ProgressionList = ({query, modalCtx, editChart}: Props) => {
         data={charts}
         keyExtractor={(chart) => chart.id.toString()}
         ListEmptyComponent={ListEmptyComponent}
+        ListFooterComponent={<CreateProgressionLink />}
         renderItem={(item) => (
           <ProgressionItem
+            compact={compact}
             next={() => next(item.index)}
             chart={item.item}
             editChart={editChart}
@@ -115,7 +137,7 @@ export const ProgressionList = ({query, modalCtx, editChart}: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 150,
+    marginBottom: 0,
   },
   emptyList: {
     padding: 20,
