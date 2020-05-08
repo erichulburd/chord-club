@@ -26,12 +26,13 @@ const ListEmptyComponent = () => (
 
 interface ManualProps {
   query: ChartQuery;
+  compact: boolean;
   editChart: (chart: Chart) => void;
 }
 
 interface Props extends ModalContextProps, ManualProps {}
 
-export const ProgressionList = ({query, modalCtx, editChart}: Props) => {
+export const ProgressionList = ({query, modalCtx, compact, editChart}: Props) => {
   const {data, loading, refetch, fetchMore} = useQuery<
     ChartsQueryResponse,
     ChartsQueryVariables
@@ -102,6 +103,7 @@ export const ProgressionList = ({query, modalCtx, editChart}: Props) => {
         ListEmptyComponent={ListEmptyComponent}
         renderItem={(item) => (
           <ProgressionItem
+            compact={compact}
             next={() => next(item.index)}
             chart={item.item}
             editChart={editChart}
@@ -115,7 +117,7 @@ export const ProgressionList = ({query, modalCtx, editChart}: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 150,
+    marginBottom: 0,
   },
   emptyList: {
     padding: 20,

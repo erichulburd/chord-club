@@ -9,16 +9,17 @@ import {withUser, UserConsumerProps} from './UserContext';
 import {MenuItemData} from './Title';
 import { ChartViewSetting, SettingsPath, FlashcardViewSetting } from '../util/settings';
 
-interface ManualProps {
+interface ManualProps<T> {
   title: Screens;
   settingsPath: SettingsPath;
   expandable?: boolean;
   reversable?: boolean;
-  renderQueryResults: ((setting: ChartViewSetting) => React.ReactElement) |
-    ((setting: FlashcardViewSetting) => React.ReactElement);
+  renderQueryResults: ((setting: T) => React.ReactElement);
 }
 
-interface Props extends ManualProps, UserConsumerProps {}
+interface Props<T> extends ManualProps<T>, UserConsumerProps {}
+
+type ChartViewProps = Props<ChartViewSetting> | Props<FlashcardViewSetting>;
 
 const ChartQueryView = ({
   title,
@@ -27,7 +28,7 @@ const ChartQueryView = ({
   settingsPath,
   reversable = true,
   expandable = true,
-}: Props) => {
+}: ChartViewProps) => {
   const settings = userCtx.user?.settings[settingsPath];
 
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);

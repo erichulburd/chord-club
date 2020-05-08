@@ -93,10 +93,9 @@ const ChordList = ({query, compact, editChart, modalCtx}: Props) => {
     flatList.scrollToIndex({index: i + 1});
   };
   return (
-    <View>
+    <View style={styles.container}>
       <FlatList
         onRefresh={() => refetch()}
-        style={styles.container}
         refreshing={loading}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={() => refetch()} />
@@ -127,6 +126,7 @@ export default withModalContext<ManualProps>(ChordList);
 const styles = StyleSheet.create({
   container: {
     marginBottom: 0,
+    // flex: 1,
   },
   emptyList: {
     padding: 20,
