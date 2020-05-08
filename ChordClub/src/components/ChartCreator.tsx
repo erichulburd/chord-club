@@ -72,6 +72,15 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
   const [modalImageVisible, setModalImageVisible] = useState<boolean>(false);
   const [urlCache, setFileURLCache] = useState<FileURLCache>({});
 
+  const reset = () => {
+    setChart(makeChartNew(uid));
+    setExtensions([]);
+    setAudioFilePath(undefined);
+    setResizableImage(null);
+    setModalImageVisible(false);
+    setFileURLCache({});
+  };
+
   const [createChart, {}] = useMutation<
     CreateChartResponse,
     CreateChartVariables
@@ -105,11 +114,16 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
 
       await createChart({variables: {chartNew: payload}});
       modalCtx.wait(false);
+      reset();
       close();
     } catch (err) {
       modalCtx.wait(false);
       modalCtx.message({msg: err.message, status: 'danger'});
     }
+  };
+  const cancel = () => {
+    reset();
+    close();
   };
 
   const updateImagePath = async () => {
@@ -281,7 +295,7 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
               appearance="ghost"
               size="large"
               status="warning"
-              onPress={close}>
+              onPress={cancel}>
               Cancel
             </Button>
           </View>
