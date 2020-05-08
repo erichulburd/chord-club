@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   Button,
@@ -42,7 +42,6 @@ import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 import {ChartExtensionsEditor} from './ChartExtensionsEditor';
-import logger from '../util/logger';
 
 interface ManualProps {
   chart: Chart;
@@ -54,8 +53,20 @@ interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
   const {uid} = userCtx.authState;
 
-  const [chartUpdate, setChart] = useState<ChartUpdate>(
-    omit(chart, [
+  const defaultChartUpdate = omit(chart, [
+    '__typename',
+    'extensions',
+    'createdAt',
+    'updatedAt',
+    'createdBy',
+    'creator',
+    'reactionCounts',
+    'userReactionType',
+    'chartType',
+  ])
+  const [chartUpdate, setChart] = useState<ChartUpdate>(defaultChartUpdate);
+  useEffect(() => {
+    setChart(omit(chart, [
       '__typename',
       'extensions',
       'createdAt',
@@ -65,8 +76,8 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
       'reactionCounts',
       'userReactionType',
       'chartType',
-    ]),
-  );
+    ]));
+  }, [chart?.id]);
   const updateChartExtensions = (exts: Extension[]) => {
     setChart({...chartUpdate, extensionIDs: exts.map((e) => e.id)});
   };
@@ -121,6 +132,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
 
       await updateChart({variables: {chartUpdate: payload}});
       modalCtx.wait(false);
+      reset();
       close();
     } catch (err) {
       modalCtx.wait(false);
@@ -133,6 +145,14 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
     if (image) {
       await setResizableImage(image);
     }
+  };
+
+  const reset = () => {
+    setChart(defaultChartUpdate);
+    setAudioFilePath(undefined);
+    setResizableImage(null);
+    setModalImageVisible(false);
+    setFileURLCache({});
   };
 
   const addTag = (tagNew: TagNew | Tag) => {
@@ -282,10 +302,20 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
           />
           <TagCollection tags={chartUpdate.tags || []} onDelete={removeTag} />
         </Row>
+        {chart.chartType === ChartType.Progression && (
+          <Row style={{flexDirection: 'column', alignSelf: 'stretch'}}>
+            <Input
+              textStyle={styles.input}
+              placeholder="Name"
+              value={chartUpdate.name || ''}
+              onChangeText={(txt: string) => setChart({...chartUpdate, name: txt})}
+            />
+          </Row>
+        )}
         <Row style={{flexDirection: 'column', alignSelf: 'stretch'}}>
           <Input
             multiline
-            textStyle={styles.input}
+            textStyle={[styles.input, styles.inputMultiline]}
             placeholder="Description"
             value={chartUpdate.description || ''}
             onChangeText={(txt: string) =>
@@ -339,6 +369,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch',
     width: '100%',
+  },
+  inputMultiline: {
     minHeight: 64,
   },
   chordTone: {flex: 1, flexShrink: 1, flexGrow: 1, flexBasis: 1},

@@ -4,7 +4,7 @@ import Title, {MenuItemData} from './Title';
 import {Divider, Layout} from '@ui-kitten/components';
 import { NavigationHelpers, RouteProp } from '@react-navigation/native';
 import { DrawerNavigationEventMap } from '@react-navigation/drawer/lib/typescript/src/types';
-import { ChartType } from 'src/types';
+import { ChartType, Chart } from 'src/types';
 
 interface Props {
   title: string;
@@ -22,6 +22,7 @@ export enum Screens {
   CreateAChart = 'Create a Chart',
   Account = 'Account',
   Logout = 'Logout',
+  EditChart = 'Edit Chart',
 }
 
 interface AppParamList {
@@ -33,6 +34,9 @@ interface AppParamList {
   };
   Account: {};
   Logout: {};
+  EditChart: {
+    chart: Chart,
+  };
   [key: string]: {} | undefined;
 }
 

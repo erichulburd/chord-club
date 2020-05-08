@@ -3,20 +3,20 @@ import ChordList from './ChordList';
 import ChartQueryView from './ChartQueryView';
 import {Screens} from './AppScreen';
 import { ChartViewSetting } from '../util/settings';
-import { NavigationHelpers, useFocusEffect } from '@react-navigation/native';
-import { DrawerNavigationEventMap } from '@react-navigation/drawer/lib/typescript/src/types';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
+import { Chart } from 'src/types';
 
-interface Props {
-  navigation: NavigationHelpers<Record<string, object | undefined>, DrawerNavigationEventMap>;
-}
-
-export const ChordListScreen = ({ navigation }: Props) => {
+export const ChordListScreen = () => {
   const [mountID, setMountID] = useState(uuid.v4());
 
   useFocusEffect(useCallback(() => {
     setMountID(uuid.v4());
   }, []));
+  const navigation = useNavigation();
+  const editChart = (chart: Chart) => {
+    navigation.navigate(Screens.EditChart, { chart  });
+  }
   return (
     <ChartQueryView
       title={Screens.Chords}
@@ -26,7 +26,7 @@ export const ChordListScreen = ({ navigation }: Props) => {
           mountID={mountID}
           compact={compact === null || compact === undefined ? false : compact}
           query={query}
-          editChart={(chart) => undefined /* TODO */}
+          editChart={editChart}
         />
       )}
     />
