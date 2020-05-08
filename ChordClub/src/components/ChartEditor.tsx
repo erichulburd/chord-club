@@ -139,6 +139,10 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
       modalCtx.message({msg: err.message, status: 'danger'});
     }
   };
+  const cancel = () => {
+    reset();
+    close();
+  };
 
   const updateImagePath = async () => {
     const image = await pickSingleImage();
@@ -340,7 +344,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
               appearance="ghost"
               size="large"
               status="warning"
-              onPress={close}>
+              onPress={cancel}>
               Cancel
             </Button>
           </View>
