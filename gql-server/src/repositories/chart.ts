@@ -222,7 +222,7 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
     order = ChartQueryOrder.TagPosition.toLowerCase();
   }
   let direction: 'ASC' | 'DESC' = 'DESC';
-  let after = rawQuery.after;
+  const after = rawQuery.after;
   direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
   const orderBy = `${order} ${direction}`;
 
