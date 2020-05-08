@@ -39,6 +39,8 @@ import {withModalContext, ModalContextProps} from './ModalProvider';
 import TagAutocomplete from './TagAutocomplete';
 import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
+import { useRoute } from '@react-navigation/native';
+import { AppRouteProp } from './AppScreen';
 
 interface ManualProps {
   close: () => void;
@@ -48,7 +50,11 @@ interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 
 const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
   const {uid} = userCtx.authState;
-  const [newChart, setChart] = useState(makeChartNew(uid));
+  const route = useRoute<AppRouteProp<'CreateAChart'>>();
+  const defaultChartType = route.params?.chartType === undefined ? ChartType.Chord : ChartType.Progression;
+  const [newChart, setChart] = useState(makeChartNew(uid, {
+    chartType: defaultChartType,
+  }));
   const updateChartType = (ct: ChartType) =>
     setChart({...newChart, chartType: ct});
   const updateChartRoot = (n: Note) => setChart({...newChart, root: n});

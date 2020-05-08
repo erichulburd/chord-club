@@ -13,7 +13,7 @@ import {ChartFooter} from './ChartFooter';
 
 interface ManualProps {
   chart: Chart;
-  compact: boolean;
+  compact: boolean | undefined;
   editChart: (chart: Chart) => void;
   onDeleteChart: (chartID: number) => void;
   next: () => void;

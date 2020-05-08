@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {useQuery, useMutation} from '@apollo/react-hooks';
-import {ChartQuery, Chart} from '../types';
+import {ChartQuery, Chart, ChartType} from '../types';
 import last from 'lodash/last';
 import {
   CHARTS_QUERY,
@@ -10,11 +10,26 @@ import {
   DeleteChartMutationVariables,
 } from '../gql/chart';
 import {FlatList} from 'react-native-gesture-handler';
-import {Spinner, Text} from '@ui-kitten/components';
+import {Spinner, Text, Button} from '@ui-kitten/components';
 import ChordItem from './ChordItem';
 import {View, RefreshControl, StyleSheet} from 'react-native';
 import {withModalContext, ModalContextProps} from './ModalProvider';
 import {ChordClubShim} from '../../types/ChordClubShim';
+import { useNavigation } from '@react-navigation/native';
+import { Screens } from './AppScreen';
+
+const CreateChordLink = () => {
+  const navigation = useNavigation();
+  return (
+    <Button
+      appearance="outline"
+      status="info"
+      onPress={() => navigation.navigate(Screens.CreateAChart, {
+        chartType: ChartType.Chord,
+      })}
+    >Create new chord!</Button>
+  );
+};
 
 const ListEmptyComponent = () => (
   <View style={styles.emptyList}>
@@ -99,6 +114,7 @@ const ChordList = ({query, compact, mountID, editChart, modalCtx}: Props) => {
       <FlatList
         onRefresh={() => refetch()}
         refreshing={loading}
+        ListFooterComponent={<CreateChordLink />}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={() => refetch()} />
         }

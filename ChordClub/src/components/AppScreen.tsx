@@ -2,8 +2,9 @@ import React, {PropsWithChildren} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import Title, {MenuItemData} from './Title';
 import {Divider, Layout} from '@ui-kitten/components';
-import { NavigationHelpers } from '@react-navigation/native';
+import { NavigationHelpers, RouteProp } from '@react-navigation/native';
 import { DrawerNavigationEventMap } from '@react-navigation/drawer/lib/typescript/src/types';
+import { ChartType } from 'src/types';
 
 interface Props {
   title: string;
@@ -22,6 +23,20 @@ export enum Screens {
   Account = 'Account',
   Logout = 'Logout',
 }
+
+interface AppParamList {
+  Chords: {};
+  ChordFlashcards: {};
+  Progressions: {};
+  CreateAChart: {
+    chartType?: ChartType
+  };
+  Account: {};
+  Logout: {};
+  [key: string]: {} | undefined;
+}
+
+export type AppRouteProp<T extends keyof AppParamList> = RouteProp<AppParamList, T>;
 
 export const AppScreen = ({
   title,
