@@ -2,7 +2,8 @@ import React, {PropsWithChildren} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import Title, {MenuItemData} from './Title';
 import {Divider, Layout} from '@ui-kitten/components';
-import {ChordClubShim} from '../../types/ChordClubShim';
+import { NavigationHelpers } from '@react-navigation/native';
+import { DrawerNavigationEventMap } from '@react-navigation/drawer/lib/typescript/src/types';
 
 interface Props {
   title: string;
@@ -10,7 +11,7 @@ interface Props {
 }
 
 export interface ScreenProps {
-  navigation: ChordClubShim.Navigation;
+  navigation: NavigationHelpers<Record<string, object | undefined>, DrawerNavigationEventMap>;
 }
 
 export enum Screens {

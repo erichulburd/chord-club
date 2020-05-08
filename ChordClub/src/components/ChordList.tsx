@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useQuery, useMutation} from '@apollo/react-hooks';
 import {ChartQuery, Chart} from '../types';
 import last from 'lodash/last';
@@ -15,7 +15,6 @@ import ChordItem from './ChordItem';
 import {View, RefreshControl, StyleSheet} from 'react-native';
 import {withModalContext, ModalContextProps} from './ModalProvider';
 import {ChordClubShim} from '../../types/ChordClubShim';
-import omit from 'lodash/omit';
 
 const ListEmptyComponent = () => (
   <View style={styles.emptyList}>
@@ -28,20 +27,24 @@ const ListEmptyComponent = () => (
 interface ManualProps {
   query: ChartQuery;
   compact: boolean;
+  mountID: string;
   editChart: (chart: Chart) => void;
 }
 
 interface Props extends ModalContextProps, ManualProps {}
 
-const ChordList = ({query, compact, editChart, modalCtx}: Props) => {
+const ChordList = ({query, compact, mountID, editChart, modalCtx}: Props) => {
   const {data, loading, refetch, fetchMore} = useQuery<
     ChartsQueryResponse,
     ChartsQueryVariables
   >(CHARTS_QUERY, {
     variables: {
-      query: omit(query, ['__typename']) as ChartQuery,
+      query,
     },
   });
+  useEffect(() => {
+    refetch();
+  }, [mountID]);
 
   const [deleted, setDeleted] = useState<Set<number>>(new Set());
   const charts = (data?.charts || []).filter((chart: Chart) => !deleted.has(chart.id));
@@ -68,8 +71,7 @@ const ChordList = ({query, compact, editChart, modalCtx}: Props) => {
       {
         msg: 'Are you sure you want to delete this chart?',
         status: 'warning',
-      },
-      {
+      }, {
         confirm: () => {
           deleteChart({variables: {chartID}});
           setDeleted(new Set([chartID, ...Array.from(deleted)]));

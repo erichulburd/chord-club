@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, RefreshControl, StyleSheet} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 import {ChartQuery, Chart} from '../types';
@@ -26,17 +26,21 @@ const ListEmptyComponent = () => (
 
 interface ManualProps {
   query: ChartQuery;
-  compact: boolean;
+  mountID: string;
+  compact: boolean | undefined;
   editChart: (chart: Chart) => void;
 }
 
 interface Props extends ModalContextProps, ManualProps {}
 
-export const ProgressionList = ({query, modalCtx, compact, editChart}: Props) => {
+export const ProgressionList = ({query, mountID, modalCtx, compact, editChart}: Props) => {
   const {data, loading, refetch, fetchMore} = useQuery<
     ChartsQueryResponse,
     ChartsQueryVariables
   >(CHARTS_QUERY, {variables: {query}});
+  useEffect(() => {
+    refetch();
+  }, [mountID]);
 
   const loadMore = () =>
     fetchMore({

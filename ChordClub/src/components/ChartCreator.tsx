@@ -112,7 +112,9 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
         setFileURLCache(cache);
       }
 
-      await createChart({variables: {chartNew: payload}});
+      await createChart({
+        variables: {chartNew: payload},
+      });
       modalCtx.wait(false);
       reset();
       close();
