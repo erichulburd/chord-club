@@ -8,10 +8,13 @@ import {
   TopNavigation,
   TopNavigationAction,
   TextProps,
+  Button,
 } from '@ui-kitten/components';
 import {withUser, UserConsumerProps} from './UserContext';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {ThemedIcon} from './FontAwesomeIcons';
+import { useNavigation } from '@react-navigation/native';
+import { DrawerNavigationProp } from '@react-navigation/drawer';
 
 const MenuIcon = (props: Partial<ImageProps> = {}) => (
   <Icon {...props} name="ellipsis-v" />
@@ -32,7 +35,15 @@ interface Props extends UserConsumerProps, ManualProps {}
 
 export const Title = ({title = 'Chord Club', menuItems}: Props) => {
   const [menuVisible, setMenuVisible] = React.useState(false);
-
+  const n = useNavigation() as DrawerNavigationProp<{}>;
+  const DrawerBars = () => (
+    <Button
+      status="basic"
+      appearance="ghost"
+      accessoryLeft={ThemedIcon('bars')}
+      onPress={() => n.openDrawer()}
+    />
+  )
   const renderTitle = (props: TextProps | undefined) => (
     <View style={styles.titleContainer}>
       <Text status="success" category="h5">
@@ -42,7 +53,7 @@ export const Title = ({title = 'Chord Club', menuItems}: Props) => {
   );
 
   if (!menuItems || menuItems.length < 1) {
-    return <TopNavigation title={renderTitle} />;
+    return <TopNavigation accessoryLeft={DrawerBars} title={renderTitle} />;
   }
 
   const toggleMenu = () => {
@@ -63,7 +74,8 @@ export const Title = ({title = 'Chord Club', menuItems}: Props) => {
       <OverflowMenu
         anchor={renderMenuAction}
         visible={menuVisible}
-        onBackdropPress={toggleMenu}>
+        onBackdropPress={toggleMenu}
+      >
         {menuItems.map(({title, themedIconName, onPress}) => (
           <TouchableOpacity
             key={title}
@@ -81,6 +93,7 @@ export const Title = ({title = 'Chord Club', menuItems}: Props) => {
   return (
     <TopNavigation
       title={renderTitle}
+      accessoryLeft={DrawerBars}
       accessoryRight={renderOverflowMenuAction}
     />
   );

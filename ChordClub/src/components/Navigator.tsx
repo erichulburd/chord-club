@@ -26,6 +26,7 @@ import { withUser, UserConsumerProps } from './UserContext';
 import { WithApolloClient, withApollo } from 'react-apollo';
 import logger from '../util/logger';
 import { ChartEditorScreen } from './ChartEditorScreen';
+import { TagListScreen } from './TagListScreen';
 
 const {Navigator, Screen} = createDrawerNavigator();
 
@@ -90,6 +91,7 @@ const DrawerContent = ({
           accessoryLeft={ThemedIcon('circle', {solid: true})}
           title={Screens.CreateAChart}
         />
+        <DrawerItem accessoryLeft={ThemedIcon('tags')} title={Screens.Tags} />
         <DrawerItem accessoryLeft={ThemedIcon('user-cog')} title={Screens.Account} />
         <DrawerItem
           accessoryLeft={ThemedIcon('sign-out-alt')}
@@ -118,6 +120,7 @@ export const AppNavigator = ({ userCtx, client }: Props) => (
       <Screen name={Screens.Progressions} component={ProgressionListScreen} />
       <Screen name={Screens.ChordFlashcards} component={FlashcardsScreen} />
       <Screen name={Screens.CreateAChart} component={ChartCreatorScreen} />
+      <Screen name={Screens.Tags} component={TagListScreen} />
       <Screen name={Screens.Account} component={AccountScreen} />
       <Screen name={Screens.Logout} component={AccountScreen} />
       <Screen name={Screens.EditChart} component={ChartEditorScreen} />

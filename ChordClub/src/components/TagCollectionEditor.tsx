@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useQuery} from 'react-apollo';
 import {GetTagsData, GetTagsVariables, GET_TAGS} from '../gql/tag';
-import {Spinner} from '@ui-kitten/components';
+import {Spinner, Text} from '@ui-kitten/components';
 import ErrorText from './ErrorText';
 import {TagCollection} from './TagCollection';
 import {TagType, Tag, BaseScopes} from '../types';

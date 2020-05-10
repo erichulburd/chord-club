@@ -1,6 +1,6 @@
 import React from 'react';
 import { Chart, Extension } from '../types';
-import { Card, Button, Spinner } from '@ui-kitten/components';
+import { Card, Button, Spinner, Text } from '@ui-kitten/components';
 import { View, ViewProps, StyleSheet } from 'react-native';
 import { AudioPlayer } from './AudioPlayer1';
 import { ThemedIcon } from './FontAwesomeIcons';
@@ -11,7 +11,7 @@ import { FlashcardExtensions } from './FlashcardExtensions';
 import { GetExtensionsData } from '../gql/extension';
 import { QueryResult } from 'react-apollo';
 import ErrorText from './ErrorText';
-import { FlashcardOptions } from 'src/util/settings';
+import { FlashcardOptions } from '../util/settings';
 
 interface Props {
   chart: Chart;
@@ -82,18 +82,9 @@ export const Flashcard = ({
       <View>
         <AudioPlayer audio={chart} />
       </View>
-      {options.quality &&
-        <View>
-          <FlashcardQuality
-            userAnswer={answer.quality}
-            expectedAnswer={chart.quality}
-            revealed={score !== undefined}
-            onSelect={quality => updateAnswer({ ...answer, quality })}
-          />
-        </View>
-      }
       {(options.tone && chart.root) &&
         <View>
+          <Text style={styles.label} category="label">Tone</Text>
           <FlashcardTone
             userAnswer={answer.tone}
             expectedAnswer={chart.root}
@@ -102,8 +93,20 @@ export const Flashcard = ({
           />
         </View>
       }
+      {options.quality &&
+        <View>
+          <Text style={styles.label} category="label">Quality</Text>
+          <FlashcardQuality
+            userAnswer={answer.quality}
+            expectedAnswer={chart.quality}
+            revealed={score !== undefined}
+            onSelect={quality => updateAnswer({ ...answer, quality })}
+          />
+        </View>
+      }
       {(options.extensions) &&
         <View>
+         <Text style={styles.label} category="label">Extensions</Text>
           {extensions.loading && <Spinner />}
           {extensions.error && <ErrorText error={extensions.error} />}
           {extensions.data?.extensions &&
@@ -127,6 +130,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
-  header: {
+  label: {
+    marginTop: 5,
+    marginBottom: 5,
   }
 });

@@ -78,7 +78,8 @@ const ChartQueryEditor = ({initialQuery, userCtx, save, cancel}: Props) => {
       style={styles.container}
       header={Header}
       footer={Footer}
-      status="basic">
+      status="basic"
+    >
       <Row>
         <StringCheckboxGroup
           multi

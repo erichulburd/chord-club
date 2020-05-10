@@ -5,7 +5,7 @@ import {Screens} from './AppScreen';
 import { ChartViewSetting } from '../util/settings';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
-import { Chart } from 'src/types';
+import { Chart } from '../types';
 
 export const ChordListScreen = () => {
   const [mountID, setMountID] = useState(uuid.v4());
