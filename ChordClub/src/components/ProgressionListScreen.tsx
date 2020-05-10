@@ -6,7 +6,7 @@ import {Screens} from './AppScreen';
 import { ChartViewSetting } from '../util/settings';
 import uuid from 'react-native-uuid';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { Chart } from 'src/types';
+import { Chart } from '../types';
 
 export const ProgressionListScreen = () => {
   const [mountID, setMountID] = useState(uuid.v4());

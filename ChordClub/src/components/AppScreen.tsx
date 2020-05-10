@@ -4,7 +4,7 @@ import Title, {MenuItemData} from './Title';
 import {Divider, Layout} from '@ui-kitten/components';
 import { NavigationHelpers, RouteProp } from '@react-navigation/native';
 import { DrawerNavigationEventMap } from '@react-navigation/drawer/lib/typescript/src/types';
-import { ChartType, Chart } from 'src/types';
+import { ChartType, Chart } from '../types';
 
 interface Props {
   title: string;
@@ -23,6 +23,7 @@ export enum Screens {
   Account = 'Account',
   Logout = 'Logout',
   EditChart = 'Edit Chart',
+  Tags = 'Tags',
 }
 
 interface AppParamList {

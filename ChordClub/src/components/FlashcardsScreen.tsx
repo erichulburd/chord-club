@@ -2,7 +2,7 @@ import React from 'react';
 import ChartQueryView from './ChartQueryView';
 import {Screens} from './AppScreen';
 import { Flashcards } from './Flashcards';
-import { FlashcardViewSetting } from 'src/util/settings';
+import { FlashcardViewSetting } from '../util/settings';
 
 export const FlashcardsScreen = () => {
   return (

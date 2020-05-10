@@ -11,7 +11,7 @@ import { FlashcardExtensions } from './FlashcardExtensions';
 import { GetExtensionsData } from '../gql/extension';
 import { QueryResult } from 'react-apollo';
 import ErrorText from './ErrorText';
-import { FlashcardOptions } from 'src/util/settings';
+import { FlashcardOptions } from '../util/settings';
 
 interface Props {
   chart: Chart;
