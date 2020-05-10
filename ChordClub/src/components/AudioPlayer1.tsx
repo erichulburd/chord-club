@@ -65,7 +65,6 @@ export class AudioPlayer extends React.Component<Props> {
     if (!this.state.subscription) {
       const subscription = this.audioStateObserver.subscribe({
         next: (audioEvent) => {
-          console.info(audioEvent.type, last(audio.audioURL.split('/')));
           if (
             audioEvent.type === AudioEventType.PLAY &&
             audioEvent.state.currentURL !== audio.audioURL
@@ -112,7 +111,6 @@ export class AudioPlayer extends React.Component<Props> {
     }
     const seek = (e: GestureResponderEvent) => {
       const ratio = (e.nativeEvent.locationX  / this.state.width);
-      console.info('RATIO', e.nativeEvent.locationX , this.state.width, ratio);
       audioStateObserver.seek(ratio);
     }
     return (

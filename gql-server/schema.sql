@@ -75,7 +75,7 @@ ALTER TABLE public.__migrations__ OWNER TO developer;
 CREATE TABLE public.chart (
     id integer NOT NULL,
     audio_url text NOT NULL,
-    image_url text NOT NULL,
+    image_url text,
     hint text,
     description text,
     abc text,
