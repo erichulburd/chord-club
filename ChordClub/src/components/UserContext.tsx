@@ -85,7 +85,6 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
     settings.chords = {
       query: {
         scopes: defaultScopes,
-        order: ChartQueryOrder.CreatedAt,
         chartTypes: [ChartType.Chord],
       },
       compact: false,
@@ -95,7 +94,6 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
     settings.progressions = {
       query: {
         scopes: defaultScopes,
-        order: ChartQueryOrder.CreatedAt,
         chartTypes: [ChartType.Progression],
       },
       compact: true,

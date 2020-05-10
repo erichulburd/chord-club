@@ -1,12 +1,12 @@
 import React from 'react';
 import {View, StyleSheet, ViewProps} from 'react-native';
-import {ChartQuery, Tag, BaseScopes} from '../types';
+import {ChartQuery, Tag, BaseScopes, ChartQueryOrder} from '../types';
 import {useState} from 'react';
 import {StringCheckboxGroup} from './shared/CheckboxGroup';
 import {UserConsumerProps, withUser} from './UserContext';
 import identity from 'lodash/identity';
 import {Row} from './shared/Row';
-import {Button, Card, Text} from '@ui-kitten/components';
+import {Button, Card, Text, CheckBox} from '@ui-kitten/components';
 import {TagIDCollectionEditor} from './TagCollectionEditor';
 
 interface ManualProps {
@@ -73,6 +73,15 @@ const ChartQueryEditor = ({initialQuery, userCtx, save, cancel}: Props) => {
       </Button>
     </View>
   );
+  const setChartQueryOrderRandom = (random: boolean) => {
+    const update = { ...query };
+    if (random) {
+      update.order = ChartQueryOrder.Random;
+    } else {
+      delete update.order;
+    }
+    setQuery(update);
+  }
   return (
     <Card
       style={styles.container}
@@ -88,6 +97,12 @@ const ChartQueryEditor = ({initialQuery, userCtx, save, cancel}: Props) => {
           selected={selectedScopes}
           onToggle={toggleScopes}
         />
+      </Row>
+      <Row>
+        <CheckBox
+          checked={query.order === ChartQueryOrder.Random}
+          onChange={setChartQueryOrderRandom}
+        >Random Order</CheckBox>
       </Row>
       <View>
         <TagIDCollectionEditor
