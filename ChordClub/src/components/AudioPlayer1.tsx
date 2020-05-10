@@ -4,23 +4,15 @@ import {
   Button,
   withStyles,
   ThemedComponentProps,
-  Text,
 } from '@ui-kitten/components';
 import {ThemedIcon} from './FontAwesomeIcons';
-import {
-  TouchableOpacity,
-  TapGestureHandler,
-  NativeViewGestureHandler,
-} from 'react-native-gesture-handler';
 import {getCalRatio} from '../util/screen';
 import {
   AudioStateObserver,
   Audioable,
   AudioEventType,
-  audioStateObservable,
   State as AudioState,
 } from '../util/audio';
-import last from 'lodash/last';
 
 interface Props extends ThemedComponentProps {
   audio: Audioable;
@@ -34,9 +26,9 @@ interface State {
 
 const getColors = (theme: Record<string, string>) => ({
   default: theme['border-basic-color-2'],
-  lighter: theme['border-basic-color-2'],
+  lighter: theme['border-basic-color-2'] || '#1A2138',
   recording: theme['border-danger-color-4'],
-  played: theme['border-primary-color-1'],
+  played: theme['border-primary-color-1'] || '#3366FF',
 });
 
 export class AudioPlayer extends React.Component<Props> {
