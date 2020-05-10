@@ -288,6 +288,7 @@ export enum ErrorType {
   InvalidChartReaction = 'INVALID_CHART_REACTION',
   InvalidTagPositionUpdate = 'INVALID_TAG_POSITION_UPDATE',
   DuplicateUsername = 'DUPLICATE_USERNAME',
+  VexflowRendering = 'VEXFLOW_RENDERING',
   Unhandled = 'UNHANDLED',
   InternalServerError = 'INTERNAL_SERVER_ERROR',
   ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION'

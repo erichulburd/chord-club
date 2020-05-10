@@ -3,6 +3,7 @@ import {BASE_URL} from './config';
 import {v4} from 'react-native-uuid';
 import auth from '../util/auth';
 import {GraphQLError} from 'graphql';
+import { Score } from './voicing';
 
 const API_URL = `${BASE_URL}/v1`;
 
@@ -51,8 +52,26 @@ export const graphql = async <T, U>(
       Authorization: `Bearer ${auth.currentState().token}`,
       'Content-Type': 'application/json',
     },
-    body: {query, variables},
+    body: JSON.stringify({query, variables}),
   });
   const json = await res.json();
   return json;
+};
+
+export const vexflow = async (
+  score: Score,
+): Promise<string> => {
+  const res = await fetch(`${API_URL}/vexflow`, {
+    method: 'POST',
+    headers: {
+      'X-REQUEST-ID': v4(),
+      Authorization: `Bearer ${auth.currentState().token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ score }),
+  });
+  if (res.status === 200) {
+    return res.text();
+  }
+  throw new Error(await res.text());
 };

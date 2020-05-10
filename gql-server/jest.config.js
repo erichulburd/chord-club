@@ -5,5 +5,8 @@ module.exports = {
     'ts-jest': {
       tsConfig: true
     }
-  }
+  },
+  "transformIgnorePatterns": [
+    "<rootDir>/node_modules/(?!vexflow/.*)"
+  ],
 };

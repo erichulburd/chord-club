@@ -10,11 +10,12 @@ import { DBClientManager } from '../repositories/db';
 import { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import * as resolvers from '../resolvers';
-import { auth0GetKey } from './auth';
 import omit from 'lodash/omit';
 import { uploadHandler } from '../handlers/upload';
 import { makeMetaMiddleware } from '../handlers/metaMiddleware';
 import { health } from '../handlers/health';
+import { auth0GetKey } from './auth';
+import { vexHandler } from '../handlers/vex';
 
 export type TopLevelRootValue = Maybe<OperationDefinitionNode>;
 
@@ -42,6 +43,7 @@ export const initializeApp =
   app.post('/v1/upload', metaMiddleware, uploadHandler);
   app.get('/v1/health', metaMiddleware, health);
   app.post('/graphql', metaMiddleware);
+  app.post('/v1/vexflow', metaMiddleware, vexHandler);
 
   server.applyMiddleware({ app });
   return app;

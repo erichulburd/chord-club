@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, createElement} from 'react';
 import {
   Text,
   Button,
@@ -7,8 +7,8 @@ import {
   Tab,
   CheckBox,
 } from '@ui-kitten/components';
-import {View, Image, StyleSheet} from 'react-native';
-import {TouchableHighlight, ScrollView} from 'react-native-gesture-handler';
+import {View, Image, StyleSheet, ImageProps} from 'react-native';
+import {TouchableHighlight, ScrollView, TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {withUser, UserConsumerProps} from './UserContext';
 import {makeChartNew, ChartURLs, areTagsEqual} from '../util/forms';
 import {
@@ -41,6 +41,9 @@ import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
 import { useRoute } from '@react-navigation/native';
 import { AppRouteProp } from './AppScreen';
+import { Keyboard } from './Keyboard';
+import { displayNote } from '../util/strings';
+import { ChordABC } from './ChordABC';
 
 interface ManualProps {
   close: () => void;
@@ -183,6 +186,25 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
     setChart({...newChart, scope: isPublic ? BaseScopes.Public : uid});
   };
 
+  const [sharpFlat, setSharpFlat] = useState<'sharp' | 'flat'>('sharp')
+  const addNote = (n: Note, octave: number) => {
+    let abc = (newChart.abc || '').trim();
+    const note = displayNote(n) + octave.toString();
+    if (abc.split(' ').includes(note)) {
+      return;
+    }
+    setChart({ ...newChart, abc: `${abc} ${note}`});
+  }
+
+  const clearABC = () => {
+    setChart({ ...newChart, abc: '' });
+  };
+  const ClearABCAccessory = (props: Partial<ImageProps> = {}) => (
+    <TouchableWithoutFeedback onPress={clearABC}>
+      {createElement(ThemedIcon('times'), props)}
+    </TouchableWithoutFeedback>
+  )
+
   return (
     <View style={styles.container}>
       <TabBar
@@ -246,6 +268,13 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
                 </View>
               </Row>
             </Row>
+            <Row>
+              <Text category="label">Voice</Text>
+            </Row>
+            <ChordABC
+              abc={newChart.abc || ''}
+              updateABC={(abc) => setChart({ ...newChart, abc })}
+            />
             <Row>
               <Text category="label">Extensions</Text>
             </Row>

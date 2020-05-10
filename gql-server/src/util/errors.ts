@@ -44,6 +44,9 @@ export const forbiddenResourceOpError = (data: any = {}) => new ApolloError(
 export const usernameUniqueError = () => new ApolloError(
   'This username has already been taken.', ErrorType.DuplicateUsername);
 
+export const vexFlowRenderingError = (reason: string) => new ApolloError(
+  'We experiened an error rendering this chart.', ErrorType.VexflowRendering, { reason });
+
 export const coerceUnhandledError = (err: Error) => {
   if (err instanceof ApolloError) {
     return err;
