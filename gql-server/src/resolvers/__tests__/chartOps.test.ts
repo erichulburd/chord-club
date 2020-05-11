@@ -21,7 +21,7 @@ describe('chart ops', () => {
   const token = signWithTestKey({ sub: 'uid' });
 
   beforeEach(async () => {
-    dbClientManager = new TestDBClientManager(pool);
+    dbClientManager = await TestDBClientManager.new(pool);
     app = initializeApp(dbClientManager, getTestKey);
     const conn = await dbClientManager.newConnection();
     client = conn[0];

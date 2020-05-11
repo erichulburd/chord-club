@@ -1,5 +1,4 @@
 import { TestDBClientManager, makeDBPool, DBTxManager } from '../db';
-import { PoolClient } from 'pg';
 import {
   insertNewChart, findChartByID, deleteChart, updateChart,
   deleteChartsForUser, executeChartQuery,
@@ -12,6 +11,7 @@ import {
   updateTagPositions
 } from '../tag';
 import { ApolloError } from 'apollo-server-express';
+import { PoolClient } from 'pg';
 
 describe('chart repository', () => {
   const pool = makeDBPool();
@@ -25,7 +25,7 @@ describe('chart repository', () => {
     let txManager: DBTxManager;
 
     beforeEach(async () => {
-      dbClientManager = new TestDBClientManager(pool);
+      dbClientManager = await TestDBClientManager.new(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];
@@ -91,7 +91,7 @@ describe('chart repository', () => {
     let privateTags: Tag[][] = [];
 
     beforeAll(async () => {
-      dbClientManager = new TestDBClientManager(pool);
+      dbClientManager = await TestDBClientManager.new(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];

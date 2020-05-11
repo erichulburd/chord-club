@@ -2,18 +2,17 @@ import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
 import { parseAuthorization, getBearerToken, AccessTokenClaims } from './auth';
 import { v4 as uuidv4 } from 'uuid';
 import { makeLoaders, Loaders } from '../repositories/loaders';
-import { PoolClient } from 'pg';
+import { PoolClient, Pool } from 'pg';
 import { DBClientManager } from '../repositories/db';
 import { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import pino from 'pino';
 import baseLogger from './logger';
-import { RequestWithMeta } from './app';
 
 export interface Context {
   uid: string;
   requestID: string;
   loaders: Loaders;
-  db: PoolClient;
+  db: Pool | PoolClient;
   dbClientManager: DBClientManager;
   logger: pino.Logger;
 }
@@ -43,8 +42,7 @@ async (ctx: ExpressContext): Promise<Context> => {
     logger = logger.child({
       uid,
     });
-    const req = ctx.req as RequestWithMeta;
-    const db = req._meta.db;
+    const db = dbClientManager.queryable();
     const loaders = makeLoaders(db, uid);
     return {
       uid: uid || '',

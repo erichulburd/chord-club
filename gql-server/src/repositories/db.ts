@@ -3,23 +3,25 @@ import { snakeCase, pickBy, flatten, uniq } from 'lodash';
 
 export type Tx = number;
 
+export type Queryable = Pool | PoolClient;
+
 // During run, initialize app with pool. Each request gets a new AppDbTx.
 // During tests, initialize app with AppDBTx. Each request get a nested AppDBTx
 // WARNING: This is not parallelizable. In other words, a transaction should
 // only safely spawn transactions from the same thread.
 export class DBTxManager {
-  public client: PoolClient;
+  public queryable: Queryable;
   public savepoint = 0;
 
-  constructor(client: PoolClient) {
-    this.client = client;
+  constructor(queryable: Queryable) {
+    this.queryable = queryable;
   }
 
   public async begin() {
     if (this.savepoint === 0) {
-      await this.client.query('BEGIN');
+      await this.queryable.query('BEGIN');
     } else {
-      await this.client.query(`SAVEPOINT sp${this.savepoint}`);
+      await this.queryable.query(`SAVEPOINT sp${this.savepoint}`);
     }
     const txNumber = this.savepoint;
     this.savepoint += 1;
@@ -28,18 +30,18 @@ export class DBTxManager {
 
   public async rollbackTx(savepoint: Tx) {
     if (savepoint === 0) {
-      await this.client.query('ROLLBACK');
+      await this.queryable.query('ROLLBACK');
     } else {
-      await this.client.query(`ROLLBACK TO SAVEPOINT sp${savepoint}`);
+      await this.queryable.query(`ROLLBACK TO SAVEPOINT sp${savepoint}`);
     }
     this.savepoint = savepoint;
   }
 
   public async commit(savepoint: Tx) {
     if (savepoint === 0) {
-      await this.client.query('COMMIT');
+      await this.queryable.query('COMMIT');
     } else {
-      await this.client.query(`RELEASE SAVEPOINT sp${savepoint}`);
+      await this.queryable.query(`RELEASE SAVEPOINT sp${savepoint}`);
     }
     this.savepoint = savepoint;
   }
@@ -50,6 +52,10 @@ export class DBClientManager {
 
   constructor(pool: Pool) {
     this.pool = pool;
+  }
+
+  public queryable(): PoolClient | Pool {
+    return this.pool;
   }
 
   public releaseClient(client: PoolClient) {
@@ -67,31 +73,45 @@ export class TestDBClientManager extends DBClientManager {
   private client: PoolClient | undefined;
   private txManager: DBTxManager | undefined;
 
-  public releaseClient(_client: PoolClient) {
+  public async initialize() {
+    const client = await this.pool.connect();
+    this.client = client;
+    const txManager = new DBTxManager(this.client);
+    await txManager.begin();
+    this.txManager = txManager;
+  }
+
+  public queryable() {
+    if (!this.client) {
+      throw new Error('TestDBClientManager has not been initialized.');
+    }
+    return this.client;
+  }
+
+  public releaseClient(_queryable: Queryable) {
     // do not release clients during testing, so we can roll the
     // transactions back in tests rather than on the server.
   }
 
   public async newConnection(): Promise<[PoolClient, DBTxManager]> {
-    if (this.client === undefined) {
-      const client = await this.pool.connect();
-      this.client = client;
-    }
-    if (this.txManager == undefined) {
-      const txManager = new DBTxManager(this.client);
-      await txManager.begin();
-      this.txManager = txManager;
+    if (!this.client || !this.txManager) {
+      throw new Error('TestDBClientManager has not been initialized.');
     }
     return [this.client, this.txManager];
   }
 
   public async rollbackAndRelease() {
-    if (this.txManager !== undefined) {
-      await this.txManager.rollbackTx(0);
+    if (!this.client || !this.txManager) {
+      throw new Error('TestDBClientManager has not been initialized.');
     }
-    if (this.client !== undefined) {
-      this.client.release();
-    }
+    await this.txManager.rollbackTx(0);
+    this.client.release();
+  }
+
+  public static async new(pool: Pool) {
+    const testDBClientManager = new TestDBClientManager(pool);
+    await testDBClientManager.initialize();
+    return testDBClientManager;
   }
 }
 

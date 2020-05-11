@@ -1,7 +1,6 @@
-import { PoolClient } from 'pg';
 import {  kebabCase, groupBy, trim } from 'lodash';
 import { TagQuery, Tag, TagQueryOrder, TagNew, Chart, BaseScopes, TagBase, TagType } from '../types';
-import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBInsert } from './db';
+import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBInsert, Queryable } from './db';
 import {  invalidChartTagError, invalidTagQueryScopeError, invalidNewTagsScopeError } from '../util/errors';
 
 const attrs = [
@@ -22,8 +21,8 @@ interface BaseTagQueryAfter extends BaseTagQuery {
   after: number;
 }
 
-const searchForTag = async (displayName: string, query: BaseTagQuery, client: PoolClient) => {
-  const result = await client.query(`
+const searchForTag = async (displayName: string, query: BaseTagQuery, queryable: Queryable) => {
+  const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM tag t
@@ -32,8 +31,8 @@ const searchForTag = async (displayName: string, query: BaseTagQuery, client: Po
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
-export const findTagsByID = async (ids: number[], scopes: string[], client: PoolClient) => {
-  const result = await client.query(`
+export const findTagsByID = async (ids: number[], scopes: string[], queryable: Queryable) => {
+  const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM tag t
@@ -42,8 +41,8 @@ export const findTagsByID = async (ids: number[], scopes: string[], client: Pool
   return result.rows.map(dbDataToTag);
 };
 
-export const findTagByID = async (id: number, scopes: string[], client: PoolClient) => {
-  const result = await client.query(`
+export const findTagByID = async (id: number, scopes: string[], queryable: Queryable) => {
+  const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM tag t
@@ -55,8 +54,8 @@ export const findTagByID = async (id: number, scopes: string[], client: PoolClie
   return dbDataToTag(result.rows[0]) as Tag;
 };
 
-const findTags = async (query: BaseTagQuery, client: PoolClient) => {
-  const result = await client.query(`
+const findTags = async (query: BaseTagQuery, queryable: Queryable) => {
+  const result = await queryable.query(`
   SELECT
     ${selectFields}
   FROM tag t
@@ -67,8 +66,8 @@ const findTags = async (query: BaseTagQuery, client: PoolClient) => {
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
-const findTagsAfter = async (query: BaseTagQueryAfter, client: PoolClient) => {
-  const result = await client.query(`
+const findTagsAfter = async (query: BaseTagQueryAfter, queryable: Queryable) => {
+  const result = await queryable.query(`
   WITH ranks AS (
     SELECT
       ${selectFields},
@@ -93,7 +92,7 @@ export const getTagMunge = (displayName: string) => {
 };
 
 export const findExistingTags =
-  async (tags: TagNew[], client: PoolClient): Promise<Tag[]> => {
+  async (tags: TagNew[], queryable: Queryable): Promise<Tag[]> => {
   if (!tags || tags.length === 0) {
     return [];
   }
@@ -104,17 +103,17 @@ export const findExistingTags =
     values.push(getTagMunge(tag.displayName));
     values.push(tag.scope);
   });
-  const result = await client.query(`
+  const result = await queryable.query(`
     SELECT ${selectFields} FROM tag t
       WHERE ${prep.join(' OR ')}
   `, values);
   return result.rows.map(dbDataToTag);
 };
 
-export const insertNewTags = async (newTags: TagNew[], uid: string, client: PoolClient) => {
+export const insertNewTags = async (newTags: TagNew[], uid: string, queryable: Queryable) => {
   const { prep, values, columns } =
     prepareDBInsert(newTags.map((t) => ({ ...t, munge: getTagMunge(t.displayName), createdBy: uid })), dbFields);
-  const result = await client.query(`
+  const result = await queryable.query(`
     INSERT INTO
       tag (${columns})
       VALUES ${prep} RETURNING ${dbFields.join(', ')}
@@ -122,12 +121,12 @@ export const insertNewTags = async (newTags: TagNew[], uid: string, client: Pool
   const createSequences = result.rows.map((r) =>
     `CREATE SEQUENCE tag_position_${r.id} AS INTEGER START 1`
   );
-  await Promise.all(createSequences.map(seqStatement => client.query(seqStatement)));
+  await Promise.all(createSequences.map(seqStatement => queryable.query(seqStatement)));
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
-export const deleteTag = async (tagID: number, uid: string, client: PoolClient) => {
-  await client.query(`
+export const deleteTag = async (tagID: number, uid: string, queryable: Queryable) => {
+  await queryable.query(`
     DELETE FROM tag
       WHERE created_by = $1 AND id = $2
   `, [uid, tagID]);
@@ -163,18 +162,18 @@ const validateTagScopesForChart = (tags: TagNew[], chart: Chart, uid: string): T
   }), {});
 };
 
-export const addTagsForChart = async (chart: Chart, tags: TagNew[], uid: string, client: PoolClient) => {
+export const addTagsForChart = async (chart: Chart, tags: TagNew[], uid: string, queryable: Queryable) => {
   if (!tags || tags.length === 0) {
     return;
   }
   const validatedTags = validateTagScopesForChart(tags, chart, uid);
-  const existingTags = await findExistingTags(validatedTags, client);
+  const existingTags = await findExistingTags(validatedTags, queryable);
   let savedTags = [...existingTags];
 
   const newTags: TagNew[] = validatedTags
     .filter((tag) => !existingTags.some(t => t.munge === getTagMunge(tag.displayName)));
   if (newTags.length > 0) {
-    const createdTags = await insertNewTags(newTags, uid, client);
+    const createdTags = await insertNewTags(newTags, uid, queryable);
     savedTags = savedTags.concat(createdTags);
   }
 
@@ -186,15 +185,15 @@ export const addTagsForChart = async (chart: Chart, tags: TagNew[], uid: string,
   } = prepareDBInsert(newChartTags, ['chart_id', 'tag_id'], {
     tagPosition: (t) => `nextval('tag_position_${t.tagID}')`
   });
-  await client.query(`
+  await queryable.query(`
     INSERT INTO
       chart_tag (${columns})
       VALUES ${prep}
   `, values);
 };
 
-export const unTag = async (chartID: number, tagIDs: number[], uid: string, client: PoolClient) => {
-  await client.query(`
+export const unTag = async (chartID: number, tagIDs: number[], uid: string, queryable: Queryable) => {
+  await queryable.query(`
     DELETE FROM chart_tag ct
       USING chart c
       WHERE
@@ -206,11 +205,11 @@ export const unTag = async (chartID: number, tagIDs: number[], uid: string, clie
 };
 
 export const findTagsForCharts = async (
-  chartIDs: readonly number[] | number[], uid: string | undefined, client: PoolClient,
+  chartIDs: readonly number[] | number[], uid: string | undefined, queryable: Queryable,
   ) => {
   const tagScopes: string[] = [BaseScopes.Public];
   if (uid !== undefined) tagScopes.push(uid);
-  const result = await client.query(`
+  const result = await queryable.query(`
     SELECT ct.chart_id, ct.tag_position, ${selectFields}
       FROM tag t
         INNER JOIN chart_tag ct
@@ -226,10 +225,10 @@ export const findTagsForCharts = async (
 };
 
 export const updateTagPositions = async (
-  tagID: number, chartIDs: number[], positions: number[], client: PoolClient,
+  tagID: number, chartIDs: number[], positions: number[], queryable: Queryable,
   ) => {
   await Promise.all(chartIDs.map((chartID, i) =>
-    client.query(
+    queryable.query(
       'UPDATE chart_tag SET tag_position=$1 WHERE tag_id=$2 AND chart_id=$3',
       [positions[i], tagID, chartID])
   ));
@@ -243,12 +242,12 @@ export const tagsAreEqual = (t1: TagNew | Tag, t2: TagNew | Tag) =>
 
 export const reconcileChartTags = async (
   chart: Chart, tags: TagNew[],
-  existingTags: Tag[], client: PoolClient,
+  existingTags: Tag[], queryable: Queryable,
 ) => {
   const tagsToDelete = existingTags.filter(t => !tags.some(tagNew => tagsAreEqual(t, tagNew)));
-  await unTag(chart.id, tagsToDelete.map(t => t.id), chart.createdBy, client);
+  await unTag(chart.id, tagsToDelete.map(t => t.id), chart.createdBy, queryable);
   const tagsToAdd = tags.filter(t => !existingTags.some(tag => tagsAreEqual(t, tag)));
-  await addTagsForChart(chart, tagsToAdd, chart.createdBy, client);
+  await addTagsForChart(chart, tagsToAdd, chart.createdBy, queryable);
 };
 
 export const validateNewTagsScopes = (tags: TagNew[], uid: string): TagNew[] => {
@@ -269,10 +268,10 @@ export const validateNewTagsScopes = (tags: TagNew[], uid: string): TagNew[] => 
 };
 
 export const executeTagQuery = async (
-  rawQuery: TagQuery, uid: string, client: PoolClient): Promise<Tag[]> => {
+  rawQuery: TagQuery, uid: string, queryable: Queryable): Promise<Tag[]> => {
     validatedTagQueryScopes(rawQuery.scopes, uid);
   if (rawQuery.ids) {
-    return findTagsByID(rawQuery.ids, rawQuery.scopes, client);
+    return findTagsByID(rawQuery.ids, rawQuery.scopes, queryable);
   }
   const order = (rawQuery.order || TagQueryOrder.DisplayName).toLowerCase();
   const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
@@ -284,13 +283,13 @@ export const executeTagQuery = async (
     scopes: rawQuery.scopes,
   };
   if (rawQuery.displayName) {
-    return searchForTag(rawQuery.displayName, query, client);
+    return searchForTag(rawQuery.displayName, query, queryable);
   }
 
   if (rawQuery.after) {
     const afterQuery: BaseTagQueryAfter = { ...query, after: rawQuery.after };
-    return findTagsAfter(afterQuery, client);
+    return findTagsAfter(afterQuery, queryable);
   }
-  return findTags(query, client);
+  return findTags(query, queryable);
 };
 

@@ -1,6 +1,5 @@
 import { UserQuery, UserQueryOrder, User, UserNew, UserUpdate } from '../types';
-import { PoolClient } from 'pg';
-import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBUpdate } from './db';
+import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBUpdate, Queryable } from './db';
 import without from 'lodash/without';
 
 const attrs = [
@@ -16,8 +15,8 @@ interface UserSQLQuery {
   limit: number;
 }
 
-export const findUserByUID = async (uid: string, client: PoolClient) => {
-  const result = await client.query(`
+export const findUserByUID = async (uid: string, queryable: Queryable) => {
+  const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM userr u
@@ -29,8 +28,8 @@ export const findUserByUID = async (uid: string, client: PoolClient) => {
   return dbDataToUser(result.rows[0]) as User;
 };
 
-export const findUsersByUID = async (uids: readonly string[], client: PoolClient) => {
-  const result = await client.query(`
+export const findUsersByUID = async (uids: readonly string[], queryable: Queryable) => {
+  const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM userr u
@@ -39,8 +38,8 @@ export const findUsersByUID = async (uids: readonly string[], client: PoolClient
   return result.rows.map(dbDataToUser) as User[];
 };
 
-export const findUserByUsername = async (username: string, client: PoolClient) => {
-  const result = await client.query(`
+export const findUserByUsername = async (username: string, queryable: Queryable) => {
+  const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM userr u
@@ -53,8 +52,8 @@ export const findUserByUsername = async (username: string, client: PoolClient) =
 };
 
 
-const findUsers = async (query: UserSQLQuery, client: PoolClient) => {
-  const result = await client.query(`
+const findUsers = async (query: UserSQLQuery, queryable: Queryable) => {
+  const result = await queryable.query(`
   SELECT
     ${selectFields}
   FROM userr u
@@ -65,9 +64,9 @@ const findUsers = async (query: UserSQLQuery, client: PoolClient) => {
 };
 
 const findUsersAfter = async (
-  after: string, query: UserSQLQuery, client: PoolClient) => {
+  after: string, query: UserSQLQuery, queryable: Queryable) => {
 
-  const result = await client.query(`
+  const result = await queryable.query(`
   WITH ranks AS (
     SELECT
       ${selectFields},
@@ -87,8 +86,8 @@ const findUsersAfter = async (
 };
 
 export const insertUserNew = async (
-  newUser: UserNew, uid: string, client: PoolClient) => {
-    const result = await client.query(`
+  newUser: UserNew, uid: string, queryable: Queryable) => {
+    const result = await queryable.query(`
       INSERT INTO
         userr (uid, username)
         VALUES ($1, $2)
@@ -98,9 +97,9 @@ export const insertUserNew = async (
 };
 
 export const updateUser = async (
-  update: UserUpdate, uid: string, client: PoolClient) => {
+  update: UserUpdate, uid: string, queryable: Queryable) => {
     const { prep, values } = prepareDBUpdate(update, without(dbFields, 'uid'));
-    const result = await client.query(`
+    const result = await queryable.query(`
       UPDATE
         userr
         SET ${prep}
@@ -111,20 +110,20 @@ export const updateUser = async (
 };
 
 export const deleteUser = async (
-  uid: string, client: PoolClient) => {
-    await client.query(`
+  uid: string, queryable: Queryable) => {
+    await queryable.query(`
     DELETE FROM userr WHERE uid = $1
   `, [uid]);
 };
 
-export const executeUserQuery = async (rawQuery: UserQuery, client: PoolClient) => {
+export const executeUserQuery = async (rawQuery: UserQuery, queryable: Queryable) => {
   if (rawQuery.uid) {
-    const user = await findUserByUID(rawQuery.uid, client);
+    const user = await findUserByUID(rawQuery.uid, queryable);
     if (!user) return [];
     return [user];
   }
   if (rawQuery.username) {
-    const user = await findUserByUsername(rawQuery.username, client);
+    const user = await findUserByUsername(rawQuery.username, queryable);
     if (!user) return [];
     return [user];
   }
@@ -135,7 +134,7 @@ export const executeUserQuery = async (rawQuery: UserQuery, client: PoolClient) 
   const limit = Math.min(100, rawQuery.limit || 50);
   const query: UserSQLQuery = { orderBy, direction, limit };
   if (rawQuery.after) {
-    return findUsersAfter(rawQuery.after, query, client);
+    return findUsersAfter(rawQuery.after, query, queryable);
   }
-  return findUsers(query, client);
+  return findUsers(query, queryable);
 };
