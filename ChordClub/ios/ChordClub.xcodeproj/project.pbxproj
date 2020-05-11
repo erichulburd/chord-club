@@ -19,18 +19,18 @@
 		2DCD954D1E0B4F2C00145EB5 /* ChordClubTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* ChordClubTests.m */; };
 		8477AB4581D0A4D83DEC37EA /* libPods-ChordClub-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9BF0B298E85C5DCD827A0B1 /* libPods-ChordClub-tvOS.a */; };
 		9A95F4B3B307277B95EB1992 /* libPods-ChordClub-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A8021ED4FA48015742CB68E9 /* libPods-ChordClub-tvOSTests.a */; };
-		9DB524B5244E10160029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524B6244E10160029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524B7244E10160029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524B8244E10160029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524BA244E10680029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524BB244E10680029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524BC244E10680029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524BD244E10680029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524BF244E107A0029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524C0244E107A0029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524C1244E107A0029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		9DB524C2244E107A0029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524B5244E10160029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524B6244E10160029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524B7244E10160029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524B8244E10160029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524BA244E10680029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524BB244E10680029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524BC244E10680029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524BD244E10680029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524BF244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524C0244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524C1244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524C2244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		BD14B0219F3A8BCB0C436FFA /* libPods-ChordClub-ChordClubTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F029DE565E6A15CAA689ACB0 /* libPods-ChordClub-ChordClubTests.a */; };
 /* End PBXBuildFile section */
 
@@ -360,9 +360,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DB524C0244E107A0029E856 /* BuildFile in Resources */,
-				9DB524BB244E10680029E856 /* BuildFile in Resources */,
-				9DB524B6244E10160029E856 /* BuildFile in Resources */,
+				9DB524C0244E107A0029E856 /* (null) in Resources */,
+				9DB524BB244E10680029E856 /* (null) in Resources */,
+				9DB524B6244E10160029E856 /* (null) in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -370,11 +370,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DB524B5244E10160029E856 /* BuildFile in Resources */,
+				9DB524B5244E10160029E856 /* (null) in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				9DB524BA244E10680029E856 /* BuildFile in Resources */,
+				9DB524BA244E10680029E856 /* (null) in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
-				9DB524BF244E107A0029E856 /* BuildFile in Resources */,
+				9DB524BF244E107A0029E856 /* (null) in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,9 +382,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DB524BC244E10680029E856 /* BuildFile in Resources */,
-				9DB524C1244E107A0029E856 /* BuildFile in Resources */,
-				9DB524B7244E10160029E856 /* BuildFile in Resources */,
+				9DB524BC244E10680029E856 /* (null) in Resources */,
+				9DB524C1244E107A0029E856 /* (null) in Resources */,
+				9DB524B7244E10160029E856 /* (null) in Resources */,
 				2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -393,9 +393,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DB524C2244E107A0029E856 /* BuildFile in Resources */,
-				9DB524BD244E10680029E856 /* BuildFile in Resources */,
-				9DB524B8244E10160029E856 /* BuildFile in Resources */,
+				9DB524C2244E107A0029E856 /* (null) in Resources */,
+				9DB524BD244E10680029E856 /* (null) in Resources */,
+				9DB524B8244E10160029E856 /* (null) in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -973,7 +973,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
@@ -983,6 +983,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -1026,7 +1027,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
@@ -1035,6 +1036,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

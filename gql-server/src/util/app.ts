@@ -1,9 +1,8 @@
 import { ApolloServer } from 'apollo-server-express';
-import express, { Request } from 'express';
+import express from 'express';
 import { IncomingForm } from 'formidable';
 import { importSchema } from 'graphql-import';
 import { makeExecutableSchema, IResolvers } from 'graphql-tools';
-import { PoolClient } from 'pg';
 import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json';
 import { makeRequestContext } from './context';
 import { getOperationAST, DocumentNode, OperationDefinitionNode } from 'graphql';
@@ -88,23 +87,6 @@ export const initializeApp =
     });
   });
 
-  app.post('/graphql', async (req, _res, next) => {
-    const [db, _] = await clientManager.newConnection();
-    (req as RequestWithMeta)._meta = { db };
-    try {
-      next();
-    } finally {
-      clientManager.releaseClient(db);
-    }
-  });
-
   server.applyMiddleware({ app });
   return app;
 };
-
-export interface RequestWithMeta extends Request {
-  _meta: {
-    db: PoolClient;
-  };
-}
-

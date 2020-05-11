@@ -1,6 +1,6 @@
 import DataLoader from 'dataloader';
 import { Extension, Tag, ReactionCounts, ReactionType, User } from '../types';
-import { PoolClient } from 'pg';
+import { PoolClient, Pool } from 'pg';
 import { findExtensionsForCharts } from './extensions';
 import { findTagsForCharts } from './tag';
 import { countReactions, findReactionsByChartID } from './reaction';
@@ -15,23 +15,23 @@ export interface Loaders {
 }
 
 export const makeLoaders = (
-  client: PoolClient, uid: string | undefined,
+  queryable: PoolClient | Pool, uid: string | undefined,
 ): Loaders => {
   return {
     usersByUID:
-      new DataLoader((uids) => findUsersByUID(uids, client)),
+      new DataLoader((uids) => findUsersByUID(uids, queryable)),
     extensionsByChartID:
-      new DataLoader((chartIDs) => findExtensionsForCharts(chartIDs, client)),
+      new DataLoader((chartIDs) => findExtensionsForCharts(chartIDs, queryable)),
     tagsByChartID:
-      new DataLoader((chartIDs) => findTagsForCharts(chartIDs, uid, client)),
+      new DataLoader((chartIDs) => findTagsForCharts(chartIDs, uid, queryable)),
     reactionCountsByChartID:
-      new DataLoader((chartIDs) => countReactions(chartIDs, client)),
+      new DataLoader((chartIDs) => countReactions(chartIDs, queryable)),
     reactionByChartID:
       new DataLoader((chartIDs: readonly number[]) => {
         if (uid === undefined) {
           return Promise.resolve(new Array(chartIDs.length));
         }
-        return findReactionsByChartID(chartIDs, uid, client);
+        return findReactionsByChartID(chartIDs, uid, queryable);
       }),
   };
 };

@@ -1,10 +1,10 @@
 import { BaseScopes, ChartQuery, Chart, ChartQueryOrder, ChartNew, ChartUpdate, ChartType } from '../types';
-import { PoolClient } from 'pg';
 import { omit } from 'lodash';
 import {
   prepareDBUpdate, makeDBFields, makeSelectFields,
   makeDBDataToObject,
-  prepareDBInsert
+  prepareDBInsert,
+  Queryable
 } from './db';
 import { invalidChartScope } from '../util/errors';
 
@@ -43,9 +43,9 @@ const validateChartScope = (scope: string, uid: string) => {
   }
 };
 
-export const findChartByID = async (id: number, uid: string, client: PoolClient) => {
+export const findChartByID = async (id: number, uid: string, queryable: Queryable) => {
   const scopes = [BaseScopes.Public, uid];
-  const result = await client.query(`
+  const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM chart c
@@ -57,9 +57,9 @@ export const findChartByID = async (id: number, uid: string, client: PoolClient)
   return dbDataToChart(result.rows[0]) as Chart;
 };
 
-export const findChartsByID = async (chartIDs: number[], uid: string[], client: PoolClient) => {
+export const findChartsByID = async (chartIDs: number[], uid: string[], queryable: Queryable) => {
   const scopes = [uid, BaseScopes.Public];
-  const result = await client.query(`
+  const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM chart c
@@ -68,8 +68,8 @@ export const findChartsByID = async (chartIDs: number[], uid: string[], client: 
   return result.rows.map(dbDataToChart);
 };
 
-const findRandomCharts = async (chartTypes: ChartType[], scopes: string[], limit: number, client: PoolClient) => {
-  const result = await client.query(`
+const findRandomCharts = async (chartTypes: ChartType[], scopes: string[], limit: number, queryable: Queryable) => {
+  const result = await queryable.query(`
   WITH selection AS (
     SELECT
     ${selectFields}
@@ -82,8 +82,8 @@ const findRandomCharts = async (chartTypes: ChartType[], scopes: string[], limit
   return charts;
 };
 
-const findCharts = async (query: BaseChartQuery, scopes: string[], client: PoolClient) => {
-  const result = await client.query(`
+const findCharts = async (query: BaseChartQuery, scopes: string[], queryable: Queryable) => {
+  const result = await queryable.query(`
   SELECT
     ${selectFields}
   FROM chart c
@@ -95,9 +95,9 @@ const findCharts = async (query: BaseChartQuery, scopes: string[], client: PoolC
 };
 
 const findChartsAfter = async (
-  query: BaseChartQueryAfter, scopes: string[], client: PoolClient) => {
+  query: BaseChartQueryAfter, scopes: string[], queryable: Queryable) => {
 
-  const result = await client.query(`
+  const result = await queryable.query(`
   WITH ranks AS (
     SELECT
       ${selectFields},
@@ -116,9 +116,9 @@ const findChartsAfter = async (
 };
 
 const findChartsByTags = async (
-  query: ChartQueryByTags, scopes: string[], client: PoolClient,
+  query: ChartQueryByTags, scopes: string[], queryable: Queryable,
 ) => {
-  const result = await client.query(`
+  const result = await queryable.query(`
   SELECT
     ${selectFields}
   FROM chart_tag ct
@@ -132,9 +132,9 @@ const findChartsByTags = async (
 };
 
 const findChartsByTagsAfter = async (
-  query: ChartQueryByTagsAfter, scopes: string[], client: PoolClient,
+  query: ChartQueryByTagsAfter, scopes: string[], queryable: Queryable,
 ) => {
-  const result = await client.query(`
+  const result = await queryable.query(`
   WITH ranks AS (
     SELECT
       ${selectFields},
@@ -155,17 +155,17 @@ const findChartsByTagsAfter = async (
   return result.rows.map(dbDataToChart) as Chart[];
 };
 
-export const deleteChartsForUser = async (uid: string, client: PoolClient) => {
-  await client.query(`
+export const deleteChartsForUser = async (uid: string, queryable: Queryable) => {
+  await queryable.query(`
     DELETE FROM chart WHERE created_by = $1
   `, [uid]);
 };
 
-export const insertNewChart = async (chartNew: ChartNew, uid: string, client: PoolClient) => {
+export const insertNewChart = async (chartNew: ChartNew, uid: string, queryable: Queryable) => {
   validateChartScope(chartNew.scope, uid);
   const payload = { ...chartNew, createdBy: uid };
   const { values, columns, prep } = prepareDBInsert([omit(payload, ['id'])], dbFields);
-  const result = await client.query(`
+  const result = await queryable.query(`
     INSERT INTO
       chart (${columns})
       VALUES ${prep} RETURNING ${dbFields.join(', ')}
@@ -174,12 +174,12 @@ export const insertNewChart = async (chartNew: ChartNew, uid: string, client: Po
 };
 
 export const updateChart = async (
-  update: ChartUpdate, uid: string, client: PoolClient) => {
+  update: ChartUpdate, uid: string, queryable: Queryable) => {
   if (update.scope) {
     validateChartScope(update.scope, uid);
   }
   const { prep, values } = prepareDBUpdate(omit(update, ['id']), dbFields);
-  const result = await client.query(`
+  const result = await queryable.query(`
     UPDATE chart
       SET ${prep}
       WHERE id = $${values.length + 1} AND created_by = $${values.length + 2}
@@ -189,17 +189,17 @@ export const updateChart = async (
 };
 
 export const deleteChart = async (
-  chartID: number, uid: string, client: PoolClient) => {
+  chartID: number, uid: string, queryable: Queryable) => {
 
-  await client.query(`
+  await queryable.query(`
     DELETE FROM chart
       WHERE id = $1 AND created_by = $2
   `, [chartID, uid]);
 };
 
-export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, client: PoolClient) => {
+export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, queryable: Queryable) => {
   if (rawQuery.id) {
-    const chart = await findChartByID(rawQuery.id, uid, client);
+    const chart = await findChartByID(rawQuery.id, uid, queryable);
     const res = [];
     if (chart) {
       res.push(chart);
@@ -212,7 +212,7 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
   const scopes = rawQuery.scopes || [uid, BaseScopes.Public];
 
   if (rawQuery.order === ChartQueryOrder.Random) {
-    return findRandomCharts(chartTypes, scopes, limit, client);
+    return findRandomCharts(chartTypes, scopes, limit, queryable);
   }
 
   let order = (rawQuery.order || ChartQueryOrder.CreatedAt).toLowerCase();
@@ -232,22 +232,22 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, clien
     const chartTagQueryAfter: ChartQueryByTagsAfter = {
       ...query, tagIDs: rawQuery.tagIDs, after,
     };
-    return findChartsByTagsAfter(chartTagQueryAfter, scopes, client);
+    return findChartsByTagsAfter(chartTagQueryAfter, scopes, queryable);
   }
 
   if (rawQuery.tagIDs?.length) {
     const chartTagQuery: ChartQueryByTags = {
       ...query, tagIDs: rawQuery.tagIDs,
     };
-    return findChartsByTags(chartTagQuery, scopes, client);
+    return findChartsByTags(chartTagQuery, scopes, queryable);
   }
 
   if (after) {
     const chartQueryAfter: BaseChartQueryAfter = {
       ...query, after,
     };
-    return findChartsAfter(chartQueryAfter, scopes, client);
+    return findChartsAfter(chartQueryAfter, scopes, queryable);
   }
-  const charts = await findCharts(query, scopes, client);
+  const charts = await findCharts(query, scopes, queryable);
   return charts;
 };

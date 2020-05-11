@@ -1,7 +1,6 @@
-import { PoolClient } from 'pg';
 import { ReactionNew, ReactionCounts, ReactionType, Reaction } from '../types';
 import { groupBy } from 'lodash';
-import { makeDBFields, makeSelectFields, makeDBDataToObject } from './db';
+import { makeDBFields, makeSelectFields, makeDBDataToObject, Queryable } from './db';
 import { pgReactionUniqueError, invalidChartReactionError } from '../util/errors';
 
 const attrs = [
@@ -11,9 +10,9 @@ const dbFields = makeDBFields(attrs);
 const _selectFields = makeSelectFields(dbFields, 'u');
 const _dbDataToReaction = makeDBDataToObject<Reaction>(attrs, 'Reaction');
 
-export const upsertReactionNew = async (reaction: ReactionNew, client: PoolClient) => {
+export const upsertReactionNew = async (reaction: ReactionNew, queryable: Queryable) => {
   try {
-    await client.query(`
+    await queryable.query(`
       INSERT INTO reaction (chart_id, created_by, reaction_type)
         VALUES ($1, $2, $3)
         ON CONFLICT (created_by, chart_id) DO
@@ -27,8 +26,8 @@ export const upsertReactionNew = async (reaction: ReactionNew, client: PoolClien
   }
 };
 
-export const deleteReactionNew = async (chartID: number, uid: string, client: PoolClient) => {
-  await client.query(`
+export const deleteReactionNew = async (chartID: number, uid: string, queryable: Queryable) => {
+  await queryable.query(`
     DELETE FROM reaction WHERE chart_id = $1 AND created_by = $2
   `, [chartID, uid]);
 };
@@ -45,8 +44,8 @@ const makeReactionCounts = (a: ReactionCountsRow[]): ReactionCounts => ({
 });
 
 export const countReactions = async (
-  chartIDs: readonly number [] | number[], client: PoolClient) => {
-  const result = await client.query(`
+  chartIDs: readonly number [] | number[], queryable: Queryable) => {
+  const result = await queryable.query(`
     SELECT chart_id, reaction_type, COUNT(*) AS ct
       FROM reaction
       WHERE chart_id = ANY ($1)
@@ -73,8 +72,8 @@ const getReactionForChartIDs = (groups: { [key: number]: (ReactionRow | undefine
   };
 
 export const findReactionsByChartID = async (
-  chartIDs: readonly number [] | number[], uid: string, client: PoolClient): Promise<(ReactionType | undefined)[]> => {
-  const result = await client.query(`
+  chartIDs: readonly number [] | number[], uid: string, queryable: Queryable): Promise<(ReactionType | undefined)[]> => {
+  const result = await queryable.query(`
     SELECT chart_id, reaction_type
       FROM reaction
       WHERE chart_id = ANY ($1) AND created_by = $2

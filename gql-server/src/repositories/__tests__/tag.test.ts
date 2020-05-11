@@ -18,7 +18,7 @@ describe('tag repository', () => {
     let txManager: DBTxManager;
 
     beforeEach(async () => {
-      dbClientManager = new TestDBClientManager(pool);
+      dbClientManager = await TestDBClientManager.new(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];
@@ -130,7 +130,7 @@ describe('tag repository', () => {
     let privateTags: Tag[][] = [];
 
     beforeAll(async () => {
-      dbClientManager = new TestDBClientManager(pool);
+      dbClientManager = await TestDBClientManager.new(pool);
       const conn = await dbClientManager.newConnection();
       client = conn[0];
       txManager = conn[1];
