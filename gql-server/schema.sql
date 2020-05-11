@@ -16,14 +16,14 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: citext; Type: EXTENSION; Schema: -; Owner:
+-- Name: citext; Type: EXTENSION; Schema: -; Owner: 
 --
 
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner:
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: 
 --
 
 COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
@@ -76,6 +76,8 @@ CREATE TABLE public.chart (
     id integer NOT NULL,
     audio_url text NOT NULL,
     image_url text,
+    audio_length integer NOT NULL,
+    name character varying(180),
     hint text,
     description text,
     abc text,
@@ -86,9 +88,7 @@ CREATE TABLE public.chart (
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone,
     created_by character varying(180) NOT NULL,
-    scope character varying(180) NOT NULL,
-    name character varying(180),
-    audio_length integer NOT NULL
+    scope character varying(180) NOT NULL
 );
 
 
@@ -306,7 +306,7 @@ ALTER SEQUENCE public.tag_id_seq OWNED BY public.tag.id;
 CREATE TABLE public.userr (
     uid character varying(180) NOT NULL,
     username public.citext NOT NULL,
-    settings JSONB NOT NULL DEFAULT '{}',
+    settings jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp with time zone DEFAULT now()
 );
 
@@ -465,6 +465,69 @@ ALTER TABLE ONLY public.userr
 
 ALTER TABLE ONLY public.userr
     ADD CONSTRAINT userr_username_unique UNIQUE (username);
+
+
+--
+-- Name: chart_extension_chart_id_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_extension_chart_id_idx ON public.chart_extension USING btree (chart_id);
+
+
+--
+-- Name: chart_scope_created_at_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_scope_created_at_idx ON public.chart USING btree (scope, created_at);
+
+
+--
+-- Name: chart_scope_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_scope_idx ON public.chart USING btree (scope);
+
+
+--
+-- Name: chart_tag_chart_id_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_tag_chart_id_idx ON public.chart_tag USING btree (chart_id);
+
+
+--
+-- Name: chart_tag_tag_id_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_tag_tag_id_idx ON public.chart_tag USING btree (tag_id);
+
+
+--
+-- Name: reaction_chart_id_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX reaction_chart_id_idx ON public.reaction USING btree (chart_id);
+
+
+--
+-- Name: reaction_chart_id_reaction_type_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX reaction_chart_id_reaction_type_idx ON public.reaction USING btree (chart_id, reaction_type);
+
+
+--
+-- Name: tag_scope_display_name_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX tag_scope_display_name_idx ON public.tag USING btree (scope, display_name);
+
+
+--
+-- Name: tag_scope_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX tag_scope_idx ON public.tag USING btree (scope);
 
 
 --
