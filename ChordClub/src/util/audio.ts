@@ -131,8 +131,6 @@ export class AudioStateObserver {
   };
 
   public play = async (url: Audioable) => {
-
-    console.warn('PLAY', this.state)
     if (this.state.isPlaying) {
       await this.stop();
     }
