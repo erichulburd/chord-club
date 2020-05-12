@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   Button,
@@ -44,19 +44,26 @@ import { AppRouteProp } from './AppScreen';
 
 interface ManualProps {
   close: () => void;
+  mountID: string;
 }
 
 interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 
-const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
+const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const {uid} = userCtx.authState;
   const route = useRoute<AppRouteProp<'CreateAChart'>>();
-  const defaultChartType = route.params?.chartType === undefined ? ChartType.Chord : route.params?.chartType;
+  const defaultChartType = route.params?.chartType === undefined ?
+    ChartType.Chord :
+    route.params?.chartType;
   const [newChart, setChart] = useState(makeChartNew(uid, {
     chartType: defaultChartType,
   }));
   const updateChartType = (ct: ChartType) =>
     setChart({...newChart, chartType: ct});
+  useEffect(() => {
+    updateChartType(defaultChartType);
+  }, [defaultChartType]);
+
   const updateChartRoot = (n: Note) => setChart({...newChart, root: n});
   const [extensions, setExtensions] = useState<Extension[]>([]);
   const updateExtensions = (e: Extension) => {
@@ -79,7 +86,9 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
   const [urlCache, setFileURLCache] = useState<FileURLCache>({});
 
   const reset = () => {
-    setChart(makeChartNew(uid));
+    setChart(makeChartNew(uid, {
+      chartType: defaultChartType,
+    }));
     setExtensions([]);
     setAudioFilePath(undefined);
     setResizableImage(null);
@@ -196,7 +205,10 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
       </TabBar>
       <ScrollView style={{height: '80%'}}>
         <Row>
-          <AudioRecorder onRecordingComplete={onRecordingComplete} />
+          <AudioRecorder
+            mountID={mountID}
+            onRecordingComplete={onRecordingComplete}
+          />
         </Row>
         {image && (
           <Row>
@@ -234,12 +246,16 @@ const ChartCreator = ({close, modalCtx, userCtx}: Props) => {
               <Row>
                 <View style={styles.chordTone}>
                   <NoteAutocomplete
+                    mountID={mountID}
+                    initialValue={undefined}
                     placeholder={'Tone'}
                     onSelect={updateChartRoot}
                   />
                 </View>
                 <View style={styles.chordQuality}>
                   <ChartQualityAutocomplete
+                    mountID={mountID}
+                    initialValue={undefined}
                     placeholder={'Quality'}
                     onSelect={(cq) => setChart({...newChart, quality: cq})}
                   />

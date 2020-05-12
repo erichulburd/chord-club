@@ -74,7 +74,6 @@ interface State {
   isRecording: boolean;
   isPlayingPaused: boolean;
   hasRecorded: boolean;
-  isLoggingIn: boolean;
   recordSecs: number;
   currentPositionSec: number;
   currentDurationSec: number;
@@ -85,6 +84,7 @@ interface State {
 }
 
 interface Props extends ThemedComponentProps {
+  mountID: string;
   onRecordingComplete: (path: string, lengthMs: number) => void;
 }
 
@@ -132,7 +132,6 @@ class AudioRecorder extends Component<Props, State> {
       isRecording: false,
       isPlayingPaused: false,
       hasRecorded: false,
-      isLoggingIn: false,
       recordSecs: 0,
       currentPositionSec: 0,
       currentDurationSec: 0,
@@ -148,6 +147,36 @@ class AudioRecorder extends Component<Props, State> {
     } catch (err) {
       logger.error('failed to initialize audio', err);
     }
+  }
+
+  public componentWillUnmount() {
+    this._resetIfNecessary();
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps: Props) {
+    const {mountID} = nextProps;
+    if (mountID !== this.props.mountID) {
+      this._resetIfNecessary();
+    }
+  }
+
+  private _resetIfNecessary() {
+    const { isPlaying, isPlayingPaused, isRecording } = this.state;
+    if (isPlaying || isPlayingPaused) {
+      this.onStopPlay();
+    } else if (isRecording) {
+      this.onStopRecord();
+    }
+    this.setState({
+      hasRecorded: false,
+      recordSecs: 0,
+      currentPositionSec: 0,
+      currentDurationSec: 0,
+      playTime: '00:00:00',
+      duration: '00:00:00',
+      fileName: '',
+      absFilePath: '',
+    })
   }
 
   public render() {

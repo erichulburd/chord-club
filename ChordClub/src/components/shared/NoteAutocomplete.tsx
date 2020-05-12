@@ -1,4 +1,4 @@
-import React, {createElement} from 'react';
+import React, {createElement, useEffect} from 'react';
 import {Autocomplete, AutocompleteItem, IconProps} from '@ui-kitten/components';
 import {Note} from '../../types';
 import zip from 'lodash/zip';
@@ -43,16 +43,21 @@ interface Props {
   disabled?: boolean;
   style?: StyleProp<TextStyle>;
   placeholder?: string;
+  mountID: string;
 }
 
 export const NoteAutocomplete = ({
   onSelect,
+  mountID,
   initialValue,
   disabled,
   placeholder = 'Note',
   style = {},
 }: Props) => {
   const [query, setQuery] = React.useState(initialValue?.toString() || '');
+  useEffect(() => {
+    setQuery(initialValue || '');
+  }, [mountID]);
   const [notes, setNotes] = React.useState(allNotes);
 
   const onChangeText = (txt: string) => {

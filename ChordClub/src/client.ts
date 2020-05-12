@@ -12,7 +12,8 @@ const fragmentMatcher = new IntrospectionFragmentMatcher({
 });
 
 const cache = new InMemoryCache({
-  fragmentMatcher,
+  // FIXME: FragmentMatcher is broken.
+  // fragmentMatcher,
   dataIdFromObject: (obj) => {
     if (obj.__typename === 'User') {
       return (obj as User).uid;
