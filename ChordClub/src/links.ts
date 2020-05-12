@@ -5,8 +5,8 @@ import {RetryLink} from 'apollo-link-retry';
 import {ApolloLink} from 'apollo-link';
 import logger from './util/logger';
 import auth from './util/auth';
+import {GQL_URL} from './util/api';
 import {requestWithoutTokenError} from './util/errors';
-import {GQL_URL} from './util/config';
 import {v4} from 'react-native-uuid';
 
 const authLink = setContext(async (_request, previousContext) => {
