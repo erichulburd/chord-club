@@ -1,6 +1,47 @@
+import { readFileSync } from 'fs';
 
-export const config = {
-  AUTH0_DOMAIN: 'dev-a1418g8w.auth0.com',
-  AUTH0_CLIENT_ID: 'Cpx3C78jx5gtje0EzpiXjgmLWb19Mufv',
-  AUTH0_AUDIENCE: 'https://api.chordclub.app',
+interface Config {
+  PGHOST: string;
+  PGPORT: string;
+  PGUSER: string;
+  PGPASSWORD: string;
+  PGDATABASE: string;
+  AUTH0_DOMAIN: string;
+  AUTH0_CLIENT_ID: string;
+  AUTH0_AUDIENCE: string;
+  GC_PROJECT_ID: string;
+  GC_STORAGE_KEYFILE: string;
+  GC_STORAGE_BUCKET_NAME: string;
+  [key: string]: string;
+}
+
+const requiredConfig = [
+  'PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'PGDATABASE',
+  'AUTH0_DOMAIN', 'AUTH0_CLIENT_ID', 'AUTH0_AUDIENCE',
+  'GC_PROJECT_ID', 'GC_STORAGE_KEYFILE', 'GC_STORAGE_BUCKET_NAME'
+];
+
+const validateConfig = (config: Partial<Config>) => {
+  const missing = requiredConfig.filter((envVar) => !config[envVar]);
+  if (missing.length !== 0) {
+    throw new Error(`Missing config: ${missing.join(', ')}.`);
+  }
 };
+
+const parseConfig = (): Config => {
+  const SECRET_PATH = process.env.SECRET_PATH;
+
+  if (SECRET_PATH === undefined) {
+    throw new Error('Must set SECRET_PATH.');
+  }
+  const data = readFileSync(SECRET_PATH, { encoding: 'utf-8' });
+  const secrets = JSON.parse(data);
+  const config: Config = {
+    PGHOST: process.env.PGHOST,
+    ...secrets,
+  };
+  validateConfig(config);
+  return config;
+};
+
+export const config = parseConfig();

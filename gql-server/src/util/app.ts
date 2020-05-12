@@ -1,6 +1,5 @@
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
-import { IncomingForm } from 'formidable';
 import { importSchema } from 'graphql-import';
 import { makeExecutableSchema, IResolvers } from 'graphql-tools';
 import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json';
@@ -11,81 +10,38 @@ import { DBClientManager } from '../repositories/db';
 import { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import * as resolvers from '../resolvers';
-import { auth0GetKey, getUID } from './auth';
-import { MAX_FILE_SIZE_MB, upload } from './gcStorage';
-import baseLogger from './logger';
-import { ErrorType } from '../types';
+import { auth0GetKey } from './auth';
+import omit from 'lodash/omit';
+import { uploadHandler } from '../handlers/upload';
+import { makeMetaMiddleware } from '../handlers/metaMiddleware';
+import { health } from '../handlers/health';
 
 export type TopLevelRootValue = Maybe<OperationDefinitionNode>;
 
 export const initializeApp =
   (clientManager: DBClientManager, getKey: GetPublicKeyOrSecret = auth0GetKey): express.Express => {
   const typeDefs = importSchema(`${__dirname}/../../schema/schema.graphql`);
-  const r = {
+  const r = omit({
     ...resolvers,
     JSON: GraphQLJSON,
     JSONObject: GraphQLJSONObject,
-  };
+  }, ['__esModule']);
   const schema = makeExecutableSchema({
     typeDefs, resolvers: r as IResolvers,
   });
   const server = new ApolloServer({
     schema,
-    context: makeRequestContext(clientManager, getKey),
+    context: makeRequestContext(),
     rootValue: (node: DocumentNode): TopLevelRootValue =>
       getOperationAST(node, undefined),
   });
   const app = express();
   app.use(bodyParser.json());
 
-  app.post('/v1/upload', async (req, res, next) => {
-    const start = Date.now();
-    const uid = await getUID(req.headers.authorization || '', getKey);
-    const logger = baseLogger.child({
-      uid,
-      requestID: req.headers['X-REQUEST-ID'],
-      path: req.path,
-    });
-    if (!uid) {
-      res.status(401);
-      logger.child({
-        success: false, statusCode: 401,
-        ms: Date.now() - start,
-        errorCode: ErrorType.Unauthenticated,
-      }).error('unauthenticated');
-      res.end();
-      return;
-    }
-    const form = new IncomingForm();
-    form.multiples = false;
-    form.keepExtensions = true;
-    form.maxFileSize = MAX_FILE_SIZE_MB * 1024 * 1024;
-
-    form.parse(req, async (err, _fields, files) => {
-      if (err) {
-        logger.child({
-          success: false, statusCode: 500,
-          ms: Date.now() - start,
-          errorCode: ErrorType.Unhandled,
-        }).error(err);
-        next(err);
-        return;
-      }
-
-      const uploads: { [key: string]: string } = {};
-      await Promise.all(Object.keys(files).map(async (fileName) => {
-        const file = files[fileName];
-        const url = await upload(file, uid);
-        uploads[fileName] = url;
-      }));
-
-
-      logger
-        .child({ success: true, statusCode: 200, ms: Date.now() - start, })
-        .info('success');
-      res.status(200).json(uploads);
-    });
-  });
+  const metaMiddleware = makeMetaMiddleware(clientManager, getKey);
+  app.post('/v1/upload', metaMiddleware, uploadHandler);
+  app.get('/v1/health', metaMiddleware, health);
+  app.post('/graphql', metaMiddleware);
 
   server.applyMiddleware({ app });
   return app;

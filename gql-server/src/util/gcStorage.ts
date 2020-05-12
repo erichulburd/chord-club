@@ -3,18 +3,18 @@ import path from 'path';
 import { v4 } from 'uuid';
 import { File } from 'formidable';
 import mimeTypes from 'mime-types';
+import { config } from './config';
 
 export const MAX_FILE_SIZE_MB = 500;
 
-
 const storage = new Storage({
-  projectId: process.env.GC_PROJECT_ID,
-  keyFilename: process.env.GC_STORAGE_KEYFILE,
+  projectId: config.GC_PROJECT_ID,
+  keyFilename: config.GC_STORAGE_KEYFILE,
 });
 
-export const GC_STORAGE_BUCKET_NAME = process.env.GC_STORAGE_BUCKET_NAME || '';
+export const GC_STORAGE_BUCKET_NAME = config.GC_STORAGE_BUCKET_NAME || '';
 export const GC_STORAGE_URL_BASE =
-  `https://storage.googleapis.com/${process.env.GC_STORAGE_BUCKET_NAME}`;
+  `https://storage.googleapis.com/${GC_STORAGE_BUCKET_NAME}`;
 
 export const upload = async (file: File, uid: string, opts: UploadOptions = {}) => {
   const bucket = storage.bucket(GC_STORAGE_BUCKET_NAME);
