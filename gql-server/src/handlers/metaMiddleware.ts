@@ -58,7 +58,7 @@ async (
     }
   }
   const uid = claims?.sub;
-  logger = baseLogger.child({
+  logger = logger.child({
     uid,
   });
   const loaders = makeLoaders(dbClientManager.queryable(), uid);

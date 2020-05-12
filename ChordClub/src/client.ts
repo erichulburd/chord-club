@@ -12,7 +12,7 @@ const fragmentMatcher = new IntrospectionFragmentMatcher({
 });
 
 const cache = new InMemoryCache({
-  // fragmentMatcher,
+  fragmentMatcher,
   dataIdFromObject: (obj) => {
     if (obj.__typename === 'User') {
       return (obj as User).uid;

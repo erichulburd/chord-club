@@ -96,7 +96,7 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
         scopes: defaultScopes,
         chartTypes: [ChartType.Progression],
       },
-      compact: true,
+      compact: false,
     };
   }
   if (!settings.flashcards) {

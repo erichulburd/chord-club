@@ -1,10 +1,12 @@
 {
-  "name": "ChordClub",
+  "name": "chord-club-app",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
+    "ipad": "react-native run-ios --simulator \"iPad Pro (9.7-inch)\"",
+    "ios:devices": "xcrun simctl list devices",
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
