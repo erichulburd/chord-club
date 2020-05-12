@@ -1,0 +1,10 @@
+FROM node:12-alpine
+
+WORKDIR /migrations
+
+ADD migrations migrations
+ADD migrate.js .
+
+RUN ["npm", "install", "node-sql-migrations@1.0.7"]
+
+ENTRYPOINT ["node", "migrate.js"]

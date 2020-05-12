@@ -10,6 +10,7 @@ import AudioPlayer from './AudioPlayer1';
 import {UserConsumerProps, withUser} from './UserContext';
 import ChartOwnerMenu from './ChartOwnerMenu';
 import {ChartFooter} from './ChartFooter';
+import { TagCollection } from './TagCollection';
 
 interface ManualProps {
   chart: Chart;
@@ -74,6 +75,7 @@ const ProgressionItem = ({
         <Text>{chart.name || 'Unnamed'}</Text>
         <AudioPlayer audio={chart} />
       </View>
+      <TagCollection tags={chart.tags} />
       {image && (
         <ModalImage
           visible={imageIsOpen}

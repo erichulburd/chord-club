@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gql-server-migrations
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 100
+  template:
+    spec:
+      containers:
+      - name: migrations
+        image: gcr.io/chord-club/migrations:r2020-12-05.r03
+        command: ["node", "migrate.js", "migrate"]
+        env:
+          - name: SECRET_PATH
+            value: "/data/secrets.json"
+        volumeMounts:
+          - mountPath: /data
+            name: secrets
+            readOnly: true
+      restartPolicy: Never
+      volumes:
+      - name: secrets
+        secret:
+          defaultMode: 420
+          secretName: prd-chordclub-secrets--v003

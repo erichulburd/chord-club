@@ -22,12 +22,6 @@ directive @constraint(
   multipleOf: Int
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
-interface ListQuery {
-  asc: Boolean!
-  after: String!
-  limit: Int!
-}
-
 enum TagType {
   DESCRIPTOR,
   LIST,

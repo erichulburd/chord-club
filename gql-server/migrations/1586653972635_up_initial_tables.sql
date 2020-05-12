@@ -1,4 +1,5 @@
-CREATE EXTENSION IF NOT EXISTS citext;
+-- This should be done manually by database superuser.
+-- CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TABLE userr (
   uid VARCHAR(180) NOT NULL PRIMARY KEY,

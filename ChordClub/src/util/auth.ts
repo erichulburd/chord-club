@@ -4,6 +4,7 @@ import Observable from 'zen-observable';
 import logger from './logger';
 import {Buffer} from 'buffer';
 import {ObservableState} from './observableState';
+import config from './config';
 
 export enum AuthEventType {
   INITIALIZED,
@@ -113,9 +114,8 @@ export const observable = new Observable<AuthEvent>((observer) => {
 });
 
 const auth0 = new Auth0({
-  // TODO read these from config
-  domain: 'dev-a1418g8w.auth0.com',
-  clientId: 'Cpx3C78jx5gtje0EzpiXjgmLWb19Mufv',
+  domain: config.AUTH0_DOMAIN,
+  clientId: config.AUTH0_CLIENT_ID,
 });
 
 interface Auth0Credentials {
@@ -126,7 +126,7 @@ interface Auth0Credentials {
 const auth0Login = (): Promise<Auth0Credentials> =>
   auth0.webAuth.authorize({
     scope: 'openid',
-    audience: 'https://api.chordclub.app',
+    audience: config.AUTH0_TOKEN_AUDIENCE,
   });
 const auth0Logout = () => auth0.webAuth.clearSession({federated: true});
 

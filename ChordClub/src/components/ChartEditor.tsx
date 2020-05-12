@@ -46,11 +46,12 @@ import {ChartExtensionsEditor} from './ChartExtensionsEditor';
 interface ManualProps {
   chart: Chart;
   close: () => void;
+  mountID: string;
 }
 
 interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 
-const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
+const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
   const {uid} = userCtx.authState;
 
   const defaultChartUpdate = omit(chart, [
@@ -66,18 +67,8 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
   ])
   const [chartUpdate, setChart] = useState<ChartUpdate>(defaultChartUpdate);
   useEffect(() => {
-    setChart(omit(chart, [
-      '__typename',
-      'extensions',
-      'createdAt',
-      'updatedAt',
-      'createdBy',
-      'creator',
-      'reactionCounts',
-      'userReactionType',
-      'chartType',
-    ]));
-  }, [chart?.id]);
+    reset();
+  }, [mountID, chart?.id]);
   const updateChartExtensions = (exts: Extension[]) => {
     setChart({...chartUpdate, extensionIDs: exts.map((e) => e.id)});
   };
@@ -220,7 +211,10 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
         </Row>
         {fileUpdates.audio && (
           <Row>
-            <AudioRecorder onRecordingComplete={onRecordingComplete} />
+            <AudioRecorder
+              mountID={mountID}
+              onRecordingComplete={onRecordingComplete}
+            />
           </Row>
         )}
         <Row>
@@ -272,6 +266,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
               <Row>
                 <View style={styles.chordTone}>
                   <NoteAutocomplete
+                    mountID={mountID}
                     placeholder={'Tone'}
                     onSelect={updateChartRoot}
                     initialValue={chart.root}
@@ -279,6 +274,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
                 </View>
                 <View style={styles.chordQuality}>
                   <ChartQualityAutocomplete
+                    mountID={mountID}
                     placeholder={'Quality'}
                     onSelect={(cq) => setChart({...chartUpdate, quality: cq})}
                     initialValue={chart.quality}
@@ -298,7 +294,6 @@ const ChartEditor = ({close, modalCtx, userCtx, chart}: Props) => {
           </>
         )}
         <Row style={{flexDirection: 'column', alignSelf: 'stretch'}}>
-          <Text>{chartUpdate.tags?.map((t) => t.displayName).join(', ')}</Text>
           <TagAutocomplete
             containerStyle={{width: '100%'}}
             onSelect={addTag}

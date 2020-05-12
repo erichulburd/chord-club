@@ -74,7 +74,6 @@ interface State {
   isRecording: boolean;
   isPlayingPaused: boolean;
   hasRecorded: boolean;
-  isLoggingIn: boolean;
   recordSecs: number;
   currentPositionSec: number;
   currentDurationSec: number;
@@ -85,6 +84,7 @@ interface State {
 }
 
 interface Props extends ThemedComponentProps {
+  mountID: string;
   onRecordingComplete: (path: string, lengthMs: number) => void;
 }
 
@@ -132,7 +132,6 @@ class AudioRecorder extends Component<Props, State> {
       isRecording: false,
       isPlayingPaused: false,
       hasRecorded: false,
-      isLoggingIn: false,
       recordSecs: 0,
       currentPositionSec: 0,
       currentDurationSec: 0,
@@ -150,6 +149,36 @@ class AudioRecorder extends Component<Props, State> {
     }
   }
 
+  public componentWillUnmount() {
+    this._resetIfNecessary();
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps: Props) {
+    const {mountID} = nextProps;
+    if (mountID !== this.props.mountID) {
+      this._resetIfNecessary();
+    }
+  }
+
+  private _resetIfNecessary() {
+    const { isPlaying, isPlayingPaused, isRecording } = this.state;
+    if (isPlaying || isPlayingPaused) {
+      this.onStopPlay();
+    } else if (isRecording) {
+      this.onStopRecord();
+    }
+    this.setState({
+      hasRecorded: false,
+      recordSecs: 0,
+      currentPositionSec: 0,
+      currentDurationSec: 0,
+      playTime: '00:00:00',
+      duration: '00:00:00',
+      fileName: '',
+      absFilePath: '',
+    })
+  }
+
   public render() {
     let playWidth =
       (this.state.currentPositionSec / this.state.currentDurationSec) *
@@ -160,44 +189,41 @@ class AudioRecorder extends Component<Props, State> {
     const {eva} = this.props;
     const {isRecording, isPlaying, isPlayingPaused, hasRecorded} = this.state;
     const colors = getColors(eva?.theme || {});
+
+    let buttonIcon = 'circle';
+    let buttonOnPress = this.onStartRecord;
+    if (isRecording) {
+      buttonIcon = 'stop';
+      buttonOnPress = this.onStopRecord;
+    } else if (isPlayingPaused) {
+      buttonIcon = 'play-circle';
+      buttonOnPress = this.onResumePlay;
+    } else if (isPlaying) {
+      buttonIcon = 'pause-circle';
+      buttonOnPress = this.onPausePlay;
+    } else if (hasRecorded) {
+      buttonIcon = 'play-circle';
+      buttonOnPress = this.onStartPlay;
+    }
     return (
       <Card
         appearance={'filled'}
         style={[styles.container, {backgroundColor: colors.default, margin: 3}]}
-        status={isRecording ? 'danger' : isPlaying ? 'info' : 'basic'}>
+        status={isRecording ? 'danger' : isPlaying ? 'info' : 'basic'}
+      >
         <Row>
-          <ButtonGroup size="small" appearance="filled" status="basic">
+        <Row>
             <Button
-              disabled={isRecording || isPlaying || isPlayingPaused}
+              appearance="outline"
               accessoryLeft={(props) =>
-                React.createElement(ThemedIcon('circle'), {
+                React.createElement(ThemedIcon(buttonIcon), {
                   ...props,
                   solid: true,
                 })
               }
-              onPress={this.onStartRecord}
+              onPress={buttonOnPress}
             />
-            <Button
-              disabled={isRecording || !hasRecorded}
-              accessoryLeft={
-                isPlaying
-                  ? ThemedIcon('pause-circle')
-                  : ThemedIcon('play-circle')
-              }
-              onPress={
-                isPlaying
-                  ? this.onPausePlay
-                  : isPlayingPaused
-                  ? this.onResumePlay
-                  : this.onStartPlay
-              }
-            />
-            <Button
-              disabled={!isRecording && !isPlaying}
-              accessoryLeft={ThemedIcon('stop')}
-              onPress={isRecording ? this.onStopRecord : this.onStopPlay}
-            />
-          </ButtonGroup>
+        </Row>
         </Row>
         <Row>
           <PlayTimeAndDuration
@@ -219,11 +245,19 @@ class AudioRecorder extends Component<Props, State> {
             </View>
           </TouchableOpacity>
         </Row>
+        {hasRecorded &&
+          <Row>
+            <Button
+              appearance="ghost"
+              onPress={() => console.error('FIXME on reset')}
+            >Reset</Button>
+          </Row>
+        }
       </Card>
     );
   }
 
-  private onStatusPress = (e: any) => {
+  private onStatusPress = async (e: any) => {
     const touchX = e.nativeEvent.locationX;
     console.log(`touchX: ${touchX}`);
     const playWidth =
@@ -236,11 +270,11 @@ class AudioRecorder extends Component<Props, State> {
 
     if (playWidth && playWidth < touchX) {
       const addSecs = Math.round(currentPosition + 1000);
-      this.audioRecorderPlayer.seekToPlayer(addSecs);
+      await this.audioRecorderPlayer.seekToPlayer(addSecs);
       console.log(`addSecs: ${addSecs}`);
     } else {
       const subSecs = Math.round(currentPosition - 1000);
-      this.audioRecorderPlayer.seekToPlayer(subSecs);
+      await this.audioRecorderPlayer.seekToPlayer(subSecs);
       console.log(`subSecs: ${subSecs}`);
     }
   };
@@ -257,7 +291,6 @@ class AudioRecorder extends Component<Props, State> {
       AVNumberOfChannelsKeyIOS: 2,
       AVFormatIDKeyIOS: AVEncodingOption.aac,
     };
-    console.log('audioSet', audioSet);
     const fileName = makeFileName();
     this.setState({
       hasRecorded: true,
@@ -280,7 +313,6 @@ class AudioRecorder extends Component<Props, State> {
         recordSecs: e.current_position,
       });
     });
-    console.log(`absFilePath: ${absFilePath}`);
   };
 
   private onStopRecord = async () => {
@@ -295,16 +327,13 @@ class AudioRecorder extends Component<Props, State> {
       currentPositionSec: 0,
       isRecording: false,
     });
-    console.log(result);
   };
 
   private onStartPlay = async () => {
-    console.log('onStartPlay');
     this.setState({isPlaying: true});
-    const msg = await this.audioRecorderPlayer.startPlayer(this.state.fileName);
-    this.audioRecorderPlayer.setVolume(1.0);
-    console.log(msg);
-    this.audioRecorderPlayer.addPlayBackListener((e: any) => {
+    await this.audioRecorderPlayer.startPlayer(this.state.fileName);
+    await this.audioRecorderPlayer.setVolume(1.0);
+    this.audioRecorderPlayer.addPlayBackListener(async (e: any) => {
       const update = {
         currentPositionSec: e.current_position,
         currentDurationSec: e.duration,
@@ -315,8 +344,9 @@ class AudioRecorder extends Component<Props, State> {
         isPlaying: true,
       };
       if (e.current_position === e.duration) {
-        console.log('finished');
-        this.audioRecorderPlayer.stopPlayer();
+        await this.audioRecorderPlayer.stopPlayer();
+        update.currentPositionSec = 0;
+        update.playTime = '00:00:00';
         update.isPlaying = false;
       }
       this.setState(update);
@@ -324,19 +354,25 @@ class AudioRecorder extends Component<Props, State> {
   };
 
   private onPausePlay = async () => {
-    this.setState({isPlaying: false, isPlayingPaused: true});
+    console.info('PAUSE PLAY');
     await this.audioRecorderPlayer.pausePlayer();
+    this.setState({isPlaying: false, isPlayingPaused: true});
   };
 
   private onResumePlay = async () => {
-    this.setState({isPlaying: true, isPlayingPaused: false});
+    console.info('RESUME PLAY');
     await this.audioRecorderPlayer.resumePlayer();
+    this.setState({isPlaying: true, isPlayingPaused: false});
   };
 
   private onStopPlay = async () => {
-    console.log('onStopPlay');
-    this.setState({isPlaying: false, isPlayingPaused: false});
-    this.audioRecorderPlayer.stopPlayer();
+    await this.audioRecorderPlayer.stopPlayer();
+    this.setState({
+      isPlaying: false, isPlayingPaused: false,
+      playTime: '00:00:00',
+      currentPositionSec: 0,
+      isRecording: false,
+    });
     this.audioRecorderPlayer.removePlayBackListener();
   };
 }

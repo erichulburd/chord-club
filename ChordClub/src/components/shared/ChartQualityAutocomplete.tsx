@@ -1,4 +1,4 @@
-import React, {createElement} from 'react';
+import React, {createElement, useEffect} from 'react';
 import {Autocomplete, AutocompleteItem, IconProps} from '@ui-kitten/components';
 import {ChartQuality} from '../../types';
 import zip from 'lodash/zip';
@@ -23,6 +23,7 @@ const strToChartQuality: {[k: string]: ChartQuality} = allChartQualities.reduce(
 );
 
 interface Props {
+  mountID: string;
   onSelect: (note: ChartQuality) => void;
   initialValue?: ChartQuality;
   disabled?: boolean;
@@ -32,12 +33,16 @@ interface Props {
 
 export const ChartQualityAutocomplete = ({
   onSelect,
+  mountID,
   initialValue,
   disabled,
   style,
   placeholder = 'Chord quality',
 }: Props) => {
   const [query, setQuery] = React.useState(initialValue?.toString() || '');
+  useEffect(() => {
+    setQuery(initialValue || '');
+  }, [mountID]);
   const [qualities, setQualities] = React.useState(allChartQualities);
 
   const onChangeText = (txt: string) => {
