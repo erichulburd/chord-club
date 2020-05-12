@@ -1,12 +1,9 @@
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
-import { parseAuthorization, getBearerToken, AccessTokenClaims } from './auth';
-import { v4 as uuidv4 } from 'uuid';
-import { makeLoaders, Loaders } from '../repositories/loaders';
+import { Loaders } from '../repositories/loaders';
 import { PoolClient, Pool } from 'pg';
 import { DBClientManager } from '../repositories/db';
-import { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import pino from 'pino';
-import baseLogger from './logger';
+import { RequestWithMeta } from '../handlers/metaMiddleware';
 
 export interface Context {
   uid: string;
@@ -17,37 +14,14 @@ export interface Context {
   logger: pino.Logger;
 }
 
-const getRequestID = (ctx: ExpressContext) => {
-  const { headers } = ctx.req;
-  const requestID = headers['X-REQUEST-ID'] instanceof Array ? headers['X-REQUEST-ID'][0] : headers['X-REQUEST-ID'];
-  if (!requestID) {
-    return uuidv4();
-  }
-  return requestID;
-};
-
-export const makeRequestContext = (dbClientManager: DBClientManager, getKey: GetPublicKeyOrSecret) =>
-async (ctx: ExpressContext): Promise<Context> => {
-  const requestID = getRequestID(ctx);
-  let logger = baseLogger.child({
-    requestID,
-  });
+export const makeRequestContext = () => async (ctx: ExpressContext): Promise<Context> => {
+  const req = ctx.req as RequestWithMeta;
+  const { uid, dbClientManager, logger, requestID, loaders } = req._meta;
   try {
-    const token = getBearerToken(ctx.req.headers.authorization || '') || undefined;
-    let claims: AccessTokenClaims | undefined;
-    if (token) {
-      claims = await parseAuthorization(token, getKey);
-    }
-    const uid = claims?.sub;
-    logger = logger.child({
-      uid,
-    });
-    const db = dbClientManager.queryable();
-    const loaders = makeLoaders(db, uid);
     return {
       uid: uid || '',
       dbClientManager,
-      db,
+      db: dbClientManager.queryable(),
       requestID,
       logger,
       loaders,

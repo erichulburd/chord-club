@@ -12,3 +12,15 @@ services:
     - POSTGRES_DB=db
     - POSTGRES_PASSWORD=notsecret
     - PGSSLMODE=disable
+
+  gql-server:
+    build: .
+    image: chordclub:latest
+    volumes:
+    - './tmp/secrets.dev.json:/data/secrets.json'
+    - './tmp/chord-club-bc4acc7a1282.json:/data/chord-club-bc4acc7a1282.json'
+    ports:
+    - "4000:4000"
+    environment:
+    - PGHOST=postgres
+    - SECRET_PATH=/data/secrets.json

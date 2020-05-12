@@ -12,6 +12,4 @@ npx eslint ./src/**/*.ts
 
 sleep 30
 
-export $(cat .env.example)
-
-npm run jest
+PGHOST=127.0.0.1 SECRET_PATH=./secrets.example.json npm run jest

@@ -21,13 +21,13 @@ export const wrapTopLevelOp =
     logger.child({ ms: Date.now() - start, success: true, }).info('success');
     return res;
   } catch (err) {
-    logger.error(err);
     const apolloError = coerceUnhandledError(err);
     logger = logger.child({
       ms: Date.now() - start,
       success: false,
       errorCode: apolloError.code,
     });
+    logger.error(err);
     throw apolloError;
   }
 };

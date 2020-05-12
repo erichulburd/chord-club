@@ -1,5 +1,6 @@
 import { Pool, PoolClient } from 'pg';
 import { snakeCase, pickBy, flatten, uniq } from 'lodash';
+import { config } from '../util/config';
 
 export type Tx = number;
 
@@ -116,10 +117,11 @@ export class TestDBClientManager extends DBClientManager {
 }
 
 export const makeDBPool = () => new Pool({
-  host: process.env.PGHOST,
-  user: process.env.PGUSER,
-  port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : undefined,
-  database: process.env.PGDATABASE,
+  host: config.PGHOST,
+  user: config.PGUSER,
+  password: config.PGPASSWORD,
+  port: config.PGPORT ? parseInt(config.PGPORT, 10) : undefined,
+  database: config.PGDATABASE,
   // ssl: { ca: '', cert: '', },
   max: 100,
   idleTimeoutMillis: 30000,
@@ -127,10 +129,6 @@ export const makeDBPool = () => new Pool({
 });
 
 export const makeDBClientManager = () => new DBClientManager(makeDBPool());
-
-interface DBInsert {
-  [key: string]: any;
-}
 
 interface DynamicValues<T> {
   [key: string]: string | ((val: T) => string);

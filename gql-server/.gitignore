@@ -117,5 +117,6 @@ dist
 
 tmp/
 data/
+build/
 
 postgres-data/
