@@ -30,6 +30,12 @@ npx ts-node-dev src/commands/extensions.ts
 npm run dev
 ```
 
+### Cluster Creation
+
+For creation of Google managed certs and ConfigConnector, see below links:
+  * https://cloud.google.com/kubernetes-engine/docs/how-to/managed-certs
+  * https://cloud.google.com/config-connector/docs/how-to/install-upgrade-uninstall
+
 ## React Native
 
 ```sh
