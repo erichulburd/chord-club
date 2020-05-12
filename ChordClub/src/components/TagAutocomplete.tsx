@@ -111,7 +111,7 @@ export class TagAutocomplete extends React.Component<Props> {
     let options: any[] = data.tags;
     if (allowNewTags && query.displayName) {
       const tagExists = options.some(
-        (t) => t.munge !== getTagMunge(query.displayName || ''),
+        (t) => t.munge === getTagMunge(query.displayName || ''),
       );
       if (!tagExists) {
         const tagNew = makeTagNew(query.displayName, this.includePublic(), uid);
