@@ -1,7 +1,5 @@
 import React, {useContext, useEffect, useState, useCallback} from 'react';
 import {AudioContext} from './AudioContextProvider';
-import {StyleSheet} from 'react-native';
-import {getCalRatio} from '../util/screen';
 import {AudioControls, AudioAction} from './AudioControls';
 import logger from '../util/logger';
 
@@ -51,6 +49,7 @@ export const AudioPlayerActive = ({extraActions = []}: Props) => {
     setPaused(false);
   };
 
+  /*
   const seek = useCallback(
     () => async (positionMs: number) => {
       let newPosition = positionMs;
@@ -66,6 +65,7 @@ export const AudioPlayerActive = ({extraActions = []}: Props) => {
     },
     [durationMs],
   );
+  */
   const stop = async () => {
     setPaused(false);
     setDurationMs(0);
@@ -81,7 +81,7 @@ export const AudioPlayerActive = ({extraActions = []}: Props) => {
   ];
   return (
     <AudioControls
-      seek={seek}
+      seek={undefined}
       currentPositionMs={currentPositionMs}
       durationMs={durationMs}
       actions={actions}
