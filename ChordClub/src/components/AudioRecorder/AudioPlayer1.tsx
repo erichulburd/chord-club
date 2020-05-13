@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {View, StyleSheet, GestureResponderEvent} from 'react-native';
 import {
   Button,
   withStyles,
   ThemedComponentProps,
 } from '@ui-kitten/components';
-import {ThemedIcon} from './FontAwesomeIcons';
-import {getCalRatio} from '../util/screen';
+import {ThemedIcon} from '../FontAwesomeIcons';
+import {getCalRatio} from '../../util/screen';
 import {
-  AudioStateObserver,
   Audioable,
   AudioEventType,
   State as AudioState,
-} from '../util/audio';
+} from '../../util/audio';
+import {AudioContextProps, withAudioContext } from '../AudioContexts';
 
-interface Props extends ThemedComponentProps {
+interface Props extends ThemedComponentProps, AudioContextProps {
   audio: Audioable;
 }
 
@@ -31,13 +31,11 @@ const getColors = (theme: Record<string, string>) => ({
   played: theme['border-primary-color-1'] || '#3366FF',
 });
 
-export class AudioPlayer extends React.Component<Props> {
-  private audioStateObserver: AudioStateObserver;
+class AudioPlayer extends React.Component<Props> {
   public state: State = { width: getCalRatio().width };
 
   constructor(props: Props) {
     super(props);
-    this.audioStateObserver = new AudioStateObserver();
   }
 
   public componentWillUnmount() {
@@ -45,7 +43,6 @@ export class AudioPlayer extends React.Component<Props> {
   }
 
   private _unsubscribe() {
-    this.audioStateObserver.close();
     if (this.state.subscription) {
       this.state.subscription.unsubscribe();
       this.setState({subscription: undefined});
@@ -53,39 +50,35 @@ export class AudioPlayer extends React.Component<Props> {
   }
 
   private _play = () => {
-    const {audio} = this.props;
+    const {audio, audioCtx} = this.props;
     if (!this.state.subscription) {
-      const subscription = this.audioStateObserver.subscribe({
+      const { audioCtx } = this.props;
+      const subscription = audioCtx.subscribe({
         next: (audioEvent) => {
           if (
             audioEvent.type === AudioEventType.PLAY &&
             audioEvent.state.currentURL !== audio.audioURL
           ) {
             this._unsubscribe();
-          } else {
-            this.audioStateObserver.state = audioEvent.state;
-            this.setState({audioState: audioEvent.state});
           }
         },
       });
       this.setState({subscription});
     }
-    this.audioStateObserver.play(audio);
+    audioCtx.play(audio);
   };
 
   public render() {
-    const {audioStateObserver} = this;
-    const {audio, eva} = this.props;
+    const {audio, eva, audioCtx} = this.props;
 
     let playWidth = 0;
     const dims = getCalRatio();
     const fullWidth = dims.width - 100 * dims.ratio;
     if (
-      audioStateObserver.isPlaying(audio.audioURL) ||
-      audioStateObserver.isPaused(audio.audioURL)
+      audioCtx.isPlaying(audio.audioURL) ||
+      audioCtx.isPaused(audio.audioURL)
     ) {
-      playWidth =
-        audioStateObserver.playRatio() * (dims.width - 100 * dims.ratio);
+      playWidth = audioCtx.playRatio() * (dims.width - 100 * dims.ratio);
       if (!playWidth) {
         playWidth = 0;
       }
@@ -93,17 +86,17 @@ export class AudioPlayer extends React.Component<Props> {
     const colors = getColors(eva?.theme || {});
     let actionIcon = ThemedIcon('play');
     let action = this._play;
-    if (audioStateObserver.isPlaying(audio.audioURL)) {
-      if (audioStateObserver.isPaused(audio.audioURL)) {
-        action = () => audioStateObserver.resume();
+    if (audioCtx.isPlaying(audio.audioURL)) {
+      if (audioCtx.isPaused(audio.audioURL)) {
+        action = () => audioCtx.resume();
       } else {
         actionIcon = ThemedIcon('pause');
-        action = () => audioStateObserver.pause();
+        action = () => audioCtx.pause();
       }
     }
     const seek = (e: GestureResponderEvent) => {
       const ratio = (e.nativeEvent.locationX  / this.state.width);
-      audioStateObserver.seek(ratio);
+      audioCtx.seek(ratio);
     }
     return (
       <View style={styles.container}>
@@ -159,4 +152,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withStyles(AudioPlayer);
+export default withStyles(withAudioContext(AudioPlayer));

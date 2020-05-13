@@ -6,7 +6,7 @@ import {Chart} from '../types';
 import {View, ViewProps, StyleSheet} from 'react-native';
 import {ModalImage} from './shared/ModalImage';
 import {ResizableImage} from '../util/imagePicker';
-import AudioPlayer from './AudioPlayer1';
+import AudioPlayer from './AudioRecorder/AudioPlayer1';
 import {UserConsumerProps, withUser} from './UserContext';
 import ChartOwnerMenu from './ChartOwnerMenu';
 import {ChartFooter} from './ChartFooter';

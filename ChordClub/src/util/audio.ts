@@ -1,7 +1,5 @@
 import Observable from 'zen-observable';
-import {ObservableState} from './observableState';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import {getCalRatio} from '../util/screen';
 import {GestureResponderEvent} from 'react-native';
 import logger from './logger';
 
@@ -10,7 +8,7 @@ export interface Audioable {
   audioLength: number;
 }
 
-export interface State {
+export interface AudioState {
   currentURL?: string;
   audioRecorderPlayer: AudioRecorderPlayer;
   isPlaying: boolean;
@@ -32,7 +30,7 @@ interface Actions {
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
 
-let currentState: State = {
+let initialState: State = {
   audioRecorderPlayer,
   currentURL: '',
   isPlaying: false,
@@ -56,9 +54,10 @@ interface AudioEvent {
   type: AudioEventType;
 }
 
-class AudioObservable {
+export class AudioObservable {
   private subscribers: Set<ZenObservable.Observer<AudioEvent>>;
   public observable: Observable<AudioEvent>;
+  private state = initialState;
 
   constructor() {
     this.subscribers = new Set<ZenObservable.Observer<AudioEvent>>();
@@ -75,41 +74,8 @@ class AudioObservable {
     });
   }
 
-  public publish = (update: Partial<State>, eventType: AudioEventType) => {
-    currentState = Object.freeze({...currentState, ...update});
-    this.subscribers.forEach((observer) => {
-      if (observer.next) {
-        observer.next({
-          state: currentState,
-          type: eventType,
-        });
-      }
-    });
-  };
-}
-
-export const audioStateObservable = new AudioObservable();
-
-export class AudioStateObserver {
-  public state: State;
-  private audioObversable: AudioObservable;
-  private subscription: ZenObservable.Subscription;
-  constructor(aobs: AudioObservable = audioStateObservable) {
-    this.state = currentState;
-    this.audioObversable = aobs;
-    this.subscription = this.audioObversable.observable.subscribe({
-      next: (e) => {
-        this.state = e.state;
-      }
-    });
-  }
-
-  public close() {
-    this.subscription.unsubscribe();
-  }
-
   public subscribe = (observer: ZenObservable.Observer<AudioEvent>) => {
-    return this.audioObversable.observable.subscribe(observer);
+    return this.observable.subscribe(observer);
   };
 
   public isPlaying = (audioURL: string) => {
@@ -134,7 +100,7 @@ export class AudioStateObserver {
     if (this.state.isPlaying) {
       await this.stop();
     }
-    this.audioObversable.publish(
+    this.publish(
       {
         currentURL: url.audioURL,
         currentPositionSec: 0,
@@ -160,12 +126,12 @@ export class AudioStateObserver {
         update.isPlaying = false;
         eventType = AudioEventType.FINISHED;
       }
-      this.audioObversable.publish(update, eventType);
+      this.publish(update, eventType);
     });
   };
 
   public pause = async () => {
-    this.audioObversable.publish(
+    this.publish(
       {isPlaying: false, isPlayingPaused: true},
       AudioEventType.PAUSE,
     );
@@ -173,20 +139,20 @@ export class AudioStateObserver {
   };
 
   public resume = async () => {
-    this.audioObversable.publish(
+    await this.state.audioRecorderPlayer.resumePlayer();
+    this.publish(
       {isPlaying: true, isPlayingPaused: false},
       AudioEventType.RESUME,
     );
-    await this.state.audioRecorderPlayer.resumePlayer();
   };
 
   public stop = async () => {
-    this.audioObversable.publish(
+    await this.state.audioRecorderPlayer.stopPlayer();
+    this.state.audioRecorderPlayer.removePlayBackListener();
+    this.publish(
       {isPlaying: false, isPlayingPaused: false},
       AudioEventType.STOP,
     );
-    await this.state.audioRecorderPlayer.stopPlayer();
-    this.state.audioRecorderPlayer.removePlayBackListener();
   };
 
   public seek = async (ratio: number) => {
@@ -196,7 +162,6 @@ export class AudioStateObserver {
     newPosition = Math.max(newPosition, 0);
     newPosition = Math.round(newPosition);
 
-    awaitingSeek = true;
     const {audioRecorderPlayer} = this.state;
     try {
       await audioRecorderPlayer.seekToPlayer(newPosition);
@@ -204,8 +169,22 @@ export class AudioStateObserver {
       logger.error('seek failed', err);
     }
     // position will be updated in addPlayBackListener.
-    this.audioObversable.publish({}, AudioEventType.SEEK);
+    this.publish({}, AudioEventType.SEEK);
+  };
+
+  private publish = (update: Partial<State>, eventType: AudioEventType) => {
+    this.state = Object.freeze({...this.state, ...update});
+    this.subscribers.forEach((observer) => {
+      if (observer.next) {
+        observer.next({
+          state: this.state,
+          type: eventType,
+        });
+      }
+    });
   };
 }
 
-let awaitingSeek = false;
+export const audioObservable = new AudioObservable();
+
+

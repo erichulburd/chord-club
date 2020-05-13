@@ -8,7 +8,7 @@ import {ChartExtensions} from './ChartExtensions';
 import {displayNote} from '../util/strings';
 import {ModalImage} from './shared/ModalImage';
 import {ResizableImage} from '../util/imagePicker';
-import AudioPlayer from './AudioPlayer1';
+import AudioPlayer from './AudioRecorder/AudioPlayer1';
 import {TagCollection} from './TagCollection';
 import {UserConsumerProps, withUser} from './UserContext';
 import ChartOwnerMenu from './ChartOwnerMenu';
