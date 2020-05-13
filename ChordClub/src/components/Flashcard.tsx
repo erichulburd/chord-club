@@ -2,7 +2,7 @@ import React from 'react';
 import { Chart, Extension } from '../types';
 import { Card, Button, Spinner, Text } from '@ui-kitten/components';
 import { View, ViewProps, StyleSheet } from 'react-native';
-import { AudioPlayer } from './AudioRecorder/AudioPlayer1';
+import { AudioPlayer } from './AudioPlayer';
 import { ThemedIcon } from './FontAwesomeIcons';
 import { FlashcardAnswer } from '../util/flashcards';
 import { FlashcardQuality } from './FlashcardQuality';
@@ -125,6 +125,11 @@ export const Flashcard = ({
 };
 
 const styles = StyleSheet.create({
+  header: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
   footer: {
     display: 'flex',
     flexDirection: 'row',

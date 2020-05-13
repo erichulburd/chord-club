@@ -1,3 +1,4 @@
+import { StyleSheet } from "react-native";
 
 
 export const getColors = (theme: Record<string, string>) => ({
@@ -6,3 +7,12 @@ export const getColors = (theme: Record<string, string>) => ({
   recording: theme['border-danger-color-4'],
   played: theme['border-primary-color-1'] || '#3366FF',
 });
+
+export const styles = StyleSheet.create({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: 15,
+  }
+})

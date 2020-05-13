@@ -23,7 +23,7 @@ import {
   ChartUpdate,
 } from '../types';
 import {Row} from './shared/Row';
-import AudioRecorder from './AudioRecorder/index';
+import {AudioRecorder} from './AudioRecorder';
 import {ThemedIcon} from './FontAwesomeIcons';
 import {pickSingleImage, ResizableImage} from '../util/imagePicker';
 import {ModalImage} from './shared/ModalImage';
@@ -212,8 +212,8 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
         {fileUpdates.audio && (
           <Row>
             <AudioRecorder
-              mountID={mountID}
-              onRecordingComplete={onRecordingComplete}
+              recorderID={chart.id.toString()}
+              onRecordComplete={() => { throw new Error('onRecordComplete unimplemented')}}
             />
           </Row>
         )}

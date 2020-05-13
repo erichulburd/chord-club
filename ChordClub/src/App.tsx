@@ -19,7 +19,7 @@ import {FontAwesome5IconsPack} from './components/FontAwesomeIcons';
 import AuthModal from './components/AuthModal';
 import {UserProvider} from './components/UserContext';
 import {ModalProvider} from './components/ModalProvider';
-import { AudioContexts } from './components/AudioContexts';
+import { AudioContextProvider } from './components/AudioContextProvider';
 
 if (__DEV__) {
   import('./util/reactotron').then(() => logger.info('Reactotron Configured'));
@@ -35,9 +35,9 @@ const App = ({}) => {
         <ApplicationProvider {...eva} theme={eva.dark}>
           <UserProvider>
             <ModalProvider>
-              <AudioContexts>
+              <AudioContextProvider>
                 <AppNavigator />
-              </AudioContexts>
+              </AudioContextProvider>
             </ModalProvider>
             <AuthModal />
           </UserProvider>

@@ -22,7 +22,7 @@ import {
 } from '../types';
 import {Row} from './shared/Row';
 import {ExtensionPalletteBG} from './shared/ExtensionPalletteBG';
-import AudioRecorder from './AudioRecorder/index';
+import {AudioRecorder} from './AudioRecorder';
 import {ThemedIcon} from './FontAwesomeIcons';
 import {pickSingleImage, ResizableImage} from '../util/imagePicker';
 import {ModalImage} from './shared/ModalImage';
@@ -206,8 +206,8 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
       <ScrollView style={{height: '80%'}}>
         <Row>
           <AudioRecorder
-            mountID={mountID}
-            onRecordingComplete={onRecordingComplete}
+            recorderID={'0'}
+            onRecordComplete={() => { throw new Error('onRecordComplete not implemented')}}
           />
         </Row>
         {image && (

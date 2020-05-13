@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Audioable } from '../util/audio';
-import { AudioContext } from './AudioContexts';
+import { AudioContext } from './AudioContextProvider';
 import { Button } from '@ui-kitten/components';
 import { View } from 'react-native';
 import { ThemedIcon } from './FontAwesomeIcons';

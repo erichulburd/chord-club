@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Audioable } from '../util/audio';
-import { AudioContext } from './AudioContexts';
+import { AudioContext } from './AudioContextProvider';
 import { useRoute } from '@react-navigation/native';
 import { AudioRecorderActive } from './AudioRecorderActive';
 import { AudioRecorderInactive } from './AudioRecorderInactive';
