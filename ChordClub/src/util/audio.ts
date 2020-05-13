@@ -1,6 +1,9 @@
 import {
-  AudioSet, AudioEncoderAndroidType, AudioSourceAndroidType,
-  AVEncoderAudioQualityIOSType, AVEncodingOption,
+  AudioSet,
+  AudioEncoderAndroidType,
+  AudioSourceAndroidType,
+  AVEncoderAudioQualityIOSType,
+  AVEncodingOption,
 } from 'react-native-audio-recorder-player';
 import {Platform} from 'react-native';
 import {v4} from 'react-native-uuid';

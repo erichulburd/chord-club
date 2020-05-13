@@ -39,9 +39,9 @@ import {withModalContext, ModalContextProps} from './ModalProvider';
 import TagAutocomplete from './TagAutocomplete';
 import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
-import { useRoute } from '@react-navigation/native';
-import { AppRouteProp } from './AppScreen';
-import { Audioable } from '../util/audio';
+import {useRoute} from '@react-navigation/native';
+import {AppRouteProp} from './AppScreen';
+import {Audioable} from '../util/audio';
 
 interface ManualProps {
   close: () => void;
@@ -53,12 +53,15 @@ interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const {uid} = userCtx.authState;
   const route = useRoute<AppRouteProp<'CreateAChart'>>();
-  const defaultChartType = route.params?.chartType === undefined ?
-    ChartType.Chord :
-    route.params?.chartType;
-  const [newChart, setChart] = useState(makeChartNew(uid, {
-    chartType: defaultChartType,
-  }));
+  const defaultChartType =
+    route.params?.chartType === undefined
+      ? ChartType.Chord
+      : route.params?.chartType;
+  const [newChart, setChart] = useState(
+    makeChartNew(uid, {
+      chartType: defaultChartType,
+    }),
+  );
   const updateChartType = (ct: ChartType) =>
     setChart({...newChart, chartType: ct});
   useEffect(() => {
@@ -92,9 +95,11 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const [urlCache, setFileURLCache] = useState<FileURLCache>({});
 
   const reset = () => {
-    setChart(makeChartNew(uid, {
-      chartType: defaultChartType,
-    }));
+    setChart(
+      makeChartNew(uid, {
+        chartType: defaultChartType,
+      }),
+    );
     setExtensions([]);
     setAudioFilePath(undefined);
     setResizableImage(null);
@@ -377,8 +382,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   fullWidth: {
-    flexDirection: 'column', alignItems: 'stretch'
-  }
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
 });
 
 export default withModalContext(

@@ -42,7 +42,7 @@ import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 import {ChartExtensionsEditor} from './ChartExtensionsEditor';
-import { Audioable } from '../util/audio';
+import {Audioable} from '../util/audio';
 
 interface ManualProps {
   chart: Chart;
@@ -65,11 +65,12 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
     'reactionCounts',
     'userReactionType',
     'chartType',
-  ])
+  ]);
   const [chartUpdate, setChart] = useState<ChartUpdate>(defaultChartUpdate);
+  const chartID = chart?.id;
   useEffect(() => {
     reset();
-  }, [mountID, chart?.id]);
+  }, [mountID, chartID]);
   const updateChartExtensions = (exts: Extension[]) => {
     setChart({...chartUpdate, extensionIDs: exts.map((e) => e.id)});
   };
@@ -77,9 +78,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
   const [audioFilePath, setAudioFilePath] = useState<string | undefined>(
     undefined,
   );
-  const [audioLength, setAudioLength] = useState<number | undefined>(
-    undefined,
-  );
+  const [audioLength, setAudioLength] = useState<number | undefined>(undefined);
   const onRecordingComplete = (audio: Audioable | undefined) => {
     setAudioFilePath(audio?.audioURL);
     setAudioLength(audio?.audioLength || 0);
@@ -302,7 +301,9 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
               textStyle={styles.input}
               placeholder="Name"
               value={chartUpdate.name || ''}
-              onChangeText={(txt: string) => setChart({...chartUpdate, name: txt})}
+              onChangeText={(txt: string) =>
+                setChart({...chartUpdate, name: txt})
+              }
             />
           </Row>
         )}
@@ -386,8 +387,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   fullWidth: {
-    flexDirection: 'column', alignItems: 'stretch'
-  }
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
 });
 
 export default withModalContext(

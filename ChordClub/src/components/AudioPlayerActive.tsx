@@ -1,22 +1,22 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { AudioContext } from './AudioContextProvider';
-import { StyleSheet } from 'react-native';
-import { getCalRatio } from '../util/screen';
-import { AudioControls, AudioAction } from './AudioControls';
+import React, {useContext, useEffect, useState, useCallback} from 'react';
+import {AudioContext} from './AudioContextProvider';
+import {StyleSheet} from 'react-native';
+import {getCalRatio} from '../util/screen';
+import {AudioControls, AudioAction} from './AudioControls';
 import logger from '../util/logger';
 
 interface Props {
   extraActions?: AudioAction[];
 }
 
-export const AudioPlayerActive = ({ extraActions = [] }: Props) => {
+export const AudioPlayerActive = ({extraActions = []}: Props) => {
   const audioCtx = useContext(AudioContext);
   const [currentPositionMs, setCurrentPositionMs] = useState(0);
   const [durationMs, setDurationMs] = useState(0);
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
 
-  const { audioRecorderPlayer } = audioCtx;
+  const {audioRecorderPlayer} = audioCtx;
   const start = async () => {
     if (!audioCtx.focusedAudioURL || started) {
       return;
@@ -51,29 +51,32 @@ export const AudioPlayerActive = ({ extraActions = [] }: Props) => {
     setPaused(false);
   };
 
-  const seek = useCallback(() => async (positionMs: number) => {
-    let newPosition = positionMs;
-    newPosition = Math.min(newPosition, durationMs);
-    newPosition = Math.max(newPosition, 0);
-    newPosition = Math.round(newPosition);
+  const seek = useCallback(
+    () => async (positionMs: number) => {
+      let newPosition = positionMs;
+      newPosition = Math.min(newPosition, durationMs);
+      newPosition = Math.max(newPosition, 0);
+      newPosition = Math.round(newPosition);
 
-    try {
-      await audioRecorderPlayer.seekToPlayer(newPosition);
-    } catch(err) {
-      logger.error('seek failed', err);
-    }
-  }, [durationMs]);
+      try {
+        await audioRecorderPlayer.seekToPlayer(newPosition);
+      } catch (err) {
+        logger.error('seek failed', err);
+      }
+    },
+    [durationMs],
+  );
   const stop = async () => {
     setPaused(false);
     setDurationMs(0);
     setPaused(false);
-    await audioCtx.stopPlay()
-  }
+    await audioCtx.stopPlay();
+  };
   const onPress = paused ? resume : pause;
   const iconName = paused ? 'play-circle' : 'pause-circle';
   const actions: AudioAction[] = [
-    { onPress: stop, iconName: 'step-backward', status: 'basic' },
-    { onPress, iconName, status: 'basic' },
+    {onPress: stop, iconName: 'step-backward', status: 'basic'},
+    {onPress, iconName, status: 'basic'},
     ...extraActions,
   ];
   return (
@@ -84,18 +87,5 @@ export const AudioPlayerActive = ({ extraActions = [] }: Props) => {
       actions={actions}
     />
   );
-}
+};
 
-const initialDims = getCalRatio();
-const styles = StyleSheet.create({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'stretch',
-  },
-  innerContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-});

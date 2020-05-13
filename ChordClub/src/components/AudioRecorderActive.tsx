@@ -1,32 +1,32 @@
-import React, { useContext, useState, useEffect, useCallback } from 'react';
-import { AudioContext } from './AudioContextProvider';
-import { Audioable, makeFileName, audioSet } from '../util/audio';
-import { getRecordingPermissions } from '../util/permissions';
-import { AudioControls, AudioAction } from './AudioControls';
+import React, {useContext, useState, useEffect, useCallback} from 'react';
+import {AudioContext} from './AudioContextProvider';
+import {Audioable, makeFileName, audioSet} from '../util/audio';
+import {getRecordingPermissions} from '../util/permissions';
+import {AudioControls, AudioAction} from './AudioControls';
+import { ModalContext } from './ModalProvider';
 
 interface Props {
   onStopRecord: (recorded: Audioable) => void;
 }
 
-interface State {
-  currentPositionMs: number;
-  fileName: string;
-  absFilePath: string;
-  started: boolean;
-}
+const MAX_RECORDING_MS = 5 * 60 * 1000;
 
-const MAX_RECORDING_MS = 2 * 60 * 1000;
-
-export const AudioRecorderActive = ({
-  onStopRecord,
-}: Props) => {
+export const AudioRecorderActive = ({onStopRecord}: Props) => {
+  const modalCtx = useContext(ModalContext);
   const [absFilePath, setAbsFilePath] = useState('');
   const [currentPositionMs, setCurrentPositionMs] = useState(0);
   const [started, setStarted] = useState(false);
   const audioCtx = useContext(AudioContext);
   const {audioRecorderPlayer} = audioCtx;
   const recordBackListener = (e: any) => {
-    setCurrentPositionMs(parseFloat(e.current_position));
+    const newCurrentPositionMS = parseFloat(e.current_position);
+    setCurrentPositionMs(newCurrentPositionMS);
+    if (newCurrentPositionMS > MAX_RECORDING_MS) {
+      stopRecord();
+      modalCtx.message({
+        msg: 'We currently limit uploads to 5 minutes.',
+      })
+    }
   };
   const start = async () => {
     setStarted(true);
@@ -53,15 +53,17 @@ export const AudioRecorderActive = ({
     await audioCtx.stopRecord();
     onStopRecord(audioRecording);
   }, [absFilePath, currentPositionMs]);
-  useEffect(useCallback(() => {
-    if (!started) {
-      start();
-    }
-  }, [started]));
+  useEffect(
+    useCallback(() => {
+      if (!started) {
+        start();
+      }
+    }, [started]),
+  );
 
   const actions: AudioAction[] = [
-    { iconName: 'stop', onPress: stopRecord },
-    { iconName: 'circle', status: 'danger' },
+    {iconName: 'stop', onPress: stopRecord},
+    {iconName: 'circle', status: 'danger'},
   ];
   return (
     <AudioControls

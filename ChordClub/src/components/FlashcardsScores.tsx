@@ -1,15 +1,14 @@
 import React from 'react';
-import { FlatList } from 'react-native-gesture-handler';
-import { Button, StyleService, Text } from '@ui-kitten/components';
-import { ThemedIcon } from './FontAwesomeIcons';
-import { View, StyleSheet } from 'react-native';
+import {Button} from '@ui-kitten/components';
+import {ThemedIcon} from './FontAwesomeIcons';
+import {View, StyleSheet} from 'react-native';
 
 interface ScoreProps {
-  correct: (boolean | undefined);
+  correct: boolean | undefined;
   isCurrent: boolean;
 }
 
-const Score = ({ correct, isCurrent }: ScoreProps) => {
+const Score = ({correct, isCurrent}: ScoreProps) => {
   let status = 'basic';
   let iconName = 'circle';
   if (correct === true) {
@@ -27,26 +26,22 @@ const Score = ({ correct, isCurrent }: ScoreProps) => {
       accessoryLeft={ThemedIcon(iconName)}
     />
   );
-}
+};
 
 interface Props {
   currentIndex: number | undefined;
   scores: (boolean | undefined)[];
 }
 
-export const FlashcardsScores = ({ scores, currentIndex }: Props) => {
+export const FlashcardsScores = ({scores, currentIndex}: Props) => {
   return (
     <View style={styles.container}>
       {scores.map((score, i) => (
-        <Score
-          key={i}
-          isCurrent={i === currentIndex}
-          correct={score}
-        />
+        <Score key={i} isCurrent={i === currentIndex} correct={score} />
       ))}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -56,5 +51,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     width: '100%',
-  }
-})
+  },
+});

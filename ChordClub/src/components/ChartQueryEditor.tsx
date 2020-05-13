@@ -74,21 +74,20 @@ const ChartQueryEditor = ({initialQuery, userCtx, save, cancel}: Props) => {
     </View>
   );
   const setChartQueryOrderRandom = (random: boolean) => {
-    const update = { ...query };
+    const update = {...query};
     if (random) {
       update.order = ChartQueryOrder.Random;
     } else {
       delete update.order;
     }
     setQuery(update);
-  }
+  };
   return (
     <Card
       style={styles.container}
       header={Header}
       footer={Footer}
-      status="basic"
-    >
+      status="basic">
       <Row>
         <StringCheckboxGroup
           multi
@@ -101,8 +100,9 @@ const ChartQueryEditor = ({initialQuery, userCtx, save, cancel}: Props) => {
       <Row>
         <CheckBox
           checked={query.order === ChartQueryOrder.Random}
-          onChange={setChartQueryOrderRandom}
-        >Random Order</CheckBox>
+          onChange={setChartQueryOrderRandom}>
+          Random Order
+        </CheckBox>
       </Row>
       <View>
         <TagIDCollectionEditor

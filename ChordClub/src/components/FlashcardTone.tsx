@@ -1,9 +1,9 @@
 import React from 'react';
 import {Button} from '@ui-kitten/components';
 import {View, StyleSheet} from 'react-native';
-import { Note } from '../types';
-import { getAnswerStatus, getAnswerAppearance } from '../util/flashcards';
-import { displayNote } from '../util/strings';
+import {Note} from '../types';
+import {getAnswerStatus, getAnswerAppearance} from '../util/flashcards';
+import {displayNote} from '../util/strings';
 
 interface Props {
   expectedAnswer: Note;
@@ -15,7 +15,10 @@ interface Props {
 const options = Object.values(Note) as Note[];
 
 export const FlashcardTone = ({
-  userAnswer, expectedAnswer, revealed, onSelect,
+  userAnswer,
+  expectedAnswer,
+  revealed,
+  onSelect,
 }: Props) => {
   return (
     <View style={styles.container}>
@@ -26,8 +29,7 @@ export const FlashcardTone = ({
           style={styles.button}
           status={getAnswerStatus(value, userAnswer, expectedAnswer, revealed)}
           appearance={getAnswerAppearance(value, userAnswer)}
-          onPress={() => onSelect(value)}
-        >
+          onPress={() => onSelect(value)}>
           {displayNote(value)}
         </Button>
       ))}

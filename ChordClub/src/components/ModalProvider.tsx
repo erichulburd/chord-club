@@ -1,6 +1,6 @@
 import React, {createContext, PropsWithChildren} from 'react';
 import {Status} from '../util/themeHelpers';
-import {StyleSheet, View, StyleProp, ViewProps} from 'react-native';
+import {StyleSheet, View, ViewProps} from 'react-native';
 import {Spinner, Text, Modal, Card, Button} from '@ui-kitten/components';
 
 interface Message {
@@ -32,7 +32,7 @@ export const ModalContext = createContext<ModalContextValue>({
   state: initialState,
   wait: (_waiting?: boolean) => undefined,
   message: (_msg?: Message) => undefined,
-  clearMessage: (cb?: () => void) => undefined,
+  clearMessage: (_cb?: () => void) => undefined,
 });
 
 export class ModalProvider extends React.Component<{}, State> {

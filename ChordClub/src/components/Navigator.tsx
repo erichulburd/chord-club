@@ -20,13 +20,13 @@ import {SafeAreaView, View, ViewProps, StyleSheet} from 'react-native';
 import {ChartCreatorScreen} from './ChartCreatorScreen';
 import {Screens} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
-import { FlashcardsScreen } from './FlashcardsScreen';
-import { AccountScreen } from './AccountScreen';
-import { withUser, UserConsumerProps } from './UserContext';
-import { WithApolloClient, withApollo } from 'react-apollo';
+import {FlashcardsScreen} from './FlashcardsScreen';
+import {AccountScreen} from './AccountScreen';
+import {withUser, UserConsumerProps} from './UserContext';
+import {WithApolloClient, withApollo} from 'react-apollo';
 import logger from '../util/logger';
-import { ChartEditorScreen } from './ChartEditorScreen';
-import { TagListScreen } from './TagListScreen';
+import {ChartEditorScreen} from './ChartEditorScreen';
+import {TagListScreen} from './TagListScreen';
 
 const {Navigator, Screen} = createDrawerNavigator();
 
@@ -56,7 +56,7 @@ const DrawerContent = ({
   navigation,
   state,
   userCtx,
-  client
+  client,
 }: DrawerContentProps) => {
   const goToRoute = async (index: IndexPath) => {
     let route = state.routeNames[index.row];
@@ -69,14 +69,13 @@ const DrawerContent = ({
       await client.resetStore();
       route = Screens.Chords;
     }
-    navigation.navigate(route)
-  }
+    navigation.navigate(route);
+  };
   return (
     <Drawer
       header={Header}
       selectedIndex={new IndexPath(state.index)}
-      onSelect={goToRoute}
-    >
+      onSelect={goToRoute}>
       <SafeAreaView>
         <DrawerItem accessoryLeft={ThemedIcon('list')} title={Screens.Chords} />
         <DrawerItem
@@ -92,7 +91,10 @@ const DrawerContent = ({
           title={Screens.CreateAChart}
         />
         <DrawerItem accessoryLeft={ThemedIcon('tags')} title={Screens.Tags} />
-        <DrawerItem accessoryLeft={ThemedIcon('user-cog')} title={Screens.Account} />
+        <DrawerItem
+          accessoryLeft={ThemedIcon('user-cog')}
+          title={Screens.Account}
+        />
         <DrawerItem
           accessoryLeft={ThemedIcon('sign-out-alt')}
           title={Screens.Logout}
@@ -104,18 +106,13 @@ const DrawerContent = ({
 
 interface Props extends UserConsumerProps, WithApolloClient<{}> {}
 
-export const AppNavigator = ({ userCtx, client }: Props) => (
+export const AppNavigator = ({userCtx, client}: Props) => (
   <NavigationContainer>
     <Navigator
-      drawerContent={(props) =>
-        <DrawerContent
-          {...props}
-          userCtx={userCtx}
-          client={client}
-        />
-      }
-      initialRouteName={Screens.Chords}
-    >
+      drawerContent={(props) => (
+        <DrawerContent {...props} userCtx={userCtx} client={client} />
+      )}
+      initialRouteName={Screens.Chords}>
       <Screen name={Screens.Chords} component={ChordListScreen} />
       <Screen name={Screens.Progressions} component={ProgressionListScreen} />
       <Screen name={Screens.ChordFlashcards} component={FlashcardsScreen} />

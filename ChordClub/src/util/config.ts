@@ -1,4 +1,4 @@
-import config, { NativeConfig } from 'react-native-config';
+import config, {NativeConfig} from 'react-native-config';
 
 interface Config extends NativeConfig {
   API_BASE_URL: string;
@@ -10,15 +10,19 @@ interface Config extends NativeConfig {
 
 const requiredVariables = [
   'API_BASE_URL',
-  'AUTH0_DOMAIN', 'AUTH0_CLIENT_ID', 'AUTH0_TOKEN_AUDIENCE',
-]
+  'AUTH0_DOMAIN',
+  'AUTH0_CLIENT_ID',
+  'AUTH0_TOKEN_AUDIENCE',
+];
 
 const validateConfiguration = (conf: NativeConfig) => {
   const missing = requiredVariables.filter((name) => !conf[name]);
   if (missing.length > 0) {
-    throw new Error(`App failed to start. Missing variables: ${missing.join(', ')}`);
+    throw new Error(
+      `App failed to start. Missing variables: ${missing.join(', ')}`,
+    );
   }
-}
+};
 
 validateConfiguration(config);
 

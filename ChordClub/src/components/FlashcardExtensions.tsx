@@ -1,9 +1,9 @@
 import React from 'react';
 import {Button} from '@ui-kitten/components';
 import {View, StyleSheet} from 'react-native';
-import { Extension } from '../types';
-import { getAnswerStatus, getAnswerAppearance } from '../util/flashcards';
-import { displayExtension } from '../util/strings';
+import {Extension} from '../types';
+import {getAnswerStatus, getAnswerAppearance} from '../util/flashcards';
+import {displayExtension} from '../util/strings';
 
 interface Props {
   extensions: Extension[];
@@ -14,7 +14,11 @@ interface Props {
 }
 
 export const FlashcardExtensions = ({
-  userAnswer, expectedAnswer, revealed, onSelect, extensions,
+  userAnswer,
+  expectedAnswer,
+  revealed,
+  onSelect,
+  extensions,
 }: Props) => {
   return (
     <View style={styles.container}>
@@ -25,8 +29,7 @@ export const FlashcardExtensions = ({
           style={styles.button}
           status={getAnswerStatus(value, userAnswer, expectedAnswer, revealed)}
           appearance={getAnswerAppearance(value, userAnswer)}
-          onPress={() => onSelect(value)}
-        >
+          onPress={() => onSelect(value)}>
           {displayExtension(value)}
         </Button>
       ))}

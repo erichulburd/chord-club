@@ -1,11 +1,9 @@
-import React, { useContext, useEffect, useState, PropsWithChildren } from 'react';
-import { Audioable } from '../util/audio';
-import { AudioContext } from './AudioContextProvider';
-import { View, StyleSheet } from 'react-native';
-import { getCalRatio } from '../util/screen';
-import { Button } from '@ui-kitten/components';
-import { AudioPlayerProgress } from './AudioPlayerProgress';
-import { ThemedIcon } from './FontAwesomeIcons';
+import React, {useState} from 'react';
+import {View, StyleSheet} from 'react-native';
+import {getCalRatio} from '../util/screen';
+import {Button} from '@ui-kitten/components';
+import {AudioPlayerProgress} from './AudioPlayerProgress';
+import {ThemedIcon} from './FontAwesomeIcons';
 import {AudioDuration} from './AudioDuration';
 
 export interface AudioAction {
@@ -22,16 +20,17 @@ interface Props {
 }
 
 export const AudioControls = ({
-  currentPositionMs, durationMs,
-  seek, actions,
+  currentPositionMs,
+  durationMs,
+  seek,
+  actions,
 }: Props) => {
   const [width, setWidth] = useState(0);
   return (
     <View style={styles.container}>
       <View
         style={styles.rows}
-        onLayout={e => setWidth(e.nativeEvent.layout.width)}
-      >
+        onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         <View style={styles.innerContainer}>
           <AudioPlayerProgress
             width={width}
@@ -42,12 +41,12 @@ export const AudioControls = ({
         </View>
         <View style={styles.innerContainer}>
           <View style={styles.actions}>
-            {actions.map(({ onPress, status, iconName }, i) => (
+            {actions.map(({onPress, status, iconName}, i) => (
               <Button
                 key={`audioAction-${i}`}
                 appearance="ghost"
                 status={status || 'basic'}
-                accessoryLeft={ThemedIcon(iconName, { solid: true })}
+                accessoryLeft={ThemedIcon(iconName, {solid: true})}
                 onPress={onPress}
               />
             ))}
@@ -62,7 +61,7 @@ export const AudioControls = ({
       </View>
     </View>
   );
-}
+};
 
 const initialDims = getCalRatio();
 const styles = StyleSheet.create({
@@ -79,11 +78,11 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   actions: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-start',
-  }
+  },
 });

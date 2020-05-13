@@ -19,7 +19,7 @@ import {FontAwesome5IconsPack} from './components/FontAwesomeIcons';
 import AuthModal from './components/AuthModal';
 import {UserProvider} from './components/UserContext';
 import {ModalProvider} from './components/ModalProvider';
-import { AudioContextProvider } from './components/AudioContextProvider';
+import {AudioContextProvider} from './components/AudioContextProvider';
 
 if (__DEV__) {
   import('./util/reactotron').then(() => logger.info('Reactotron Configured'));

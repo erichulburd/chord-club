@@ -1,5 +1,4 @@
-import { StyleSheet } from "react-native";
-
+import {StyleSheet} from 'react-native';
 
 export const getColors = (theme: Record<string, string>) => ({
   default: theme['border-basic-color-2'],
@@ -14,5 +13,5 @@ export const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     padding: 15,
-  }
-})
+  },
+});

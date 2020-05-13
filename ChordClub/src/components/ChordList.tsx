@@ -15,8 +15,8 @@ import ChordItem from './ChordItem';
 import {View, RefreshControl, StyleSheet} from 'react-native';
 import {withModalContext, ModalContextProps} from './ModalProvider';
 import {ChordClubShim} from '../../types/ChordClubShim';
-import { useNavigation } from '@react-navigation/native';
-import { Screens } from './AppScreen';
+import {useNavigation} from '@react-navigation/native';
+import {Screens} from './AppScreen';
 
 const CreateChordLink = () => {
   const navigation = useNavigation();
@@ -24,10 +24,13 @@ const CreateChordLink = () => {
     <Button
       appearance="outline"
       status="info"
-      onPress={() => navigation.navigate(Screens.CreateAChart, {
-        chartType: ChartType.Chord,
-      })}
-    >Create new chord!</Button>
+      onPress={() =>
+        navigation.navigate(Screens.CreateAChart, {
+          chartType: ChartType.Chord,
+        })
+      }>
+      Create new chord!
+    </Button>
   );
 };
 
@@ -62,7 +65,10 @@ const ChordList = ({query, compact, mountID, editChart, modalCtx}: Props) => {
   }, [mountID]);
 
   const [deleted, setDeleted] = useState<Set<number>>(new Set());
-  const charts = (data?.charts || []).filter((chart: Chart) => !deleted.has(chart.id));
+  const charts = (data?.charts || []).filter(
+    (chart: Chart) => !deleted.has(chart.id),
+  );
+  /*
   const lastChart: Chart | undefined = last(charts);
   const loadMore = () =>
     fetchMore({
@@ -78,6 +84,7 @@ const ChordList = ({query, compact, mountID, editChart, modalCtx}: Props) => {
         };
       },
     });
+  */
   const [deleteChart, {}] = useMutation<{}, DeleteChartMutationVariables>(
     DELETE_CHART_MUTATION,
   );
@@ -86,7 +93,8 @@ const ChordList = ({query, compact, mountID, editChart, modalCtx}: Props) => {
       {
         msg: 'Are you sure you want to delete this chart?',
         status: 'warning',
-      }, {
+      },
+      {
         confirm: () => {
           deleteChart({variables: {chartID}});
           setDeleted(new Set([chartID, ...Array.from(deleted)]));

@@ -75,8 +75,7 @@ const ChordItem = ({
       style={styles.card}
       status="success"
       footer={compact ? undefined : Footer}
-      header={compact ? undefined : Header}
-    >
+      header={compact ? undefined : Header}>
       <View>
         <AudioPlayer audio={chart} />
       </View>

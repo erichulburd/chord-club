@@ -15,8 +15,8 @@ import {ModalContextProps, withModalContext} from './ModalProvider';
 import {Spinner, Text, Button} from '@ui-kitten/components';
 import {ChordClubShim} from 'types/ChordClubShim';
 import ProgressionItem from './ProgressionItem';
-import { useNavigation } from '@react-navigation/native';
-import { Screens } from './AppScreen';
+import {useNavigation} from '@react-navigation/native';
+import {Screens} from './AppScreen';
 
 const CreateProgressionLink = () => {
   const navigation = useNavigation();
@@ -24,10 +24,13 @@ const CreateProgressionLink = () => {
     <Button
       appearance="outline"
       status="info"
-      onPress={() => navigation.navigate(Screens.CreateAChart, {
-        chartType: ChartType.Progression,
-      })}
-    >Create new progression!</Button>
+      onPress={() =>
+        navigation.navigate(Screens.CreateAChart, {
+          chartType: ChartType.Progression,
+        })
+      }>
+      Create new progression!
+    </Button>
   );
 };
 
@@ -48,7 +51,13 @@ interface ManualProps {
 
 interface Props extends ModalContextProps, ManualProps {}
 
-export const ProgressionList = ({query, mountID, modalCtx, compact, editChart}: Props) => {
+export const ProgressionList = ({
+  query,
+  mountID,
+  modalCtx,
+  compact,
+  editChart,
+}: Props) => {
   const {data, loading, refetch, fetchMore} = useQuery<
     ChartsQueryResponse,
     ChartsQueryVariables
@@ -56,7 +65,7 @@ export const ProgressionList = ({query, mountID, modalCtx, compact, editChart}: 
   useEffect(() => {
     refetch();
   }, [mountID]);
-
+  /*
   const loadMore = () =>
     fetchMore({
       variables: {
@@ -71,6 +80,7 @@ export const ProgressionList = ({query, mountID, modalCtx, compact, editChart}: 
         };
       },
     });
+    */
   const [deleted, setDeleted] = useState<Set<number>>(new Set());
   const [deleteChart, {}] = useMutation<{}, DeleteChartMutationVariables>(
     DELETE_CHART_MUTATION,

@@ -39,8 +39,9 @@ export default ({error, retry}: ErrorTextProps) => (
       <Button
         appearance="outline"
         size="small"
-        accessoryLeft={(props) => <Icon name="redo" {...props} /> }
-      >Retry</Button>
+        accessoryLeft={(props) => <Icon name="redo" {...props} />}>
+        Retry
+      </Button>
     )}
   </View>
 );

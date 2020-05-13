@@ -1,10 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Audioable } from '../util/audio';
-import { AudioContext } from './AudioContextProvider';
-import { useRoute } from '@react-navigation/native';
-import { AudioRecorderActive } from './AudioRecorderActive';
-import { AudioRecorderInactive } from './AudioRecorderInactive';
-import { AudioAction } from './AudioControls';
+import React, {useContext, useEffect, useState} from 'react';
+import {Audioable} from '../util/audio';
+import {AudioContext} from './AudioContextProvider';
+import {useRoute} from '@react-navigation/native';
+import {AudioRecorderActive} from './AudioRecorderActive';
+import {AudioRecorderInactive} from './AudioRecorderInactive';
 
 interface Props {
   preRecordedAudio?: Audioable;
@@ -12,9 +11,15 @@ interface Props {
   onRecordComplete: (audio: Audioable | undefined) => void;
 }
 
-export const AudioRecorder = ({ preRecordedAudio, recorderID, onRecordComplete }: Props) => {
+export const AudioRecorder = ({
+  preRecordedAudio,
+  recorderID,
+  onRecordComplete,
+}: Props) => {
   const audioCtx = useContext(AudioContext);
-  const [recordedAudio, setRecordedAudio] = useState<Audioable | undefined>(undefined);
+  const [recordedAudio, setRecordedAudio] = useState<Audioable | undefined>(
+    undefined,
+  );
   const route = useRoute();
   useEffect(() => {
     if (recorderID !== audioCtx.focusedRecorderID) {
@@ -30,9 +35,9 @@ export const AudioRecorder = ({ preRecordedAudio, recorderID, onRecordComplete }
     onRecordComplete(undefined);
   };
   const onStopRecord = (newAudio: Audioable) => {
-    setRecordedAudio(newAudio)
+    setRecordedAudio(newAudio);
     onRecordComplete(newAudio);
-  }
+  };
   if (recorderID !== audioCtx.focusedRecorderID) {
     return (
       <AudioRecorderInactive
@@ -43,9 +48,5 @@ export const AudioRecorder = ({ preRecordedAudio, recorderID, onRecordComplete }
       />
     );
   }
-  return (
-    <AudioRecorderActive
-      onStopRecord={onStopRecord}
-    />
-  );
-}
+  return <AudioRecorderActive onStopRecord={onStopRecord} />;
+};

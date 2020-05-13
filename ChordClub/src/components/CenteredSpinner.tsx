@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Spinner } from '@ui-kitten/components';
+import {View, StyleSheet} from 'react-native';
+import {Spinner} from '@ui-kitten/components';
 
 export const CenteredSpinner = () => (
   <View style={styles.container}>
@@ -14,5 +14,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     width: '100%',
-  }
-})
+  },
+});
