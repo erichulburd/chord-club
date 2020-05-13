@@ -1,7 +1,6 @@
-import React, {useContext, useEffect, useState, useCallback} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {AudioContext} from './AudioContextProvider';
 import {AudioControls, AudioAction} from './AudioControls';
-import logger from '../util/logger';
 
 interface Props {
   extraActions?: AudioAction[];
@@ -75,8 +74,8 @@ export const AudioPlayerActive = ({extraActions = []}: Props) => {
   const onPress = paused ? resume : pause;
   const iconName = paused ? 'play-circle' : 'pause-circle';
   const actions: AudioAction[] = [
-    {onPress: stop, iconName: 'step-backward', status: 'basic'},
-    {onPress, iconName, status: 'basic'},
+    {onPress: stop, iconName: 'step-backward'},
+    {onPress, iconName},
     ...extraActions,
   ];
   return (

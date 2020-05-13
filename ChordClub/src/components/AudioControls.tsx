@@ -44,8 +44,9 @@ export const AudioControls = ({
             {actions.map(({onPress, status, iconName}, i) => (
               <Button
                 key={`audioAction-${i}`}
+                size="medium"
                 appearance="ghost"
-                status={status || 'basic'}
+                status={status || (onPress ? 'success' : 'basic')}
                 accessoryLeft={ThemedIcon(iconName, {solid: true})}
                 onPress={onPress}
               />

@@ -65,7 +65,7 @@ export const AudioRecorderActive = ({onStopRecord}: Props) => {
 
   const actions: AudioAction[] = [
     {iconName: 'stop', onPress: () => stopRecord(absFilePath, currentPositionMs)},
-    {iconName: 'circle', status: 'danger'},
+    {iconName: 'circle'},
   ];
   return (
     <AudioControls

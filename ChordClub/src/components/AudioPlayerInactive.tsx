@@ -11,11 +11,10 @@ interface Props {
 export const AudioPlayerInactive = ({audio, extraActions = []}: Props) => {
   const audioCtx = useContext(AudioContext);
   const actions: AudioAction[] = [
-    {iconName: 'step-backward', status: 'basic'},
+    {iconName: 'step-backward'},
     {
       onPress: () => audioCtx.startPlay(audio),
       iconName: 'play-circle',
-      status: 'success',
     },
     ...extraActions,
   ];

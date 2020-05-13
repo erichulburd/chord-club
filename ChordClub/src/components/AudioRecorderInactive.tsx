@@ -42,7 +42,7 @@ export const AudioRecorderInactive = ({
   }
   const actions: AudioAction[] = [
     {iconName: 'stop'},
-    {iconName: 'circle', status: 'danger', onPress: record},
+    {iconName: 'circle', onPress: record},
   ];
   if (preRecordedAudio) {
     actions.push({
