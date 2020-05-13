@@ -1,73 +1,54 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Audioable } from '../util/audio';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { AudioContext } from './AudioContextProvider';
 import { StyleSheet } from 'react-native';
 import { getCalRatio } from '../util/screen';
-import { Button } from '@ui-kitten/components';
 import { AudioControls, AudioAction } from './AudioControls';
-import { ThemedIcon } from './FontAwesomeIcons';
 import logger from '../util/logger';
 
-interface Props {
-  audio: Audioable;
-}
-
-interface State {
-  currentPositionMs: number;
-  durationMs: number;
-  paused: boolean;
-  started: boolean;
-}
 
 export const AudioPlayerActive = () => {
   const audioCtx = useContext(AudioContext);
-  const [state, setState] = useState<State>({
-    currentPositionMs: 0,
-    durationMs: 0,
-    paused: false,
-    started: false,
-  });
+  const [currentPositionMs, setCurrentPositionMs] = useState(0);
+  const [durationMs, setDurationMs] = useState(0);
+  const [started, setStarted] = useState(false);
+  const [paused, setPaused] = useState(false);
+
   const { audioRecorderPlayer } = audioCtx;
   const start = async () => {
-    if (!audioCtx.focusedAudioURL || state.started) {
+    if (!audioCtx.focusedAudioURL || started) {
       return;
     }
+    setStarted(true);
     await audioRecorderPlayer.startPlayer(audioCtx.focusedAudioURL);
     await audioRecorderPlayer.setVolume(1.0);
 
     audioRecorderPlayer.addPlayBackListener(async (e: any) => {
-      const currentPositionMs = parseFloat(e.current_position);
-      const durationMs = parseFloat(e.duration);
-      if (currentPositionMs >= durationMs) {
+      const newPositionMs = parseFloat(e.current_position);
+      const newDurationMs = parseFloat(e.duration);
+      if (newPositionMs >= newDurationMs) {
         await audioCtx.stopPlay();
       } else {
-        setState({
-          ...state,
-          started: true,
-          currentPositionMs,
-          durationMs,
-        });
+        setCurrentPositionMs(newPositionMs);
+        setDurationMs(newDurationMs);
       }
     });
   };
   useEffect(() => {
-    if (!state.started) {
-      setState({ ...state, started: true });
+    if (!started) {
       start();
     }
-  });
+  }, [started]);
 
   const pause = async () => {
     await audioRecorderPlayer.pausePlayer();
-    setState({...state, paused: true});
+    setPaused(true);
   };
   const resume = async () => {
     await audioRecorderPlayer.resumePlayer();
-    setState({...state, paused: false});
+    setPaused(false);
   };
 
-  const seek = async (positionMs: number) => {
-    const { durationMs } = state;
+  const seek = useCallback(() => async (positionMs: number) => {
     let newPosition = positionMs;
     newPosition = Math.min(newPosition, durationMs);
     newPosition = Math.max(newPosition, 0);
@@ -78,17 +59,13 @@ export const AudioPlayerActive = () => {
     } catch(err) {
       logger.error('seek failed', err);
     }
-  }
+  }, [durationMs]);
   const stop = async () => {
-    setState({
-      ...state,
-      currentPositionMs: 0,
-      durationMs: 0,
-      paused: false,
-    });
+    setPaused(false);
+    setDurationMs(0);
+    setPaused(false);
     await audioCtx.stopPlay()
   }
-  const { paused, currentPositionMs, durationMs } = state;
   const onPress = paused ? resume : pause;
   const iconName = paused ? 'play-circle' : 'pause-circle';
   const actions: AudioAction[] = [

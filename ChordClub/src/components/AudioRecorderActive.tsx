@@ -1,11 +1,8 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { AudioContext } from './AudioContextProvider';
-import { Button } from '@ui-kitten/components';
-import { View } from 'react-native';
-import { ThemedIcon } from './FontAwesomeIcons';
-import { AudioPlayerProgress } from './AudioPlayerProgress';
 import { Audioable, makeFileName, audioSet } from '../util/audio';
 import { getRecordingPermissions } from '../util/permissions';
+import { AudioControls, AudioAction } from './AudioControls';
 
 interface Props {
   onStopRecord: (recorded: Audioable) => void;
@@ -21,15 +18,16 @@ interface State {
 export const AudioRecorderActive = ({
   onStopRecord,
 }: Props) => {
-  const [state, setState] = useState<State>({
-    fileName: '',
-    absFilePath: '',
-    currentPositionMs: 0,
-    started: false,
-  });
+  const [absFilePath, setAbsFilePath] = useState('');
+  const [currentPositionMs, setCurrentPositionMs] = useState(0);
+  const [started, setStarted] = useState(false);
   const audioCtx = useContext(AudioContext);
-  const {audioRecorderPlayer} = audioCtx
+  const {audioRecorderPlayer} = audioCtx;
+  const recordBackListener = (e: any) => {
+    setCurrentPositionMs(parseFloat(e.current_position));
+  };
   const start = async () => {
+    setStarted(true);
     let granted = false;
     try {
       granted = await getRecordingPermissions();
@@ -42,45 +40,32 @@ export const AudioRecorderActive = ({
       fileName,
       audioSet,
     );
-    setState({ ...state, fileName, absFilePath });
-    audioRecorderPlayer.addRecordBackListener((e: any) => {
-      const currentPositionMs = parseFloat(e.current_position);
-      setState({ ...state, currentPositionMs })
-    });
+    setAbsFilePath(absFilePath);
+    audioRecorderPlayer.addRecordBackListener(recordBackListener);
   };
-  const stopRecord = async () => {
+  const stopRecord = useCallback(async () => {
+    const audioRecording = {
+      audioLength: Math.round(currentPositionMs),
+      audioURL: absFilePath,
+    };
     await audioCtx.stopRecord();
-    const { currentPositionMs } = state;
-    setState({
-      ...state,
-      currentPositionMs: 0,
-    });
-    return currentPositionMs;
-  }
-  useEffect(() => {
-    if (!state.started) {
-      setState({ ...state, started: true });
+    onStopRecord(audioRecording);
+  }, [absFilePath, currentPositionMs]);
+  useEffect(useCallback(() => {
+    if (!started) {
       start();
     }
-  })
-  const stop = async () => {
-    const audioLength = await stopRecord();
-    onStopRecord({
-      audioLength,
-      audioURL: state.absFilePath,
-    });
-  }
-  const {currentPositionMs} = state;
+  }, [started]));
+
+  const actions: AudioAction[] = [
+    { iconName: 'stop', onPress: stopRecord },
+    { iconName: 'circle', status: 'danger' },
+  ];
   return (
-    <View>
-      <Button
-        accessoryLeft={ThemedIcon('stop', { solid: true })}
-        onPress={stop}
-      />
-      <AudioPlayerProgress
-        playPosition={currentPositionMs}
-        playDuration={currentPositionMs}
-      />
-    </View>
+    <AudioControls
+      currentPositionMs={0}
+      durationMs={currentPositionMs}
+      actions={actions}
+    />
   );
 };

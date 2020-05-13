@@ -5,6 +5,7 @@ import { Button } from '@ui-kitten/components';
 import { View } from 'react-native';
 import { ThemedIcon } from './FontAwesomeIcons';
 import { AudioPlayer } from './AudioPlayer';
+import { AudioAction, AudioControls } from './AudioControls';
 
 interface Props {
   audio?: Audioable;
@@ -16,27 +17,21 @@ export const AudioRecorderInactive = ({
   audio, resetRecording, recorderID,
 }: Props) => {
   const audioCtx = useContext(AudioContext);
-  const record = () => {
-    audioCtx.startRecord(recorderID);
+  const record = async () => {
+    await audioCtx.startRecord(recorderID);
   }
   if (audio) {
-    return (
-      <>
-        <AudioPlayer audio={audio} />
-        <Button
-          status="danger"
-          accessoryLeft={ThemedIcon('times', { solid: true })}
-          onPress={resetRecording}
-        />
-      </>
-    );
+    return (<AudioPlayer audio={audio} />);
   }
+  const actions: AudioAction[] = [
+    { iconName: 'stop' },
+    { iconName: 'circle', status: 'danger', onPress: record },
+  ];
   return (
-    <View>
-      <Button
-        accessoryLeft={ThemedIcon('circle', { solid: true })}
-        onPress={record}
-      />
-    </View>
+    <AudioControls
+      currentPositionMs={0}
+      durationMs={0}
+      actions={actions}
+    />
   );
 };

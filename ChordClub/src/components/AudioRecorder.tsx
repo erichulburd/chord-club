@@ -6,20 +6,20 @@ import { AudioRecorderActive } from './AudioRecorderActive';
 import { AudioRecorderInactive } from './AudioRecorderInactive';
 
 interface Props {
-  prerecorded?: Audioable;
+  preRecordedAudio?: Audioable;
   recorderID: string;
   onRecordComplete: (audio: Audioable | undefined) => void;
 }
 
 interface State {
-  recording?: Audioable;
+  recordedAudio?: Audioable;
   rerecord: boolean;
 }
 
-export const AudioRecorder = ({ prerecorded, recorderID, onRecordComplete }: Props) => {
+export const AudioRecorder = ({ preRecordedAudio, recorderID, onRecordComplete }: Props) => {
   const audioCtx = useContext(AudioContext);
   const [state, setState] = useState<State>({
-    recording: undefined,
+    recordedAudio: undefined,
     rerecord: false,
   });
 
@@ -31,11 +31,15 @@ export const AudioRecorder = ({ prerecorded, recorderID, onRecordComplete }: Pro
   }, [route.key]);
 
   const clearRecording = () => {
-    setState({ ...state, recording: undefined });
+    setState({ ...state, recordedAudio: undefined });
     onRecordComplete(undefined);
   };
+  const onStopRecord = (recordedAudio: Audioable) => {
+    setState({ ...state, recordedAudio });
+    onRecordComplete(recordedAudio);
+  }
   if (recorderID !== audioCtx.focusedRecorderID) {
-    const audio = (!state.rerecord && prerecorded) ? prerecorded : state.recording;
+    const audio = (!state.rerecord && preRecordedAudio) ? preRecordedAudio : state.recordedAudio;
     return (
       <AudioRecorderInactive
         recorderID={recorderID}
@@ -43,10 +47,6 @@ export const AudioRecorder = ({ prerecorded, recorderID, onRecordComplete }: Pro
         resetRecording={clearRecording}
       />
     );
-  }
-  const onStopRecord = (recording: Audioable) => {
-    setState({ ...state, recording });
-    onRecordComplete(recording);
   }
   return (
     <AudioRecorderActive

@@ -46,8 +46,8 @@ export const AudioControls = ({
               <Button
                 key={`audioAction-${i}`}
                 appearance="ghost"
-                status={status}
-                accessoryLeft={ThemedIcon(iconName)}
+                status={status || 'basic'}
+                accessoryLeft={ThemedIcon(iconName, { solid: true })}
                 onPress={onPress}
               />
             ))}

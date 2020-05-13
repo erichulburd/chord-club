@@ -48,6 +48,7 @@ export const AudioContextProvider = ({ children }: PropsWithChildren<{}>) => {
     audioRecorderPlayer.removePlayBackListener();
   };
   const startRecord = async (recorderID: string) => {
+    console.info('START RECORD', recorderID)
     if (state.focusedRecorderID === recorderID) {
       return;
     }
