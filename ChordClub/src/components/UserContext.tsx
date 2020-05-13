@@ -1,5 +1,5 @@
 import React, {createContext, PropsWithChildren} from 'react';
-import auth, {AuthState, AuthActions} from '../util/auth';
+import auth, {AuthState, AuthActions, AuthEventType} from '../util/auth';
 import {
   User,
   ChartQuery,

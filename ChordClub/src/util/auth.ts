@@ -27,52 +27,54 @@ interface AuthEvent {
   type: AuthEventType;
 }
 
-const authState: AuthState = {
+let authState: AuthState = Object.freeze({
   initialized: false,
   token: undefined,
   sessionExpired: false,
   uid: '',
-};
+});
 
 const TOKEN_ASYNC_KEY = '@ChordClub:token';
 
 const initialize = async () => {
+  const update = {...authState};
   try {
     const token = await AsyncStorage.getItem(TOKEN_ASYNC_KEY);
     if (token) {
-      authState.token = token;
+      update.token = token;
       const claims = parseJWT(token);
-      authState.uid = claims.sub;
+      update.uid = claims.sub;
     }
   } catch (err) {
     logger.error(err);
   }
-  authState.initialized = true;
-  publish({state: {...authState}, type: AuthEventType.INITIALIZED});
+  update.initialized = true;
+  publish({state: update, type: AuthEventType.INITIALIZED});
 };
 
 const sessionExpired = () => {
-  authState.token = undefined;
   publish({
-    state: {sessionExpired: true, ...authState},
+    state: {...authState, sessionExpired: true, token: undefined},
     type: AuthEventType.SESSION_EXPIRED,
   });
 };
 
 const login = async () => {
-  if (authState.token) {
-    return;
-  }
   try {
     const credentials = await auth0Login();
-    authState.token = credentials.accessToken;
-    const claims = parseJWT(authState.token);
-    authState.uid = claims.sub;
+    const token = credentials.accessToken;
+    const claims = parseJWT(token);
+    const uid = claims.sub;
     publish({
-      state: {sessionExpired: false, ...authState},
+      state: {
+        ...authState,
+        sessionExpired: false,
+        uid,
+        token,
+      },
       type: AuthEventType.USER_LOGIN,
     });
-    AsyncStorage.setItem(TOKEN_ASYNC_KEY, authState.token);
+    AsyncStorage.setItem(TOKEN_ASYNC_KEY, token);
   } catch (err) {
     logger.error(err);
     publish({state: {...authState}, type: AuthEventType.USER_LOGIN_ERROR});
@@ -83,18 +85,18 @@ export const logout = async () => {
   if (!authState.token) {
     return;
   }
-  authState.token = undefined;
   publish({
-    state: {sessionExpired: false, ...authState},
+    state: {...authState, sessionExpired: false, token: undefined},
     type: AuthEventType.USER_LOGOUT,
   });
-  auth0Logout();
-  AsyncStorage.removeItem(TOKEN_ASYNC_KEY);
+  // auth0Logout();
+  await AsyncStorage.removeItem(TOKEN_ASYNC_KEY);
 };
 
 const subscribers = new Set<ZenObservable.Observer<AuthEvent>>();
 
 const publish = (event: AuthEvent) => {
+  authState = Object.freeze(event.state)
   subscribers.forEach((observer) => {
     if (observer.next) {
       observer.next(event);
@@ -128,7 +130,7 @@ const auth0Login = (): Promise<Auth0Credentials> =>
     scope: 'openid',
     audience: config.AUTH0_TOKEN_AUDIENCE,
   });
-const auth0Logout = () => auth0.webAuth.clearSession({federated: true});
+// const auth0Logout = () => auth0.webAuth.clearSession({federated: true});
 
 export interface AuthActions {
   login: () => Promise<void>;

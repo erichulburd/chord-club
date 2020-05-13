@@ -18,7 +18,7 @@ const authLink = setContext(async (_request, previousContext) => {
     ...previousContext,
     headers: {
       ...previousContext.headers,
-      ['X-REQUEST-iD']: v4(),
+      ['X-REQUEST-ID']: v4(),
       Authorization: `Bearer ${token}`,
     },
   };
@@ -26,6 +26,7 @@ const authLink = setContext(async (_request, previousContext) => {
 
 const errorLink = onError(({graphQLErrors, networkError}) => {
   console.log('GRAPHQL ERRORS', graphQLErrors);
+
   if (graphQLErrors) {
     if (
       graphQLErrors.some((err) => err.extensions?.code === 'UNAUTHENTICATED')
