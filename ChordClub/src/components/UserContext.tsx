@@ -19,9 +19,14 @@ import {
 } from '../gql/user';
 import omit from 'lodash/omit';
 import pickBy from 'lodash/pickBy';
-import { UserSettings, SettingsPath, ChartViewSetting, FlashcardViewSetting } from '../util/settings';
+import {
+  UserSettings,
+  SettingsPath,
+  ChartViewSetting,
+  FlashcardViewSetting,
+} from '../util/settings';
 import logger from '../util/logger';
-import { GraphQLError } from 'graphql';
+import {GraphQLError} from 'graphql';
 
 interface Props extends WithApolloClient<{}> {}
 
@@ -37,7 +42,10 @@ export interface UserContextState {
 
 export interface UserContextValue extends UserContextState {
   updateUser: (update: Partial<User>) => void;
-  updateSettings: (settingsPath: SettingsPath, update: Partial<ChartViewSetting> | Partial<FlashcardViewSetting>) => void;
+  updateSettings: (
+    settingsPath: SettingsPath,
+    update: Partial<ChartViewSetting> | Partial<FlashcardViewSetting>,
+  ) => void;
   updateChartQuery: (settingsPath: SettingsPath, update: ChartQuery) => void;
   updateCompact: (settingsPath: SettingsPath, compact: boolean) => void;
   updateUsername: (username: string) => void;
@@ -108,11 +116,15 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
         limit: 10,
       },
       compact: false,
-      options: { tone: false, quality: true, extensions: false }
+      options: {tone: false, quality: true, extensions: false},
     };
   }
   if (!settings.flashcards.options) {
-    settings.flashcards.options = { tone: false, quality: true, extensions: false };
+    settings.flashcards.options = {
+      tone: false,
+      quality: true,
+      extensions: false,
+    };
   }
   return settings;
 };
@@ -190,12 +202,12 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
       logger.error(err);
       let userUpdateError = new ApolloError({
         errorMessage: 'User update failed',
-        extraInfo: {}
+        extraInfo: {},
       });
       if (err instanceof GraphQLError) {
         userUpdateError = new ApolloError({
           graphQLErrors: [err],
-          extraInfo: {}
+          extraInfo: {},
         });
       } else if (err instanceof ApolloError) {
         userUpdateError = err;

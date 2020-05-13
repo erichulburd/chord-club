@@ -1,20 +1,24 @@
 import React, {useState} from 'react';
 import {ChartQueryModal} from './ChartQueryModal';
-import {View, StyleSheet} from 'react-native';
+import {View} from 'react-native';
 import {ChartQuery} from '../types';
 import {AppScreen, Screens} from './AppScreen';
 import ErrorText from './ErrorText';
 import {Spinner} from '@ui-kitten/components';
 import {withUser, UserConsumerProps} from './UserContext';
 import {MenuItemData} from './Title';
-import { ChartViewSetting, SettingsPath, FlashcardViewSetting } from '../util/settings';
+import {
+  ChartViewSetting,
+  SettingsPath,
+  FlashcardViewSetting,
+} from '../util/settings';
 
 interface ManualProps<T> {
   title: Screens;
   settingsPath: SettingsPath;
   expandable?: boolean;
   reversable?: boolean;
-  renderQueryResults: ((setting: T) => React.ReactElement);
+  renderQueryResults: (setting: T) => React.ReactElement;
 }
 
 interface Props<T> extends ManualProps<T>, UserConsumerProps {}
@@ -45,7 +49,7 @@ const ChartQueryView = ({
         themedIconName: 'filter',
         onPress: () => setIsEditorOpen(!isEditorOpen),
       },
-    ]
+    ];
     if (reversable) {
       menuItems.push({
         title: 'Reverse',
@@ -83,10 +87,6 @@ const ChartQueryView = ({
   );
 };
 
-const styles = StyleSheet.create({
-  queryControls: {
-    justifyContent: 'space-around',
-  },
-});
-
-export default withUser<ManualProps<ChartViewSetting | FlashcardViewSetting>>(ChartQueryView);
+export default withUser<ManualProps<ChartViewSetting | FlashcardViewSetting>>(
+  ChartQueryView,
+);

@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, ViewProps, StyleSheet } from 'react-native';
-import { CheckBox, Card, Button, Text } from '@ui-kitten/components';
-import { FlashcardOptions } from '../util/settings';
-import { UserConsumerProps, withUser } from './UserContext';
+import {View, ViewProps, StyleSheet} from 'react-native';
+import {CheckBox, Card, Button, Text} from '@ui-kitten/components';
+import {FlashcardOptions} from '../util/settings';
+import {UserConsumerProps, withUser} from './UserContext';
 
 interface ManualProps {
   options: FlashcardOptions;
@@ -11,30 +11,23 @@ interface ManualProps {
 
 interface Props extends UserConsumerProps, ManualProps {}
 
-const FlashcardsOptionsSelect = ({
-  options, done, userCtx,
-}: Props) => {
+const FlashcardsOptionsSelect = ({options, done, userCtx}: Props) => {
   const Footer = (props: ViewProps | undefined) => (
     <View {...props}>
-      <Button
-        size="giant"
-        appearance="outline"
-        onPress={done}
-      >Begin!</Button>
+      <Button size="giant" appearance="outline" onPress={done}>
+        Begin!
+      </Button>
     </View>
   );
   const updateFlashcardOptions = (options: FlashcardOptions) => {
-    userCtx.updateSettings('flashcards', { options });
-  }
+    userCtx.updateSettings('flashcards', {options});
+  };
   return (
-    <Card
-      disabled
-      status="basic"
-      footer={Footer}
-    >
+    <Card disabled status="basic" footer={Footer}>
       <View style={styles.paragraph}>
         <Text category="p1">
-          Use flashcards to have fun while learning to identify chords by hearing.
+          Use flashcards to have fun while learning to identify chords by
+          hearing.
         </Text>
       </View>
       <View style={styles.paragraph}>
@@ -50,16 +43,25 @@ const FlashcardsOptionsSelect = ({
       <View style={styles.settings}>
         <CheckBox
           checked={options.tone}
-          onChange={(checked) => updateFlashcardOptions({ ...options, tone: checked })}
-        >Tone</CheckBox>
+          onChange={(checked) =>
+            updateFlashcardOptions({...options, tone: checked})
+          }>
+          Tone
+        </CheckBox>
         <CheckBox
           checked={options.quality}
-          onChange={(checked) => updateFlashcardOptions({ ...options, quality: checked })}
-        >Quality</CheckBox>
+          onChange={(checked) =>
+            updateFlashcardOptions({...options, quality: checked})
+          }>
+          Quality
+        </CheckBox>
         <CheckBox
           checked={options.extensions}
-          onChange={(checked) => updateFlashcardOptions({ ...options, extensions: checked })}
-        >Extensions</CheckBox>
+          onChange={(checked) =>
+            updateFlashcardOptions({...options, extensions: checked})
+          }>
+          Extensions
+        </CheckBox>
       </View>
     </Card>
   );
@@ -72,8 +74,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   paragraph: {
-    marginBottom: 10
-  }
-})
+    marginBottom: 10,
+  },
+});
 
 export default withUser<ManualProps>(FlashcardsOptionsSelect);

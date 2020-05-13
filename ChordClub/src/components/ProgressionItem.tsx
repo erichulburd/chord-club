@@ -6,11 +6,11 @@ import {Chart} from '../types';
 import {View, ViewProps, StyleSheet} from 'react-native';
 import {ModalImage} from './shared/ModalImage';
 import {ResizableImage} from '../util/imagePicker';
-import AudioPlayer from './AudioPlayer1';
+import {AudioPlayer} from './AudioPlayer';
 import {UserConsumerProps, withUser} from './UserContext';
 import ChartOwnerMenu from './ChartOwnerMenu';
 import {ChartFooter} from './ChartFooter';
-import { TagCollection } from './TagCollection';
+import {TagCollection} from './TagCollection';
 
 interface ManualProps {
   chart: Chart;
@@ -69,8 +69,7 @@ const ProgressionItem = ({
       style={styles.card}
       status="success"
       footer={compact ? undefined : Footer}
-      header={compact ? undefined : Header}
-    >
+      header={compact ? undefined : Header}>
       <View>
         <Text>{chart.name || 'Unnamed'}</Text>
         <AudioPlayer audio={chart} />
@@ -86,20 +85,6 @@ const ProgressionItem = ({
     </Card>
   );
 };
-
-interface CaretToggleProps {
-  isOpen: boolean;
-  toggle: (on: boolean) => void;
-}
-
-const CaretToggle = ({isOpen, toggle}: CaretToggleProps) => (
-  <Button
-    appearance="ghost"
-    accessoryLeft={isOpen ? ThemedIcon('angle-up') : ThemedIcon('angle-down')}
-    onPress={() => toggle(!isOpen)}
-  />
-);
-
 const styles = StyleSheet.create({
   card: {
     margin: 10,

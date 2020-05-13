@@ -3,8 +3,8 @@ import {Button, Card, Modal, Text, Spinner} from '@ui-kitten/components';
 import {StyleSheet, ViewProps, View, Linking} from 'react-native';
 import {UserConsumerProps, withUser} from './UserContext';
 import UsernameModal from './UsernameModal';
-import { withApollo, WithApolloClient } from 'react-apollo';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import {withApollo, WithApolloClient} from 'react-apollo';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 const styles = StyleSheet.create({
   container: {
@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
   auth0Text: {
     marginTop: 20,
     marginBottom: 10,
-  }
+  },
 });
 
 interface Props extends UserConsumerProps, WithApolloClient<{}> {}
@@ -34,7 +34,7 @@ const AuthModal = ({userCtx, client}: Props) => {
   const onLogin = async () => {
     await client.resetStore();
     await login();
-  }
+  };
   const Footer = (props?: ViewProps) => (
     <View {...props}>
       <Button status="success" onPress={onLogin} appearance="outline">
@@ -53,13 +53,14 @@ const AuthModal = ({userCtx, client}: Props) => {
               <Text status={'danger'}>Oops, your session has expired!</Text>
             )}
             <TouchableOpacity
-              onPress={() => Linking.openURL('https://auth0.com/security/#certifications')}
-            >
+              onPress={() =>
+                Linking.openURL('https://auth0.com/security/#certifications')
+              }>
               <Text style={styles.auth0Text}>
-                For your security and privacy, we use Auth0 for account management. Click to read more.
+                For your security and privacy, we use Auth0 for account
+                management. Click to read more.
               </Text>
             </TouchableOpacity>
-
           </React.Fragment>
         )}
       </Card>

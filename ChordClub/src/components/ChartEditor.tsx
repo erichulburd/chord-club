@@ -23,7 +23,7 @@ import {
   ChartUpdate,
 } from '../types';
 import {Row} from './shared/Row';
-import AudioRecorder from './AudioRecorder/index';
+import {AudioRecorder} from './AudioRecorder';
 import {ThemedIcon} from './FontAwesomeIcons';
 import {pickSingleImage, ResizableImage} from '../util/imagePicker';
 import {ModalImage} from './shared/ModalImage';
@@ -42,6 +42,7 @@ import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 import {ChartExtensionsEditor} from './ChartExtensionsEditor';
+import {Audioable} from '../util/audio';
 
 interface ManualProps {
   chart: Chart;
@@ -64,11 +65,12 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
     'reactionCounts',
     'userReactionType',
     'chartType',
-  ])
+  ]);
   const [chartUpdate, setChart] = useState<ChartUpdate>(defaultChartUpdate);
+  const chartID = chart?.id;
   useEffect(() => {
     reset();
-  }, [mountID, chart?.id]);
+  }, [mountID, chartID]);
   const updateChartExtensions = (exts: Extension[]) => {
     setChart({...chartUpdate, extensionIDs: exts.map((e) => e.id)});
   };
@@ -76,16 +78,16 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
   const [audioFilePath, setAudioFilePath] = useState<string | undefined>(
     undefined,
   );
-  const onRecordingComplete = (path: string, ms: number) => {
-    setAudioFilePath(path);
-    setChart({...chartUpdate, audioLength: ms});
+  const [audioLength, setAudioLength] = useState<number | undefined>(undefined);
+  const onRecordingComplete = (audio: Audioable | undefined) => {
+    setAudioFilePath(audio?.audioURL);
+    setAudioLength(audio?.audioLength || 0);
   };
   const [image, setResizableImage] = useState<ResizableImage | null>(null);
   const [modalImageVisible, setModalImageVisible] = useState<boolean>(false);
   const [urlCache, setFileURLCache] = useState<FileURLCache>({});
 
   const [fileUpdates, setFileUpdates] = useState({
-    audio: false,
     image: false,
   });
 
@@ -101,7 +103,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
     } as ChartUpdate;
 
     try {
-      if (fileUpdates.audio || fileUpdates.image) {
+      if (audioFilePath || fileUpdates.image) {
         const filePaths = {
           audioURL: audioFilePath || '',
           imageURL: image?.uri || '',
@@ -111,7 +113,8 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
           urlCache,
         );
 
-        payload.audioURL = fileUpdates.audio ? urls.audioURL : chart.audioURL;
+        payload.audioURL = audioFilePath ? urls.audioURL : chart.audioURL;
+        payload.audioLength = audioLength || chartUpdate.audioLength;
         payload.imageURL = fileUpdates.image ? urls.imageURL : chart.imageURL;
         if (didUpload) {
           setFileURLCache(cache);
@@ -145,6 +148,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
   const reset = () => {
     setChart(defaultChartUpdate);
     setAudioFilePath(undefined);
+    setAudioLength(undefined);
     setResizableImage(null);
     setModalImageVisible(false);
     setFileURLCache({});
@@ -200,23 +204,13 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
         <Tab title="PROGRESSION" disabled />
       </TabBar>
       <ScrollView style={{height: '80%'}}>
-        <Row>
-          <Toggle
-            checked={fileUpdates.audio}
-            onChange={(checked) =>
-              setFileUpdates({...fileUpdates, audio: checked})
-            }>
-            Update audio
-          </Toggle>
+        <Row style={styles.fullWidth}>
+          <AudioRecorder
+            recorderID={chart.id.toString()}
+            preRecordedAudio={chart}
+            onRecordComplete={onRecordingComplete}
+          />
         </Row>
-        {fileUpdates.audio && (
-          <Row>
-            <AudioRecorder
-              mountID={mountID}
-              onRecordingComplete={onRecordingComplete}
-            />
-          </Row>
-        )}
         <Row>
           <Toggle
             checked={fileUpdates.image}
@@ -293,7 +287,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
             </Row>
           </>
         )}
-        <Row style={{flexDirection: 'column', alignSelf: 'stretch'}}>
+        <Row style={styles.fullWidth}>
           <TagAutocomplete
             containerStyle={{width: '100%'}}
             onSelect={addTag}
@@ -302,16 +296,18 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
           <TagCollection tags={chartUpdate.tags || []} onDelete={removeTag} />
         </Row>
         {chart.chartType === ChartType.Progression && (
-          <Row style={{flexDirection: 'column', alignSelf: 'stretch'}}>
+          <Row style={styles.fullWidth}>
             <Input
               textStyle={styles.input}
               placeholder="Name"
               value={chartUpdate.name || ''}
-              onChangeText={(txt: string) => setChart({...chartUpdate, name: txt})}
+              onChangeText={(txt: string) =>
+                setChart({...chartUpdate, name: txt})
+              }
             />
           </Row>
         )}
-        <Row style={{flexDirection: 'column', alignSelf: 'stretch'}}>
+        <Row style={styles.fullWidth}>
           <Input
             multiline
             textStyle={[styles.input, styles.inputMultiline]}
@@ -389,6 +385,10 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  fullWidth: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
   },
 });
 

@@ -10,7 +10,10 @@ import {
 import kebabCase from 'lodash/kebabCase';
 import trim from 'lodash/trim';
 
-export const makeChartNew = (uid: string, overrides: Partial<ChartNew> = {}): Partial<ChartNew> => ({
+export const makeChartNew = (
+  uid: string,
+  overrides: Partial<ChartNew> = {},
+): Partial<ChartNew> => ({
   chartType: ChartType.Chord,
   audioURL: '',
   audioLength: 0,
@@ -22,7 +25,7 @@ export const makeChartNew = (uid: string, overrides: Partial<ChartNew> = {}): Pa
   quality: ChartQuality.Major,
   extensionIDs: [],
   tags: [],
-  ...overrides
+  ...overrides,
 });
 
 export interface ChartURLs extends Record<string, string> {

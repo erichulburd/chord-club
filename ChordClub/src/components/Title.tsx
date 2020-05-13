@@ -13,8 +13,8 @@ import {
 import {withUser, UserConsumerProps} from './UserContext';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {ThemedIcon} from './FontAwesomeIcons';
-import { useNavigation } from '@react-navigation/native';
-import { DrawerNavigationProp } from '@react-navigation/drawer';
+import {useNavigation} from '@react-navigation/native';
+import {DrawerNavigationProp} from '@react-navigation/drawer';
 
 const MenuIcon = (props: Partial<ImageProps> = {}) => (
   <Icon {...props} name="ellipsis-v" />
@@ -43,8 +43,8 @@ export const Title = ({title = 'Chord Club', menuItems}: Props) => {
       accessoryLeft={ThemedIcon('bars')}
       onPress={() => n.openDrawer()}
     />
-  )
-  const renderTitle = (props: TextProps | undefined) => (
+  );
+  const renderTitle = (_props: TextProps | undefined) => (
     <View style={styles.titleContainer}>
       <Text status="success" category="h5">
         {title}
@@ -74,8 +74,7 @@ export const Title = ({title = 'Chord Club', menuItems}: Props) => {
       <OverflowMenu
         anchor={renderMenuAction}
         visible={menuVisible}
-        onBackdropPress={toggleMenu}
-      >
+        onBackdropPress={toggleMenu}>
         {menuItems.map(({title, themedIconName, onPress}) => (
           <TouchableOpacity
             key={title}

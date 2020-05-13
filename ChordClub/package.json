@@ -3,13 +3,14 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "ENVFILE=.env.dev react-native run-android",
-    "ios": "ENVFILE=.env.dev react-native run-ios",
-    "ipad": "ENVFILE=.env.dev react-native run-ios --simulator \"iPad Pro (9.7-inch)\"",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "ipad": "react-native run-ios --simulator \"iPad Pro (9.7-inch)\"",
     "ios:devices": "xcrun simctl list devices",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "exec:lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "dependencies": {
     "@apollo/react-hooks": "^3.1.5",

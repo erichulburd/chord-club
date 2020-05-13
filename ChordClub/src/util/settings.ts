@@ -1,8 +1,8 @@
-import { ChartQuery } from "../types";
+import {ChartQuery} from '../types';
 
 export interface ChartViewSetting {
   query: ChartQuery;
-  compact?: boolean
+  compact?: boolean;
 }
 
 export interface FlashcardOptions {
@@ -22,4 +22,3 @@ export interface UserSettings {
 }
 
 export type SettingsPath = keyof UserSettings;
-

@@ -54,6 +54,8 @@ export interface UpdateUserResponse {
 
 export const DELETE_USER = gql`
   mutation DeleteUser {
-    deleteUser { empty }
+    deleteUser {
+      empty
+    }
   }
 `;

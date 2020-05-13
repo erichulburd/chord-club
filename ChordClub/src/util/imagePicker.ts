@@ -1,5 +1,5 @@
 import ImagePicker, {Options} from 'react-native-image-crop-picker';
-import {Image, Dimensions, ScaledSize} from 'react-native';
+import {Image, Dimensions} from 'react-native';
 
 interface Size {
   height: number;

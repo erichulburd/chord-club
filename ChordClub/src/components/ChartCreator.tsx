@@ -22,7 +22,7 @@ import {
 } from '../types';
 import {Row} from './shared/Row';
 import {ExtensionPalletteBG} from './shared/ExtensionPalletteBG';
-import AudioRecorder from './AudioRecorder/index';
+import {AudioRecorder} from './AudioRecorder';
 import {ThemedIcon} from './FontAwesomeIcons';
 import {pickSingleImage, ResizableImage} from '../util/imagePicker';
 import {ModalImage} from './shared/ModalImage';
@@ -39,8 +39,9 @@ import {withModalContext, ModalContextProps} from './ModalProvider';
 import TagAutocomplete from './TagAutocomplete';
 import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
-import { useRoute } from '@react-navigation/native';
-import { AppRouteProp } from './AppScreen';
+import {useRoute} from '@react-navigation/native';
+import {AppRouteProp} from './AppScreen';
+import {Audioable} from '../util/audio';
 
 interface ManualProps {
   close: () => void;
@@ -52,12 +53,15 @@ interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const {uid} = userCtx.authState;
   const route = useRoute<AppRouteProp<'CreateAChart'>>();
-  const defaultChartType = route.params?.chartType === undefined ?
-    ChartType.Chord :
-    route.params?.chartType;
-  const [newChart, setChart] = useState(makeChartNew(uid, {
-    chartType: defaultChartType,
-  }));
+  const defaultChartType =
+    route.params?.chartType === undefined
+      ? ChartType.Chord
+      : route.params?.chartType;
+  const [newChart, setChart] = useState(
+    makeChartNew(uid, {
+      chartType: defaultChartType,
+    }),
+  );
   const updateChartType = (ct: ChartType) =>
     setChart({...newChart, chartType: ct});
   useEffect(() => {
@@ -77,18 +81,25 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const [audioFilePath, setAudioFilePath] = useState<string | undefined>(
     undefined,
   );
-  const onRecordingComplete = (path: string, ms: number) => {
-    setAudioFilePath(path);
-    setChart({...newChart, audioLength: ms});
+  const onRecordingComplete = (audio: Audioable | undefined) => {
+    if (audio === undefined) {
+      setAudioFilePath(undefined);
+      setChart({...newChart, audioLength: 0});
+      return;
+    }
+    setAudioFilePath(audio.audioURL);
+    setChart({...newChart, audioLength: audio.audioLength});
   };
   const [image, setResizableImage] = useState<ResizableImage | null>(null);
   const [modalImageVisible, setModalImageVisible] = useState<boolean>(false);
   const [urlCache, setFileURLCache] = useState<FileURLCache>({});
 
   const reset = () => {
-    setChart(makeChartNew(uid, {
-      chartType: defaultChartType,
-    }));
+    setChart(
+      makeChartNew(uid, {
+        chartType: defaultChartType,
+      }),
+    );
     setExtensions([]);
     setAudioFilePath(undefined);
     setResizableImage(null);
@@ -204,10 +215,10 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
         <Tab title="PROGRESSION" />
       </TabBar>
       <ScrollView style={{height: '80%'}}>
-        <Row>
+        <Row style={styles.fullWidth}>
           <AudioRecorder
-            mountID={mountID}
-            onRecordingComplete={onRecordingComplete}
+            recorderID={'0'}
+            onRecordComplete={onRecordingComplete}
           />
         </Row>
         {image && (
@@ -242,7 +253,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
         </Row>
         {newChart.chartType === ChartType.Chord && (
           <>
-            <Row style={{flexDirection: 'column', alignItems: 'stretch'}}>
+            <Row style={styles.fullWidth}>
               <Row>
                 <View style={styles.chordTone}>
                   <NoteAutocomplete
@@ -273,7 +284,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
             </Row>
           </>
         )}
-        <Row style={{flexDirection: 'column', alignSelf: 'stretch'}}>
+        <Row style={styles.fullWidth}>
           <TagAutocomplete
             containerStyle={{width: '100%'}}
             onSelect={addTag}
@@ -282,7 +293,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
           <TagCollection tags={newChart.tags || []} onDelete={removeTag} />
         </Row>
         {newChart.chartType === ChartType.Progression && (
-          <Row style={{flexDirection: 'column', alignSelf: 'stretch'}}>
+          <Row style={styles.fullWidth}>
             <Input
               textStyle={styles.input}
               placeholder="Name"
@@ -291,7 +302,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
             />
           </Row>
         )}
-        <Row style={{flexDirection: 'column', alignSelf: 'stretch'}}>
+        <Row style={styles.fullWidth}>
           <Input
             multiline
             textStyle={[styles.input, styles.inputMultiline]}
@@ -369,6 +380,10 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  fullWidth: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
   },
 });
 
