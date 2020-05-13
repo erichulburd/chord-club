@@ -18,17 +18,27 @@ export const AudioRecorderActive = ({onStopRecord}: Props) => {
   const [started, setStarted] = useState(false);
   const audioCtx = useContext(AudioContext);
   const {audioRecorderPlayer} = audioCtx;
-  const recordBackListener = (e: any) => {
+  const stopRecord = async (audioURL: string, audioLength: number) => {
+    const audioRecording = {
+      audioLength: Math.round(audioLength),
+      audioURL,
+    };
+    await audioCtx.stopRecord();
+    onStopRecord(audioRecording);
+  };
+
+  const recordBackListener = (audioURL: string) => async (e: any) => {
     const newCurrentPositionMS = parseFloat(e.current_position);
     setCurrentPositionMs(newCurrentPositionMS);
-    if (newCurrentPositionMS > MAX_RECORDING_MS) {
-      stopRecord();
+    if (newCurrentPositionMS >= MAX_RECORDING_MS - 200) {
+      await stopRecord(audioURL, newCurrentPositionMS);
       modalCtx.message({
         msg: 'We currently limit uploads to 5 minutes.',
+        status: 'warning',
       })
     }
   };
-  const start = async () => {
+  const start = useCallback(async () => {
     setStarted(true);
     let granted = false;
     try {
@@ -43,16 +53,8 @@ export const AudioRecorderActive = ({onStopRecord}: Props) => {
       audioSet,
     );
     setAbsFilePath(absFilePath);
-    audioRecorderPlayer.addRecordBackListener(recordBackListener);
-  };
-  const stopRecord = useCallback(async () => {
-    const audioRecording = {
-      audioLength: Math.round(currentPositionMs),
-      audioURL: absFilePath,
-    };
-    await audioCtx.stopRecord();
-    onStopRecord(audioRecording);
-  }, [absFilePath, currentPositionMs]);
+    audioRecorderPlayer.addRecordBackListener(recordBackListener(absFilePath));
+  }, []);
   useEffect(
     useCallback(() => {
       if (!started) {
@@ -62,13 +64,13 @@ export const AudioRecorderActive = ({onStopRecord}: Props) => {
   );
 
   const actions: AudioAction[] = [
-    {iconName: 'stop', onPress: stopRecord},
+    {iconName: 'stop', onPress: () => stopRecord(absFilePath, currentPositionMs)},
     {iconName: 'circle', status: 'danger'},
   ];
   return (
     <AudioControls
-      currentPositionMs={0}
-      durationMs={currentPositionMs}
+      currentPositionMs={currentPositionMs}
+      durationMs={MAX_RECORDING_MS}
       actions={actions}
     />
   );
