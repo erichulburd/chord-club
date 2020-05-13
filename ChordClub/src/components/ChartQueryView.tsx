@@ -66,14 +66,14 @@ const ChartQueryView = ({
       });
     }
   }
-  const {userError, userLoading} = userCtx;
-
+  const {userError, userLoading, authState} = userCtx;
+  const showResults = Boolean(authState.token) && !userLoading && !userError && settings;
   return (
     <AppScreen title={title} menuItems={menuItems}>
       <View>
         {userError && <ErrorText error={userError} />}
         {userLoading && <Spinner />}
-        {!userLoading && !userError && settings && renderQueryResults(settings)}
+        {showResults && renderQueryResults(settings)}
         {settings && (
           <ChartQueryModal
             query={settings.query}

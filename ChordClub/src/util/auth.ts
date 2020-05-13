@@ -82,9 +82,6 @@ const login = async () => {
 };
 
 export const logout = async () => {
-  if (!authState.token) {
-    return;
-  }
   publish({
     state: {...authState, sessionExpired: false, token: undefined},
     type: AuthEventType.USER_LOGOUT,

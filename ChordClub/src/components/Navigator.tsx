@@ -1,9 +1,10 @@
 import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {
   createDrawerNavigator,
   DrawerContentComponentProps,
   DrawerContentOptions,
+  DrawerNavigationProp,
 } from '@react-navigation/drawer';
 import ChordListScreen from './ChordListScreen';
 import ProgressionListScreen from './ProgressionListScreen';
@@ -27,6 +28,7 @@ import {WithApolloClient, withApollo} from 'react-apollo';
 import logger from '../util/logger';
 import {ChartEditorScreen} from './ChartEditorScreen';
 import {TagListScreen} from './TagListScreen';
+import { BlankScreen } from './BlankScreen';
 
 const {Navigator, Screen} = createDrawerNavigator();
 
@@ -48,9 +50,13 @@ const BaseHeader = withStyles(
 
 const Header = (props: ViewProps | undefined) => <BaseHeader {...props} />;
 
+interface DrawerNavigationProps {
+  navigation: DrawerNavigationProp<{}>;
+}
+
 type DrawerContentProps = UserConsumerProps &
   DrawerContentComponentProps<DrawerContentOptions> &
-  WithApolloClient<{}>;
+  WithApolloClient<{}> & DrawerNavigationProps;
 
 const DrawerContent = ({
   navigation,
@@ -58,10 +64,12 @@ const DrawerContent = ({
   userCtx,
   client,
 }: DrawerContentProps) => {
+
   const goToRoute = async (index: IndexPath) => {
     let route = state.routeNames[index.row];
     if (route === Screens.Logout) {
       try {
+        navigation.closeDrawer();
         await userCtx.authActions.logout();
       } catch (err) {
         logger.error(err);
@@ -71,6 +79,7 @@ const DrawerContent = ({
     }
     navigation.navigate(route);
   };
+
   return (
     <Drawer
       header={Header}
@@ -112,7 +121,8 @@ export const AppNavigator = ({userCtx, client}: Props) => (
       drawerContent={(props) => (
         <DrawerContent {...props} userCtx={userCtx} client={client} />
       )}
-      initialRouteName={Screens.Chords}>
+      initialRouteName={Screens.Chords}
+    >
       <Screen name={Screens.Chords} component={ChordListScreen} />
       <Screen name={Screens.Progressions} component={ProgressionListScreen} />
       <Screen name={Screens.ChordFlashcards} component={FlashcardsScreen} />
@@ -121,6 +131,7 @@ export const AppNavigator = ({userCtx, client}: Props) => (
       <Screen name={Screens.Account} component={AccountScreen} />
       <Screen name={Screens.Logout} component={AccountScreen} />
       <Screen name={Screens.EditChart} component={ChartEditorScreen} />
+      <Screen name={Screens.Blank} component={BlankScreen} />
     </Navigator>
   </NavigationContainer>
 );

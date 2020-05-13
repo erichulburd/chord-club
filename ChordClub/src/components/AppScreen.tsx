@@ -8,7 +8,7 @@ import {ChartType, Chart} from '../types';
 import { ContentContainer } from './ContentContainer';
 
 interface Props {
-  title: string;
+  title?: string;
   menuItems?: MenuItemData[];
 }
 
@@ -28,6 +28,7 @@ export enum Screens {
   Logout = 'Logout',
   EditChart = 'Edit Chart',
   Tags = 'Tags',
+  Blank = 'Blank'
 }
 
 interface AppParamList {
@@ -51,7 +52,7 @@ export type AppRouteProp<T extends keyof AppParamList> = RouteProp<
 >;
 
 export const AppScreen = ({
-  title,
+  title = 'Chord Club',
   menuItems,
   children,
 }: PropsWithChildren<Props>) => {

@@ -32,8 +32,8 @@ const AuthModal = ({userCtx, client}: Props) => {
     return <UsernameModal />;
   }
   const onLogin = async () => {
-    await login();
     await client.resetStore();
+    await login();
   };
   const Footer = (props?: ViewProps) => (
     <View {...props}>

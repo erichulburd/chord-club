@@ -10,7 +10,18 @@ import {requestWithoutTokenError} from './util/errors';
 import {v4} from 'react-native-uuid';
 
 const authLink = setContext(async (_request, previousContext) => {
-  const token = auth.currentState().token;
+  let token = auth.currentState().token;
+  const start = Date.now();
+  // FIXME. This is hacky but effective and easy for now.
+  while (!token && (Date.now() - start) < 2000) {
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        token = auth.currentState().token;
+        resolve();
+      }, 200);
+    });
+  }
+
   if (!token) {
     throw requestWithoutTokenError;
   }
