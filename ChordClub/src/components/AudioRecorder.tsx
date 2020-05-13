@@ -4,6 +4,7 @@ import { AudioContext } from './AudioContextProvider';
 import { useRoute } from '@react-navigation/native';
 import { AudioRecorderActive } from './AudioRecorderActive';
 import { AudioRecorderInactive } from './AudioRecorderInactive';
+import { AudioAction } from './AudioControls';
 
 interface Props {
   preRecordedAudio?: Audioable;
@@ -11,39 +12,33 @@ interface Props {
   onRecordComplete: (audio: Audioable | undefined) => void;
 }
 
-interface State {
-  recordedAudio?: Audioable;
-  rerecord: boolean;
-}
-
 export const AudioRecorder = ({ preRecordedAudio, recorderID, onRecordComplete }: Props) => {
   const audioCtx = useContext(AudioContext);
-  const [state, setState] = useState<State>({
-    recordedAudio: undefined,
-    rerecord: false,
-  });
-
+  const [recordedAudio, setRecordedAudio] = useState<Audioable | undefined>(undefined);
   const route = useRoute();
   useEffect(() => {
     if (recorderID !== audioCtx.focusedRecorderID) {
       audioCtx.stopRecord();
     }
   }, [route.key]);
+  useEffect(() => {
+    return () => setRecordedAudio(undefined);
+  }, [recorderID]);
 
   const clearRecording = () => {
-    setState({ ...state, recordedAudio: undefined });
+    setRecordedAudio(undefined);
     onRecordComplete(undefined);
   };
-  const onStopRecord = (recordedAudio: Audioable) => {
-    setState({ ...state, recordedAudio });
-    onRecordComplete(recordedAudio);
+  const onStopRecord = (newAudio: Audioable) => {
+    setRecordedAudio(newAudio)
+    onRecordComplete(newAudio);
   }
   if (recorderID !== audioCtx.focusedRecorderID) {
-    const audio = (!state.rerecord && preRecordedAudio) ? preRecordedAudio : state.recordedAudio;
     return (
       <AudioRecorderInactive
         recorderID={recorderID}
-        audio={audio}
+        preRecordedAudio={preRecordedAudio}
+        recordedAudio={recordedAudio}
         resetRecording={clearRecording}
       />
     );

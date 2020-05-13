@@ -15,6 +15,8 @@ interface State {
   started: boolean;
 }
 
+const MAX_RECORDING_MS = 2 * 60 * 1000;
+
 export const AudioRecorderActive = ({
   onStopRecord,
 }: Props) => {

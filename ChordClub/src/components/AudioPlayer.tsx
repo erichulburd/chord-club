@@ -3,15 +3,14 @@ import { Audioable } from '../util/audio';
 import { AudioContext } from './AudioContextProvider';
 import { AudioPlayerInactive } from './AudioPlayerInactive';
 import { AudioPlayerActive } from './AudioPlayerActive';
-import { useRoute } from '@react-navigation/native';
-import { View } from 'react-native';
-import { styles } from './audioPlayerStyles';
+import { AudioAction } from './AudioControls';
 
 interface Props {
   audio: Audioable;
+  extraActions?: AudioAction[];
 }
 
-export const AudioPlayer = ({ audio }: Props) => {
+export const AudioPlayer = ({ audio, extraActions }: Props) => {
   const audioCtx = useContext(AudioContext);
   const isPlaying = audioCtx.focusedAudioURL === audio.audioURL;
 
@@ -27,10 +26,11 @@ export const AudioPlayer = ({ audio }: Props) => {
     return (
       <AudioPlayerInactive
         audio={audio}
+        extraActions={extraActions}
       />
     );
   }
   return (
-    <AudioPlayerActive />
+    <AudioPlayerActive extraActions={extraActions} />
   );
 }

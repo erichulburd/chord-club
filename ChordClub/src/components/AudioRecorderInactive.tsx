@@ -1,32 +1,48 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Audioable } from '../util/audio';
 import { AudioContext } from './AudioContextProvider';
-import { Button } from '@ui-kitten/components';
-import { View } from 'react-native';
-import { ThemedIcon } from './FontAwesomeIcons';
 import { AudioPlayer } from './AudioPlayer';
 import { AudioAction, AudioControls } from './AudioControls';
 
 interface Props {
-  audio?: Audioable;
+  preRecordedAudio?: Audioable;
+  recordedAudio?: Audioable;
   recorderID: string;
   resetRecording: () => void;
 }
 
 export const AudioRecorderInactive = ({
-  audio, resetRecording, recorderID,
+  preRecordedAudio, recordedAudio, resetRecording, recorderID,
 }: Props) => {
   const audioCtx = useContext(AudioContext);
+  const [isEditing, setIsEditing] = useState(false);
   const record = async () => {
     await audioCtx.startRecord(recorderID);
   }
-  if (audio) {
-    return (<AudioPlayer audio={audio} />);
+  if (recordedAudio) {
+    const extraActions = [{
+      onPress: resetRecording,
+      iconName: 'times',
+    }];
+    return (<AudioPlayer audio={recordedAudio} extraActions={extraActions} />);
+  }
+  if (preRecordedAudio && !isEditing) {
+    const extraActions: AudioAction[] = [{
+      onPress: () => setIsEditing(true),
+      iconName: 'edit',
+    }];
+    return (<AudioPlayer audio={preRecordedAudio} extraActions={extraActions} />);
   }
   const actions: AudioAction[] = [
     { iconName: 'stop' },
     { iconName: 'circle', status: 'danger', onPress: record },
   ];
+  if (preRecordedAudio) {
+    actions.push({
+      onPress: () => setIsEditing(false),
+      iconName: 'times',
+    })
+  }
   return (
     <AudioControls
       currentPositionMs={0}

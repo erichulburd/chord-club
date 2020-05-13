@@ -5,8 +5,11 @@ import { getCalRatio } from '../util/screen';
 import { AudioControls, AudioAction } from './AudioControls';
 import logger from '../util/logger';
 
+interface Props {
+  extraActions?: AudioAction[];
+}
 
-export const AudioPlayerActive = () => {
+export const AudioPlayerActive = ({ extraActions = [] }: Props) => {
   const audioCtx = useContext(AudioContext);
   const [currentPositionMs, setCurrentPositionMs] = useState(0);
   const [durationMs, setDurationMs] = useState(0);
@@ -70,7 +73,8 @@ export const AudioPlayerActive = () => {
   const iconName = paused ? 'play-circle' : 'pause-circle';
   const actions: AudioAction[] = [
     { onPress: stop, iconName: 'step-backward', status: 'basic' },
-    { onPress, iconName, status: 'basic' }
+    { onPress, iconName, status: 'basic' },
+    ...extraActions,
   ];
   return (
     <AudioControls
