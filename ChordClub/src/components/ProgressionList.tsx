@@ -63,7 +63,7 @@ export const ProgressionList = ({
     ChartsQueryVariables
   >(CHARTS_QUERY, {variables: {query}});
   useEffect(() => {
-    refetch();
+    refetch().catch((err) => console.warn(err));
   }, [mountID]);
   /*
   const loadMore = () =>
@@ -118,10 +118,10 @@ export const ProgressionList = ({
   return (
     <View style={styles.container}>
       <FlatList
-        onRefresh={() => refetch()}
+        onRefresh={() => refetch().catch((err) => console.warn(err))}
         refreshing={loading}
         refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={() => refetch()} />
+          <RefreshControl refreshing={loading} onRefresh={() => refetch().catch((err) => console.warn(err))} />
         }
         ref={(ref) => {
           flatList = ref as ChordClubShim.FlatList<Chart>;

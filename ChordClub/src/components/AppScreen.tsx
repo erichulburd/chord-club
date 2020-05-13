@@ -5,6 +5,7 @@ import {Divider, Layout} from '@ui-kitten/components';
 import {NavigationHelpers, RouteProp} from '@react-navigation/native';
 import {DrawerNavigationEventMap} from '@react-navigation/drawer/lib/typescript/src/types';
 import {ChartType, Chart} from '../types';
+import { ContentContainer } from './ContentContainer';
 
 interface Props {
   title: string;
@@ -58,7 +59,11 @@ export const AppScreen = ({
     <SafeAreaView style={styles.layout}>
       <Title title={title} menuItems={menuItems} />
       <Divider />
-      <Layout style={styles.layout}>{children}</Layout>
+      <Layout style={styles.layout}>
+        <ContentContainer>
+          {children}
+        </ContentContainer>
+      </Layout>
     </SafeAreaView>
   );
 };

@@ -61,7 +61,7 @@ const ChordList = ({query, compact, mountID, editChart, modalCtx}: Props) => {
     },
   });
   useEffect(() => {
-    refetch();
+    refetch().catch((err) => console.warn(err));
   }, [mountID]);
 
   const [deleted, setDeleted] = useState<Set<number>>(new Set());
@@ -120,11 +120,11 @@ const ChordList = ({query, compact, mountID, editChart, modalCtx}: Props) => {
   return (
     <View style={styles.container}>
       <FlatList
-        onRefresh={() => refetch()}
+        onRefresh={() => refetch().catch((err) => console.warn(err))}
         refreshing={loading}
         ListFooterComponent={<CreateChordLink />}
         refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={() => refetch()} />
+          <RefreshControl refreshing={loading} onRefresh={() => refetch().catch((err) => console.warn(err))} />
         }
         ref={(ref) => {
           flatList = ref as ChordClubShim.FlatList<Chart>;
@@ -133,6 +133,8 @@ const ChordList = ({query, compact, mountID, editChart, modalCtx}: Props) => {
         data={charts}
         keyExtractor={(chart: Chart) => chart.id.toString()}
         ListEmptyComponent={ListEmptyComponent}
+        contentContainerStyle={{
+        }}
         renderItem={(item) => (
           <ChordItem
             compact={compact}

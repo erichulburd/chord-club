@@ -43,7 +43,7 @@ export const ChartExtensionsEditor = ({chartID, onUpdate}: Props) => {
       {error && (
         <ErrorText
           error={'We could not load extensions for this chart.'}
-          retry={refetch}
+          retry={() => refetch().catch((err) => console.warn(err))}
         />
       )}
       {data && (

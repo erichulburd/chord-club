@@ -50,8 +50,8 @@ const UserModal = ({}) => {
   return (
     <Modal visible={!data?.me.username} backdropStyle={styles.backdrop}>
       {loading && <Spinner size={'giant'} />}
-      {error && <ErrorText retry={refetch} error={error} />}
-      {!loading && !error && <UsernameForm done={refetch} />}
+      {error && <ErrorText retry={() => refetch().catch((err) => console.warn(err))} error={error} />}
+      {!loading && !error && <UsernameForm done={() => refetch().catch((err) => console.warn(err))} />}
     </Modal>
   );
 };
