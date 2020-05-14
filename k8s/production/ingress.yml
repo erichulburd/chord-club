@@ -7,7 +7,7 @@ metadata:
     # kubernetes.io/ingress.allow-http: "false"
     networking.gke.io/managed-certificates: cert-chordclub-app-v01
     # ingress.gcp.kubernetes.io/pre-shared-cert: mcrt-2eaa95e1-7d22-4274-9384-711c14f088f7
-  name: i-prd-chordclub-ingress-v01
+  name: i-prd-chordclub-ingress-v02
 spec:
   backend:
     serviceName: s-prd-chordclub-gql-server

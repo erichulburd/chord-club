@@ -2,15 +2,38 @@
 
 html, body{
   padding: 0;
-  margin: 0;
+	margin: 0;
 }
 html{
   height: 100%;
 }
 body{
 	min-height: 100%;
-	font-family: KievitOffcPro;
+	font-family: Arial, Helvetica, sans-serif;
 	display: flex;
+}
+
+.html, body {
+	background-color: rgb(34, 44, 64);
+	color: white;
+}
+.card, .list-group, .list-group-item, #navbar {
+	background-color: lighten(rgb(34, 44, 64), 10%);
+}
+
+#navbar {
+	padding: 15px;
+	border-radius: 4px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	h2 {
+		display: inline-block;
+		margin: 0px;
+	}
+	img {
+		height: 50px;
+	}
 }
 
 a {
@@ -37,7 +60,7 @@ button{
 
 #app {
 	flex: 1;
-	display: flex;
+	// display: flex;
 	align-items: stretch;
 	max-width: 100%;
 }

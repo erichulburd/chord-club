@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
-    "build": "tsc src/index.ts --esModuleInterop --outDir ./build && cp src/healthcheck.js build",
+    "build": "tsc src/build.ts --esModuleInterop --outDir ./build && cp src/healthcheck.js build",
     "dev": "ts-node-dev --respawn --transpileOnly ./src/index.ts",
     "test": "eslint ./src/**/*.ts && jest",
     "graphql-schema-linter": "graphql-schema-linter",

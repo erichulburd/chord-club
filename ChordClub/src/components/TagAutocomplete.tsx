@@ -74,7 +74,7 @@ export class TagAutocomplete extends React.Component<Props> {
     const {authState} = userCtx;
     const queryTs = Date.now();
     this.setState({loading: true, queryTs});
-    const scopes = [authState.uid];
+    const scopes = [userCtx.getUID()];
     if (this.includePublic()) {
       scopes.push(BaseScopes.Public);
     }

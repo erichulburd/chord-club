@@ -67,6 +67,7 @@ export const TagIDCollectionEditor = ({
   tagTypes = allTagTypes,
   ...rest
 }: TagIDCollectionEditorProps) => {
+  console.warn('SCOPES', scopes);
   const {data, loading, error} = useQuery<GetTagsData, GetTagsVariables>(
     GET_TAGS,
     {

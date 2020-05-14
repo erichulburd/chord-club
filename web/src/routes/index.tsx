@@ -4,6 +4,7 @@ import { Route, Switch } from 'react-router';
 import { Router } from 'react-router-dom';
 import NotFound from './NotFound';
 import Home from './Home';
+import { AppNavbar } from '../components/Navbar';
 
 interface ManualProps {
   history: History;
@@ -14,6 +15,7 @@ const Layout = ({
 }: ManualProps) => {
   return (
     <Router history={history}>
+      <AppNavbar />
       <div id="layout">
         <Switch>
           {/** Content routes */}

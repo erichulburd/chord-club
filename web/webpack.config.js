@@ -90,7 +90,6 @@ module.exports = {
     new CopyWebpackPlugin([
       { from: 'src/assets', to: 'assets' },
       { from: 'node_modules/bootstrap/dist/css/bootstrap.min.css', to: 'assets' },
-      { from: 'not_found.html', to: 'not_found.html' },
     ]),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output

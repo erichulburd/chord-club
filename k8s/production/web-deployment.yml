@@ -15,7 +15,7 @@ spec:
         env: prd
     spec:
       containers:
-      - image: gcr.io/chord-club/web:r2020-14-05.r01
+      - image: gcr.io/chord-club/web:r2020-14-05.r03
         imagePullPolicy: IfNotPresent
         name: prd-chordclub-web
         ports:
