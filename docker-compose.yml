@@ -14,13 +14,22 @@ services:
     - PGSSLMODE=disable
 
   gql-server:
-    build: .
+    build: ./gql-server
     image: chordclub:latest
     volumes:
-    - './tmp/secrets.dev.json:/data/secrets.json'
-    - './tmp/chord-club-bc4acc7a1282.json:/data/chord-club-bc4acc7a1282.json'
+    - './gql-server/tmp/secrets.dev.json:/data/secrets.json'
+    - './gql-server/tmp/chord-club-bc4acc7a1282.json:/data/chord-club-bc4acc7a1282.json'
     ports:
     - "4000:4000"
     environment:
     - PGHOST=postgres
     - SECRET_PATH=/data/secrets.json
+
+  web:
+    build: ./web
+    image: chordclubweb:latest
+    ports:
+    - 80:80
+    #volumes:
+    #- ./web/dist:/usr/share/nginx/html
+    #- ./web/nginx.conf:/etc/nginx/nginx.conf

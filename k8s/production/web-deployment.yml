@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: d-prd-chordclub-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chordclub--web
+      env: prd
+  template:
+    metadata:
+      labels:
+        app: chordclub--web
+        env: prd
+    spec:
+      containers:
+      - image: gcr.io/chord-club/web:r2020-14-05.r01
+        imagePullPolicy: IfNotPresent
+        name: prd-chordclub-web
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 3
+          successThreshold: 1
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 3
+          successThreshold: 1
+          timeoutSeconds: 1
+

@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1beta2
+kind: ManagedCertificate
+metadata:
+  name: cert-chordclub-app-v01
+spec:
+  domains:
+    - api.chordclub.app
+    - www.chordclub.app

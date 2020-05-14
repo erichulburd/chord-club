@@ -5,13 +5,30 @@ metadata:
     kubernetes.io/ingress.global-static-ip-name:  chordclub-prd-static-ip
     # Allow http for now in order to redirect to https.
     # kubernetes.io/ingress.allow-http: "false"
-    networking.gke.io/managed-certificates: cert-chordclub-app
+    networking.gke.io/managed-certificates: cert-chordclub-app-v01
     # ingress.gcp.kubernetes.io/pre-shared-cert: mcrt-2eaa95e1-7d22-4274-9384-711c14f088f7
-  name: i-prd-chordclub-ingress
+  name: i-prd-chordclub-ingress-v01
 spec:
   backend:
     serviceName: s-prd-chordclub-gql-server
     servicePort: gql-server-http
+
+  rules:
+    - host: api.chordclub.app
+      http:
+        paths:
+        - backend:
+            serviceName: s-prd-chordclub-gql-server
+            servicePort: gql-server-http
+          path: /*
+    - host: www.chordclub.app
+      http:
+        paths:
+        - backend:
+            serviceName: s-prd-chordclub-web
+            servicePort: web-http
+          path: /*
+
   # tls:
   # - secretName: tls-prd-v01
   #   hosts:

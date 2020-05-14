@@ -1,0 +1,31 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta charset="UTF-8">
+	<title>ChordClub</title>
+	<script>
+		/** redirect from http to HTTPS */
+		const isDevelopment = window.location.hostname.search('localhost') === 0 ||
+			window.location.hostname.search('127.0.0.1') === 0 ||
+			window.location.hostname.search('nginx') === 0;
+
+		if (!isDevelopment && location.protocol !== 'https:') {
+			location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+		}
+	</script>
+	<link rel="stylesheet" href="/assets/bootstrap.min.css">
+	<link rel="shortcut icon" href="/assets/favicon.ico">
+	<% htmlWebpackPlugin.files.css.forEach((file) => { %><link href="/<%= file %>" rel="stylesheet" type="text/css" />
+    <% }); %>
+</head>
+<body>
+	<div id="app"></div>
+	<% htmlWebpackPlugin.files.js.filter((file) => process.env.NODE_ENV !== 'production' || !/styles/.test(file)).forEach((file) => { %><script src="/<%= file %>" ></script>
+    <% }); %>
+  </body>
+</html>
+</body>
+</html>

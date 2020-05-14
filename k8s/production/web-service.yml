@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: chordclub--web
+    env: prd
+  name: s-prd-chordclub-web
+spec:
+  ports:
+  - name: web-http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: chordclub--web
+    env: prd
+  type: NodePort
