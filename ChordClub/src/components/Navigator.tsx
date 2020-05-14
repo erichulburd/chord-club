@@ -66,16 +66,17 @@ const DrawerContent = ({
 }: DrawerContentProps) => {
 
   const goToRoute = async (index: IndexPath) => {
-    let route = state.routeNames[index.row];
+    const route = state.routeNames[index.row];
     if (route === Screens.Logout) {
       try {
         navigation.closeDrawer();
         await userCtx.authActions.logout();
       } catch (err) {
+        await client.resetStore();
         logger.error(err);
+      } finally {
+        navigation.navigate(Screens.Chords);
       }
-      await client.resetStore();
-      route = Screens.Chords;
     }
     navigation.navigate(route);
   };

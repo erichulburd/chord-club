@@ -31,6 +31,7 @@
 		9DB524C0244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		9DB524C1244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		9DB524C2244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DDB456D246CBCE1006C5F4C /* chordclubapp-transparent1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9DDB456C246CBCE1006C5F4C /* chordclubapp-transparent1.png */; };
 		BD14B0219F3A8BCB0C436FFA /* libPods-ChordClub-ChordClubTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F029DE565E6A15CAA689ACB0 /* libPods-ChordClub-ChordClubTests.a */; };
 /* End PBXBuildFile section */
 
@@ -69,6 +70,7 @@
 		60E5CA4CCA57E52A906E5F1C /* Pods-ChordClub-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChordClub-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-ChordClub-tvOS/Pods-ChordClub-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		8CF8F95CD11A959C05E9ACD9 /* Pods-ChordClub.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChordClub.debug.xcconfig"; path = "Target Support Files/Pods-ChordClub/Pods-ChordClub.debug.xcconfig"; sourceTree = "<group>"; };
 		97B8AAD800A287556ADD5DDA /* Pods-ChordClub.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChordClub.release.xcconfig"; path = "Target Support Files/Pods-ChordClub/Pods-ChordClub.release.xcconfig"; sourceTree = "<group>"; };
+		9DDB456C246CBCE1006C5F4C /* chordclubapp-transparent1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "chordclubapp-transparent1.png"; sourceTree = "<group>"; };
 		A8021ED4FA48015742CB68E9 /* libPods-ChordClub-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ChordClub-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A8FB8D6D456CDB5570FB7E92 /* Pods-ChordClub-ChordClubTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChordClub-ChordClubTests.release.xcconfig"; path = "Target Support Files/Pods-ChordClub-ChordClubTests/Pods-ChordClub-ChordClubTests.release.xcconfig"; sourceTree = "<group>"; };
 		B49663AEB65999423D2A7ECD /* Pods-ChordClub-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChordClub-tvOS.release.xcconfig"; path = "Target Support Files/Pods-ChordClub-tvOS/Pods-ChordClub-tvOS.release.xcconfig"; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 		13B07FAE1A68108700A75B9A /* ChordClub */ = {
 			isa = PBXGroup;
 			children = (
+				9DDB4567246CBBDD006C5F4C /* Images */,
 				9DB524AD244E0F120029E856 /* Fonts */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
@@ -223,6 +226,14 @@
 			children = (
 			);
 			name = Fonts;
+			sourceTree = "<group>";
+		};
+		9DDB4567246CBBDD006C5F4C /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				9DDB456C246CBCE1006C5F4C /* chordclubapp-transparent1.png */,
+			);
+			name = Images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -321,6 +332,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
+						DevelopmentTeam = XQ6523A64X;
 						LastSwiftMigration = 1120;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
@@ -375,6 +387,7 @@
 				9DB524BA244E10680029E856 /* (null) in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				9DB524BF244E107A0029E856 /* (null) in Resources */,
+				9DDB456D246CBCE1006C5F4C /* chordclubapp-transparent1.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -775,6 +788,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XQ6523A64X;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -787,7 +801,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "app.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.chordclub;
 				PRODUCT_NAME = ChordClub;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -802,6 +816,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XQ6523A64X;
 				INFOPLIST_FILE = ChordClub/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
@@ -809,7 +824,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "app.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.chordclub;
 				PRODUCT_NAME = ChordClub;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -954,6 +969,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1015,7 +1031,8 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

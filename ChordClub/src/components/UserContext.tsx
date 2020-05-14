@@ -31,6 +31,7 @@ import {GraphQLError} from 'graphql';
 interface Props extends WithApolloClient<{}> {}
 
 export interface UserContextState {
+  renderIndex: number;
   authState: AuthState;
   authActions: AuthActions;
   user?: User;
@@ -49,12 +50,14 @@ export interface UserContextValue extends UserContextState {
   updateChartQuery: (settingsPath: SettingsPath, update: ChartQuery) => void;
   updateCompact: (settingsPath: SettingsPath, compact: boolean) => void;
   updateUsername: (username: string) => void;
+  getUID: () => string;
 }
 
 const userContextInitializedError = () =>
   new Error('User context not initialized');
 
 const initialState = {
+  renderIndex: 0,
   authState: auth.currentState(),
   authActions: auth.actions,
   user: undefined,
@@ -69,6 +72,7 @@ export const AuthContext = createContext<UserContextValue>({
   updateChartQuery: userContextInitializedError,
   updateCompact: userContextInitializedError,
   updateUsername: userContextInitializedError,
+  getUID: () => auth.currentState().uid,
 });
 
 const coalesceUserAndUpdate = (
@@ -147,7 +151,10 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
     await auth.actions.initialize();
     this.subscription = auth.observable.subscribe({
       next: (e) => {
-        this.setState({authState: e.state});
+        this.setState({
+          authState: e.state,
+          renderIndex: this.state.renderIndex + 1,
+        });
         if (
           Boolean(e.state.token) &&
           !this.state.user &&
@@ -170,6 +177,7 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
     if (errors && errors.length > 0) {
       update.userError = new ApolloError({graphQLErrors: errors});
     }
+    update.renderIndex = this.state.renderIndex + 1;
     this.setState(update as UserContextState);
   };
 
@@ -262,6 +270,7 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
       updateUsername: this.updateUsername,
       updateChartQuery: this.updateChartQuery,
       updateCompact: this.updateCompact,
+      getUID: () => this.state.authState.uid || auth.currentState().uid,
     };
     return (
       <AuthContext.Provider value={value}>
