@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:chordclubapp-transparent1.png">
+   </FileRef>
+   <FileRef
+      location = "group:chordclubapp-transparent.png">
+   </FileRef>
+   <FileRef
       location = "self:">
    </FileRef>
 </Workspace>
