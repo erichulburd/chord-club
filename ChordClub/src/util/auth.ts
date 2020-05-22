@@ -82,21 +82,25 @@ const login = async () => {
 };
 
 export const logout = async () => {
-  publish({
-    state: {...authState, sessionExpired: false, token: undefined},
-    type: AuthEventType.USER_LOGOUT,
-  });
-  // auth0Logout();
-  await AsyncStorage.removeItem(TOKEN_ASYNC_KEY);
+  try {
+    await auth0Logout();
+    await AsyncStorage.removeItem(TOKEN_ASYNC_KEY);
+  } finally {
+    publish({
+      state: {...authState, sessionExpired: false, token: undefined},
+      type: AuthEventType.USER_LOGOUT,
+    });
+  }
 };
 
 const subscribers = new Set<ZenObservable.Observer<AuthEvent>>();
 
 const publish = (event: AuthEvent) => {
-  authState = Object.freeze(event.state)
+  const state = Object.freeze(event.state);
+  authState = state;
   subscribers.forEach((observer) => {
     if (observer.next) {
-      observer.next(event);
+      observer.next({ state, type: event.type });
     }
   });
 };
@@ -127,7 +131,7 @@ const auth0Login = (): Promise<Auth0Credentials> =>
     scope: 'openid',
     audience: config.AUTH0_TOKEN_AUDIENCE,
   });
-// const auth0Logout = () => auth0.webAuth.clearSession({federated: true});
+const auth0Logout = () => auth0.webAuth.clearSession({federated: true});
 
 export interface AuthActions {
   login: () => Promise<void>;

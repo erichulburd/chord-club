@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {StyleSheet, View, ImageProps} from 'react-native';
 import {
   Icon,
@@ -10,11 +10,12 @@ import {
   TextProps,
   Button,
 } from '@ui-kitten/components';
-import {withUser, UserConsumerProps} from './UserContext';
+import {withUser, UserConsumerProps, AuthContext} from './UserContext';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {ThemedIcon} from './FontAwesomeIcons';
 import {useNavigation} from '@react-navigation/native';
 import {DrawerNavigationProp} from '@react-navigation/drawer';
+import { Auth } from 'react-native-auth0';
 
 const MenuIcon = (props: Partial<ImageProps> = {}) => (
   <Icon {...props} name="ellipsis-v" />
@@ -36,12 +37,13 @@ interface Props extends UserConsumerProps, ManualProps {}
 export const Title = ({title = 'Chord Club', menuItems}: Props) => {
   const [menuVisible, setMenuVisible] = React.useState(false);
   const n = useNavigation() as DrawerNavigationProp<{}>;
+  const userCtx = useContext(AuthContext);
   const DrawerBars = () => (
     <Button
       status="basic"
       appearance="ghost"
       accessoryLeft={ThemedIcon('bars')}
-      onPress={() => n.openDrawer()}
+      onPress={() => Boolean(userCtx.authState.token) && n.openDrawer()}
     />
   );
   const renderTitle = (_props: TextProps | undefined) => (

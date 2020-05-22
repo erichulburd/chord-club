@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {UserConsumerProps, withUser} from './UserContext';
 import {Card, Button, Input, Text} from '@ui-kitten/components';
 import {ViewProps, View, StyleSheet} from 'react-native';
@@ -11,6 +11,9 @@ interface Props extends UserConsumerProps, ModalContextProps {}
 
 const Account = ({userCtx, modalCtx}: Props) => {
   const [username, setUsername] = useState(userCtx.user?.username || '');
+  useEffect(() => {
+    setUsername(userCtx.user?.username || '');
+  }, [userCtx.user?.username]);
   const [deleteUser, deleteUserResult] = useMutation(DELETE_USER);
   const confirmDeleteAccount = () => {
     modalCtx.message(

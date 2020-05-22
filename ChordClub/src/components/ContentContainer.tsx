@@ -20,5 +20,6 @@ const styles = StyleSheet.create({
   contentInner: {
     flex: 1,
     maxWidth: 500,
+    margin: 5,
   }
 })

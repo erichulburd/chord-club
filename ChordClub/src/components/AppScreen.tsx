@@ -1,11 +1,12 @@
-import React, {PropsWithChildren} from 'react';
+import React, {PropsWithChildren, useEffect, useContext} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import Title, {MenuItemData} from './Title';
 import {Divider, Layout} from '@ui-kitten/components';
-import {NavigationHelpers, RouteProp} from '@react-navigation/native';
+import {NavigationHelpers, RouteProp, useRoute, useNavigation} from '@react-navigation/native';
 import {DrawerNavigationEventMap} from '@react-navigation/drawer/lib/typescript/src/types';
 import {ChartType, Chart} from '../types';
 import { ContentContainer } from './ContentContainer';
+import { AuthContext } from './UserContext';
 
 interface Props {
   title?: string;
@@ -25,6 +26,7 @@ export enum Screens {
   Progressions = 'Progressions',
   CreateAChart = 'Create a Chart',
   Account = 'Account',
+  Login = 'Login',
   Logout = 'Logout',
   EditChart = 'Edit Chart',
   Tags = 'Tags',
@@ -56,6 +58,17 @@ export const AppScreen = ({
   menuItems,
   children,
 }: PropsWithChildren<Props>) => {
+  const route = useRoute();
+  const userCtx = useContext(AuthContext);
+  const navigation = useNavigation();
+  useEffect(() => {
+    const isLoggedIn = Boolean(userCtx.authState.token);
+    if (!isLoggedIn && route.name !== Screens.Login) {
+      navigation.navigate(Screens.Login);
+    } else if (isLoggedIn && route.name === Screens.Login) {
+      navigation.navigate(Screens.Chords);
+    }
+  }, [route.name, userCtx]);
   return (
     <SafeAreaView style={styles.layout}>
       <Title title={title} menuItems={menuItems} />

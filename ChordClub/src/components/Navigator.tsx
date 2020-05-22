@@ -1,5 +1,5 @@
 import React from 'react';
-import {NavigationContainer, useNavigation} from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
 import {
   createDrawerNavigator,
   DrawerContentComponentProps,
@@ -23,12 +23,11 @@ import {Screens} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
 import {FlashcardsScreen} from './FlashcardsScreen';
 import {AccountScreen} from './AccountScreen';
-import {withUser, UserConsumerProps} from './UserContext';
-import {WithApolloClient, withApollo} from 'react-apollo';
-import logger from '../util/logger';
 import {ChartEditorScreen} from './ChartEditorScreen';
 import {TagListScreen} from './TagListScreen';
 import { BlankScreen } from './BlankScreen';
+import { LogoutScreen } from './LogoutScreen';
+import LoginScreen from './LoginScreen';
 
 const {Navigator, Screen} = createDrawerNavigator();
 
@@ -54,30 +53,16 @@ interface DrawerNavigationProps {
   navigation: DrawerNavigationProp<{}>;
 }
 
-type DrawerContentProps = UserConsumerProps &
-  DrawerContentComponentProps<DrawerContentOptions> &
-  WithApolloClient<{}> & DrawerNavigationProps;
+type DrawerContentProps = DrawerContentComponentProps<DrawerContentOptions> &
+  DrawerNavigationProps;
 
 const DrawerContent = ({
   navigation,
   state,
-  userCtx,
-  client,
 }: DrawerContentProps) => {
 
   const goToRoute = async (index: IndexPath) => {
     const route = state.routeNames[index.row];
-    if (route === Screens.Logout) {
-      try {
-        navigation.closeDrawer();
-        await userCtx.authActions.logout();
-      } catch (err) {
-        await client.resetStore();
-        logger.error(err);
-      } finally {
-        navigation.navigate(Screens.Chords);
-      }
-    }
     navigation.navigate(route);
   };
 
@@ -114,13 +99,13 @@ const DrawerContent = ({
   );
 };
 
-interface Props extends UserConsumerProps, WithApolloClient<{}> {}
+interface Props {}
 
-export const AppNavigator = ({userCtx, client}: Props) => (
+export const AppNavigator = ({}: Props) => (
   <NavigationContainer>
     <Navigator
       drawerContent={(props) => (
-        <DrawerContent {...props} userCtx={userCtx} client={client} />
+        <DrawerContent {...props} />
       )}
       initialRouteName={Screens.Chords}
     >
@@ -130,7 +115,8 @@ export const AppNavigator = ({userCtx, client}: Props) => (
       <Screen name={Screens.CreateAChart} component={ChartCreatorScreen} />
       <Screen name={Screens.Tags} component={TagListScreen} />
       <Screen name={Screens.Account} component={AccountScreen} />
-      <Screen name={Screens.Logout} component={AccountScreen} />
+      <Screen name={Screens.Logout} component={LogoutScreen} />
+      <Screen name={Screens.Login} component={LoginScreen} />
       <Screen name={Screens.EditChart} component={ChartEditorScreen} />
       <Screen name={Screens.Blank} component={BlankScreen} />
     </Navigator>
@@ -149,4 +135,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withUser(withApollo<UserConsumerProps>(AppNavigator));
+export default AppNavigator;

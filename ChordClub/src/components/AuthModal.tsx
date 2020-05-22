@@ -24,48 +24,13 @@ interface Props extends UserConsumerProps, WithApolloClient<{}> {}
 const AuthModal = ({userCtx, client}: Props) => {
   const {
     authState,
-    authActions: {login},
   } = userCtx;
-  const {token, sessionExpired, initialized} = authState;
+  const {token} = authState;
   const isLoggedIn = Boolean(token);
   if (isLoggedIn) {
     return <UsernameModal />;
   }
-  const onLogin = async () => {
-    await client.resetStore();
-    await login();
-  };
-  const Footer = (props?: ViewProps) => (
-    <View {...props}>
-      <Button status="success" onPress={onLogin} appearance="outline">
-        Login or sign up
-      </Button>
-    </View>
-  );
-  return (
-    <Modal visible backdropStyle={styles.backdrop}>
-      <Card disabled={true} status="success" footer={Footer}>
-        <Text category="h6">Chord Club</Text>
-        {!initialized && <Spinner size="giant" />}
-        {initialized && (
-          <React.Fragment>
-            {sessionExpired && (
-              <Text status={'danger'}>Oops, your session has expired!</Text>
-            )}
-            <TouchableOpacity
-              onPress={() =>
-                Linking.openURL('https://auth0.com/security/#certifications')
-              }>
-              <Text style={styles.auth0Text}>
-                For your security and privacy, we use Auth0 for account
-                management. Click to read more.
-              </Text>
-            </TouchableOpacity>
-          </React.Fragment>
-        )}
-      </Card>
-    </Modal>
-  );
+  return null;
 };
 
 export default withUser<{}>(withApollo<UserConsumerProps>(AuthModal));

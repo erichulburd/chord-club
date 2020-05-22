@@ -151,16 +151,24 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
     await auth.actions.initialize();
     this.subscription = auth.observable.subscribe({
       next: (e) => {
-        this.setState({
-          authState: e.state,
-          renderIndex: this.state.renderIndex + 1,
-        });
+        const isLoggedIn = Boolean(e.state.token);
         if (
-          Boolean(e.state.token) &&
+          isLoggedIn &&
           !this.state.user &&
           !this.state.userLoading
         ) {
-          this.loadUser();
+          this.setState({
+            authState: e.state,
+          }, this.loadUser);
+        } else if ([AuthEventType.USER_LOGOUT, AuthEventType.SESSION_EXPIRED].indexOf(e.type) >= 0) {
+          this.setState({
+            authState: e.state,
+            user: undefined,
+          });
+        } else {
+          this.setState({
+            authState: e.state,
+          });
         }
       },
     });
