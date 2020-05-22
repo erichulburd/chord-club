@@ -84,12 +84,12 @@ const login = async () => {
 export const logout = async () => {
   try {
     await auth0Logout();
-    await AsyncStorage.removeItem(TOKEN_ASYNC_KEY);
   } finally {
     publish({
       state: {...authState, sessionExpired: false, token: undefined},
       type: AuthEventType.USER_LOGOUT,
     });
+    AsyncStorage.removeItem(TOKEN_ASYNC_KEY);
   }
 };
 
