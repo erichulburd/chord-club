@@ -7,25 +7,15 @@
       "scale" : "2x"
     },
     {
-      "idiom" : "iphone",
-      "size" : "20x20",
-      "scale" : "3x"
-    },
-    {
-      "idiom" : "iphone",
-      "size" : "29x29",
-      "scale" : "2x"
-    },
-    {
       "size" : "20x20",
       "idiom" : "iphone",
-      "filename" : "chordclubapp-20@3x.png",
+      "filename" : "chordclubapp-20@3x-1.png",
       "scale" : "3x"
     },
     {
       "size" : "29x29",
       "idiom" : "iphone",
-      "filename" : "chordclubapp-29@2x.png",
+      "filename" : "chordclubapp-29@2x-2.png",
       "scale" : "2x"
     },
     {
