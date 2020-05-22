@@ -21,6 +21,8 @@ class Home extends React.Component {
               <li>You cannot create sheet music directly within the app.</li>
               <li>This is not meant for recording production quality audio.</li>
             </ul>
+            <h2>Need support?</h2>
+            <p>Get a hold of us through our <a href="https://groups.google.com/forum/#!forum/chordclub-support" target="_blank">Google group</a>.</p>
           </Card.Body>
         </Card>
 
