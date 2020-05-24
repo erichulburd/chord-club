@@ -21,13 +21,16 @@ export const ChartExtensions = ({chartID}: Props) => {
   >(CHART_EXTENSIONS_QUERY, {
     variables: {chartID, chartTypes: [ChartType.Chord, ChartType.Progression]},
   });
+  const maybeDoRefetch = () => {
+    refetch && refetch().catch(err => console.warn(err));
+  };
   return (
     <View>
       {loading && <Spinner />}
       {error && (
         <ErrorText
           error={'We could not load extensions for this chart.'}
-          retry={() => refetch().catch((err) => console.warn(err))}
+          retry={maybeDoRefetch}
         />
       )}
       {data && (

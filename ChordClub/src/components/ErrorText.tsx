@@ -32,6 +32,7 @@ const getErrorText = (error: ApolloError | string) => {
   return defaultServerMessage;
 };
 
+
 export default ({error, retry}: ErrorTextProps) => (
   <View style={styles.container}>
     <Text category={'danger'}>{getErrorText(error)}</Text>
@@ -39,7 +40,8 @@ export default ({error, retry}: ErrorTextProps) => (
       <Button
         appearance="outline"
         size="small"
-        accessoryLeft={(props) => <Icon name="redo" {...props} />}>
+        accessoryLeft={(props) => <Icon name="redo" {...props} />}
+        onPress={retry}>
         Retry
       </Button>
     )}

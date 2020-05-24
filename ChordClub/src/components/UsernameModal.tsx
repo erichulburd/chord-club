@@ -47,11 +47,14 @@ const styles = StyleSheet.create({
 
 const UserModal = ({}) => {
   const {data, loading, error, refetch} = useQuery<GetMeData>(GET_ME);
+  const maybeDoRefetch = () => {
+    refetch && refetch().catch(err => console.warn(err));
+  };
   return (
     <Modal visible={!data?.me.username} backdropStyle={styles.backdrop}>
       {loading && <Spinner size={'giant'} />}
-      {error && <ErrorText retry={() => refetch().catch((err) => console.warn(err))} error={error} />}
-      {!loading && !error && <UsernameForm done={() => refetch().catch((err) => console.warn(err))} />}
+      {error && <ErrorText retry={maybeDoRefetch} error={error} />}
+      {!loading && !error && <UsernameForm done={maybeDoRefetch} />}
     </Modal>
   );
 };

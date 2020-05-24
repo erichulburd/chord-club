@@ -88,6 +88,9 @@ export const Flashcards = ({query, options, mountID}: Props) => {
     }
     setChartIndex(chartIndex + 1);
   };
+  const maybeDoRefetch = () => {
+    refetch && refetch().catch(err => console.warn(err));
+  };
   const reset = (shouldRefetch = true) => {
     setChartIndex(undefined);
     setScores(scores.map(() => undefined));
@@ -97,7 +100,7 @@ export const Flashcards = ({query, options, mountID}: Props) => {
       })),
     );
     if (shouldRefetch) {
-      refetch().catch((err: Error) => console.error(err));
+      maybeDoRefetch();
     }
   };
   useEffect(() => {

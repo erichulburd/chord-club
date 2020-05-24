@@ -1,8 +1,8 @@
-import React, {PropsWithChildren, useEffect, useContext} from 'react';
+import React, {PropsWithChildren, useEffect, useContext, useState} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import Title, {MenuItemData} from './Title';
 import {Divider, Layout} from '@ui-kitten/components';
-import {NavigationHelpers, RouteProp, useRoute, useNavigation} from '@react-navigation/native';
+import {NavigationHelpers, RouteProp, useRoute, useNavigation, EventListenerCallback, EventMapCore, NavigationState, useNavigationState} from '@react-navigation/native';
 import {DrawerNavigationEventMap} from '@react-navigation/drawer/lib/typescript/src/types';
 import {ChartType, Chart} from '../types';
 import { ContentContainer } from './ContentContainer';
@@ -58,9 +58,10 @@ export const AppScreen = ({
   menuItems,
   children,
 }: PropsWithChildren<Props>) => {
-  const route = useRoute();
   const userCtx = useContext(AuthContext);
   const navigation = useNavigation();
+  const route = useNavigationState(state => state.routes[state.index]);
+
   useEffect(() => {
     const isLoggedIn = Boolean(userCtx.authState.token);
     if (!isLoggedIn && route.name !== Screens.Login) {
@@ -69,6 +70,7 @@ export const AppScreen = ({
       navigation.navigate(Screens.Chords);
     }
   }, [route.name, userCtx]);
+
   return (
     <SafeAreaView style={styles.layout}>
       <Title title={title} menuItems={menuItems} />

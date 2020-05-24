@@ -42,6 +42,7 @@ import omit from 'lodash/omit';
 import {useRoute} from '@react-navigation/native';
 import {AppRouteProp} from './AppScreen';
 import {Audioable} from '../util/audio';
+import { ChartViewSetting } from 'src/util/settings';
 
 interface ManualProps {
   close: () => void;
@@ -143,6 +144,19 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
       });
       modalCtx.wait(false);
       reset();
+
+
+      if (payload.chartType === ChartType.Progression) {
+        const settings = userCtx.user?.settings.progressions as ChartViewSetting;
+        const update = {...settings};
+        update.query = {...settings.query, tagIDs: []};
+        userCtx.updateSettings('progressions', update);
+      } else if (payload.chartType === ChartType.Chord) {
+        const settings = userCtx.user?.settings.progressions as ChartViewSetting;
+        const update = {...settings};
+        update.query = {...settings.query, tagIDs: []};
+        userCtx.updateSettings('chords', update);
+      }
       close();
     } catch (err) {
       modalCtx.wait(false);

@@ -19,7 +19,7 @@ import {
 } from '@ui-kitten/components';
 import {SafeAreaView, View, ViewProps, StyleSheet} from 'react-native';
 import {ChartCreatorScreen} from './ChartCreatorScreen';
-import {Screens} from './AppScreen';
+import {Screens, ScreenProps} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
 import {FlashcardsScreen} from './FlashcardsScreen';
 import {AccountScreen} from './AccountScreen';
@@ -76,23 +76,28 @@ const DrawerContent = ({
         <DrawerItem
           accessoryLeft={ThemedIcon('list')}
           title={Screens.Progressions}
+          key={Screens.Progressions}
         />
         <DrawerItem
           accessoryLeft={ThemedIcon('bolt')}
           title={Screens.ChordFlashcards}
+          key={Screens.ChordFlashcards}
         />
         <DrawerItem
           accessoryLeft={ThemedIcon('circle', {solid: true})}
           title={Screens.CreateAChart}
+          key={Screens.CreateAChart}
         />
         <DrawerItem accessoryLeft={ThemedIcon('tags')} title={Screens.Tags} />
         <DrawerItem
           accessoryLeft={ThemedIcon('user-cog')}
           title={Screens.Account}
+          key={Screens.Account}
         />
         <DrawerItem
           accessoryLeft={ThemedIcon('sign-out-alt')}
           title={Screens.Logout}
+          key={Screens.Logout}
         />
       </SafeAreaView>
     </Drawer>
@@ -100,6 +105,19 @@ const DrawerContent = ({
 };
 
 interface Props {}
+
+const routes: [Screens, React.FunctionComponent<ScreenProps> | React.ComponentClass][] = [
+  [Screens.Chords, ChordListScreen],
+  [Screens.Progressions, ProgressionListScreen],
+  [Screens.ChordFlashcards, FlashcardsScreen],
+  [Screens.CreateAChart, ChartCreatorScreen],
+  [Screens.Tags, TagListScreen],
+  [Screens.Account, AccountScreen],
+  [Screens.Logout, LogoutScreen],
+  [Screens.Login, LoginScreen],
+  [Screens.EditChart, ChartEditorScreen],
+  [Screens.Blank, BlankScreen],
+]
 
 export const AppNavigator = ({}: Props) => (
   <NavigationContainer>
@@ -109,16 +127,9 @@ export const AppNavigator = ({}: Props) => (
       )}
       initialRouteName={Screens.Chords}
     >
-      <Screen name={Screens.Chords} component={ChordListScreen} />
-      <Screen name={Screens.Progressions} component={ProgressionListScreen} />
-      <Screen name={Screens.ChordFlashcards} component={FlashcardsScreen} />
-      <Screen name={Screens.CreateAChart} component={ChartCreatorScreen} />
-      <Screen name={Screens.Tags} component={TagListScreen} />
-      <Screen name={Screens.Account} component={AccountScreen} />
-      <Screen name={Screens.Logout} component={LogoutScreen} />
-      <Screen name={Screens.Login} component={LoginScreen} />
-      <Screen name={Screens.EditChart} component={ChartEditorScreen} />
-      <Screen name={Screens.Blank} component={BlankScreen} />
+      {routes.map(([screenName, screen]) => (
+        <Screen key={screenName} name={screenName} component={screen} />
+      ))}
     </Navigator>
   </NavigationContainer>
 );
