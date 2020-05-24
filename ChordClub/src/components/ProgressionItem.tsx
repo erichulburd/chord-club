@@ -11,6 +11,7 @@ import {UserConsumerProps, withUser} from './UserContext';
 import ChartOwnerMenu from './ChartOwnerMenu';
 import {ChartFooter} from './ChartFooter';
 import {TagCollection} from './TagCollection';
+import { CaretToggle } from './CaretToggle';
 
 interface ManualProps {
   chart: Chart;
@@ -62,6 +63,9 @@ const ProgressionItem = ({
       openImage={openImage}
     />
   );
+  const [accordionState, setAccordionState] = useState<AccordionState>({
+    description: false,
+  });
 
   return (
     <Card
@@ -75,6 +79,24 @@ const ProgressionItem = ({
         <AudioPlayer audio={chart} />
       </View>
       <TagCollection tags={chart.tags} />
+      {Boolean(chart.description) && (
+        <View>
+          <View style={styles.attributeHeader}>
+            <Text category="label">Description</Text>
+            <CaretToggle
+              isOpen={accordionState.description}
+              toggle={(nextIsOpen) =>
+                setAccordionState({...accordionState, description: nextIsOpen})
+              }
+            />
+          </View>
+          {accordionState.description && chart.description && (
+            <View>
+              <Text>{chart.description}</Text>
+            </View>
+          )}
+        </View>
+      )}
       {image && (
         <ModalImage
           visible={imageIsOpen}
@@ -85,6 +107,12 @@ const ProgressionItem = ({
     </Card>
   );
 };
+
+interface AccordionState {
+  description: boolean;
+}
+
+
 const styles = StyleSheet.create({
   card: {
     margin: 10,

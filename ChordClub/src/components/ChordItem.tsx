@@ -13,6 +13,7 @@ import {TagCollection} from './TagCollection';
 import {UserConsumerProps, withUser} from './UserContext';
 import ChartOwnerMenu from './ChartOwnerMenu';
 import {ChartFooter} from './ChartFooter';
+import { CaretToggle } from './CaretToggle';
 
 interface ManualProps {
   chart: Chart;
@@ -149,19 +150,6 @@ const ChordItem = ({
     </Card>
   );
 };
-
-interface CaretToggleProps {
-  isOpen: boolean;
-  toggle: (on: boolean) => void;
-}
-
-const CaretToggle = ({isOpen, toggle}: CaretToggleProps) => (
-  <Button
-    appearance="ghost"
-    accessoryLeft={isOpen ? ThemedIcon('angle-up') : ThemedIcon('angle-down')}
-    onPress={() => toggle(!isOpen)}
-  />
-);
 
 interface AccordionState {
   description: boolean;
