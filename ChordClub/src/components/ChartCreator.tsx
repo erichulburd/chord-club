@@ -231,7 +231,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
       <ScrollView style={{height: '80%'}}>
         <Row style={styles.fullWidth}>
           <AudioRecorder
-            recorderID={'0'}
+            recorderID={mountID}
             onRecordComplete={onRecordingComplete}
           />
         </Row>
