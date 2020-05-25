@@ -8,12 +8,13 @@ interface Size {
 
 export const pickSingleImage = async (opts: Partial<Options> = {}) => {
   const res = await ImagePicker.openPicker({
-    cropping: true,
     multiple: false,
     mediaType: 'photo',
+    avoidEmptySpaceAroundImage: false,
     writeTempFile: true,
     enableRotationGesture: true,
-    freeStyleCropEnabled: true,
+    showCropGuidelines: true,
+    cropperToolbarTitle: 'Move and Scale',
     ...opts,
   });
   if (res instanceof Array) {

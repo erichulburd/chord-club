@@ -8,6 +8,7 @@ class Home extends React.Component {
       <div id="home">
         <Card>
           <Card.Body>
+
             <p>Chord Club allows you to record audio and annotate your sounds for later reference or in order to test your musical ear. We include the following functionality:</p>
             <ul>
               <li>Record audio clips up to 5 minutes.</li>
@@ -21,11 +22,10 @@ class Home extends React.Component {
               <li>You cannot create sheet music directly within the app.</li>
               <li>This is not meant for recording production quality audio.</li>
             </ul>
-            <h2>Need support?</h2>
-            <p>Get a hold of us through our <a href="https://groups.google.com/forum/#!forum/chordclub-support" target="_blank">Google group</a>.</p>
+            <h2>Need support? Have feedback or feature request?</h2>
+            <p>Get a hold of us through our <a href="https://groups.google.com/forum/#!forum/chordclub-support" target="_blank">Google group</a> or submit your request through the form at the bottom of this page.</p>
           </Card.Body>
         </Card>
-
       </div>
     );
   }
