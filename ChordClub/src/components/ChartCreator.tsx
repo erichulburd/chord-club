@@ -8,7 +8,7 @@ import {
   CheckBox,
 } from '@ui-kitten/components';
 import {View, Image, StyleSheet} from 'react-native';
-import {TouchableHighlight, ScrollView} from 'react-native-gesture-handler';
+import {TouchableHighlight} from 'react-native-gesture-handler';
 import {withUser, UserConsumerProps} from './UserContext';
 import {makeChartNew, ChartURLs, areTagsEqual} from '../util/forms';
 import {
@@ -42,7 +42,8 @@ import omit from 'lodash/omit';
 import {useRoute} from '@react-navigation/native';
 import {AppRouteProp} from './AppScreen';
 import {Audioable} from '../util/audio';
-import { ChartViewSetting } from 'src/util/settings';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { ChartViewSetting } from '../util/settings';
 
 interface ManualProps {
   close: () => void;
@@ -228,7 +229,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
         <Tab title="CHORD" />
         <Tab title="PROGRESSION" />
       </TabBar>
-      <ScrollView style={{height: '80%'}}>
+      <KeyboardAwareScrollView>
         <Row style={styles.fullWidth}>
           <AudioRecorder
             recorderID={mountID}
@@ -327,7 +328,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
             }
           />
         </Row>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <View style={styles.formControls}>
         <>
           <View style={styles.formControl}>

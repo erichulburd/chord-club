@@ -9,7 +9,8 @@ import {
   Toggle,
 } from '@ui-kitten/components';
 import {View, Image, StyleSheet} from 'react-native';
-import {TouchableHighlight, ScrollView} from 'react-native-gesture-handler';
+import {TouchableHighlight} from 'react-native-gesture-handler';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import {withUser, UserConsumerProps} from './UserContext';
 import {areTagsEqual} from '../util/forms';
 import {
@@ -203,7 +204,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
         <Tab title="CHORD" disabled />
         <Tab title="PROGRESSION" disabled />
       </TabBar>
-      <ScrollView style={{height: '80%'}}>
+      <KeyboardAwareScrollView>
         <Row style={styles.fullWidth}>
           <AudioRecorder
             recorderID={chart.id.toString()}
@@ -318,7 +319,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
             }
           />
         </Row>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <View style={styles.formControls}>
         <>
           <View style={styles.formControl}>

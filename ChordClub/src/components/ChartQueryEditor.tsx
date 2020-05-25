@@ -21,7 +21,6 @@ interface Props extends ManualProps {}
 const ChartQueryEditor = ({initialQuery, save, cancel}: Props) => {
   const {authState} = useContext(AuthContext);
   const uid = authState.uid || auth.currentState().uid;
-  console.warn('AUTH STATE', authState, auth.currentState());
   const [query, setQuery] = useState<ChartQuery>(initialQuery);
   const setTags = (tags: Tag[]) =>
     setQuery({...query, tagIDs: tags.map((t) => t.id)});
