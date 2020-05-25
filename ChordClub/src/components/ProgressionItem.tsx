@@ -78,7 +78,7 @@ const ProgressionItem = ({
         <Text>{chart.name || 'Unnamed'}</Text>
         <AudioPlayer audio={chart} />
       </View>
-      <TagCollection tags={chart.tags} />
+      <TagCollection navigable tags={chart.tags} />
       {Boolean(chart.description) && (
         <View>
           <View style={styles.attributeHeader}>

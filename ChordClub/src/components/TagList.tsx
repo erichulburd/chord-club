@@ -47,8 +47,6 @@ export const TagList = ({}: Props) => {
       },
     })
   }
-
-
   const query = makeTagQuery(scopes);
   const {data, loading, error} = useQuery<GetTagsData, GetTagsVariables>(
     GET_TAGS,
