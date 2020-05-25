@@ -10,7 +10,7 @@ interface Message {
 
 interface Callbacks {
   confirm: () => void;
-  cancel: () => void;
+  cancel?: () => void;
 }
 
 interface State {

@@ -27,3 +27,17 @@ export interface GetTagsData {
 export interface GetTagsVariables {
   query: TagQuery;
 }
+
+export const DELETE_TAG = gql`
+  mutation DeleteTag($tagID: Int!) {
+    deleteTag(tagID: $tagID) {
+      empty
+    }
+  }
+`;
+
+
+export interface DeleteTagVariables {
+  tagID: number;
+}
+

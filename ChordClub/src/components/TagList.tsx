@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {
   TagQuery,
   BaseScopes,
@@ -8,8 +8,8 @@ import {
   ChartType,
 } from '../types';
 import {AuthContext} from './UserContext';
-import {useQuery} from 'react-apollo';
-import {GET_TAGS, GetTagsData, GetTagsVariables} from '../gql/tag';
+import {useQuery, useMutation} from 'react-apollo';
+import {GET_TAGS, GetTagsData, GetTagsVariables, DeleteTagVariables, DELETE_TAG} from '../gql/tag';
 import {CenteredSpinner} from './CenteredSpinner';
 import ErrorText from './ErrorText';
 import {ApolloError} from 'apollo-client';
@@ -18,6 +18,7 @@ import {View, ViewProps, StyleSheet} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {Screens} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
+import { ModalContext } from './ModalProvider';
 
 const makeTagQuery = (scopes: string[]): TagQuery => ({
   scopes,
@@ -30,8 +31,23 @@ interface Props {}
 
 export const TagList = ({}: Props) => {
   const userCtx = useContext(AuthContext);
+  const modalCtx = useContext(ModalContext);
   const uid = userCtx.user?.uid;
   const scopes = uid ? [uid, BaseScopes.Public] : [BaseScopes.Public];
+  const [deleted, setDeleted] = useState<{[key: number]: boolean}>({});
+  const [deleteMutation, _] = useMutation<{}, DeleteTagVariables>(DELETE_TAG);
+  const onDelete = (tag: Tag) => {
+    modalCtx.message({
+      msg: 'This will delete this untag all chords and progressions and delete the tag. Confirm your intent.',
+      status: 'danger',
+    }, {
+      confirm: () => {
+        deleteMutation({ variables: { tagID: tag.id }});
+        setDeleted({...deleted, [tag.id]: true});
+      },
+    })
+  }
+
 
   const query = makeTagQuery(scopes);
   const {data, loading, error} = useQuery<GetTagsData, GetTagsVariables>(
@@ -84,6 +100,12 @@ export const TagList = ({}: Props) => {
         onPress={() => goToProgressionTag(t)}>
         Progressions
       </Button>
+      <Button
+        size="tiny"
+        appearance="ghost"
+        status="danger"
+        accessoryLeft={ThemedIcon('times')}
+        onPress={() => onDelete(t)} />
     </View>
   );
   const renderItem = ({item}: {item: Tag; index: number}) => (
@@ -94,9 +116,10 @@ export const TagList = ({}: Props) => {
       accessoryRight={TagLinks(item)}
     />
   );
+  const tags = data.tags.filter(t => !deleted[t.id]);
   return (
     <View>
-      <List data={data.tags} renderItem={renderItem} />
+      <List data={tags} renderItem={renderItem} />
     </View>
   );
 };
