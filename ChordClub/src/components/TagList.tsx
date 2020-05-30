@@ -45,6 +45,7 @@ export const TagList = ({}: Props) => {
         deleteMutation({ variables: { tagID: tag.id }});
         setDeleted({...deleted, [tag.id]: true});
       },
+      cancel: () => {},
     })
   }
   const query = makeTagQuery(scopes);
