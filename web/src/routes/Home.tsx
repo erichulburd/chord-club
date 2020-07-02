@@ -2,7 +2,7 @@ import * as React from 'react';
 import Card from 'react-bootstrap/Card';
 import {VideoContainer} from './VideoContainer';
 
-const TUTORIAL_LINK = 'https://www.youtube.com/watch?v=hi8VVPaW0eQ';
+const TUTORIAL_LINK = 'https://www.youtube.com/embed/hi8VVPaW0eQ';
 
 class Home extends React.Component {
 
