@@ -290,7 +290,9 @@ export enum ErrorType {
   DuplicateUsername = 'DUPLICATE_USERNAME',
   Unhandled = 'UNHANDLED',
   InternalServerError = 'INTERNAL_SERVER_ERROR',
-  ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION'
+  ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION',
+  InvalidInvitationToken = 'INVALID_INVITATION_TOKEN',
+  NotFound = 'NOT_FOUND'
 }
 
 export type ErrorException = {
@@ -305,6 +307,72 @@ export type ErrorExtensions = {
   exception?: Maybe<ErrorException>;
 };
 
+export enum PolicyResourceType {
+  Tag = 'TAG'
+}
+
+export enum PolicyAction {
+  Wildcard = 'WILDCARD',
+  Read = 'READ',
+  Write = 'WRITE'
+}
+
+export type PolicyResource = {
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+};
+
+export type Policy = {
+   __typename?: 'Policy';
+  id: Scalars['Int'];
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+  invitationID?: Maybe<Scalars['Int']>;
+  action: PolicyAction;
+  uid: Scalars['String'];
+  user?: Maybe<User>;
+  expirationTime?: Maybe<Scalars['String']>;
+  createdTime: Scalars['String'];
+};
+
+export type NewPolicy = {
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+  action: PolicyAction;
+  uid: Scalars['String'];
+  expirationTime?: Maybe<Scalars['String']>;
+};
+
+export type PolicyQuery = {
+  resource: PolicyResource;
+};
+
+export type Invitation = {
+   __typename?: 'Invitation';
+  id: Scalars['Int'];
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+  action: PolicyAction;
+  expirationTime?: Maybe<Scalars['String']>;
+  createdTime: Scalars['String'];
+};
+
+export type NewInvitation = {
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+  action: PolicyAction;
+  expirationTime?: Maybe<Scalars['String']>;
+};
+
+export type InvitationQuery = {
+  resource: PolicyResource;
+};
+
+export type Empty = {
+   __typename?: 'Empty';
+  empty?: Maybe<Scalars['Boolean']>;
+};
+
 export type Query = {
    __typename?: 'Query';
   me: User;
@@ -312,6 +380,8 @@ export type Query = {
   charts: Array<Chart>;
   tags: Array<Tag>;
   extensions: Array<Extension>;
+  invitations: Array<Invitation>;
+  policies: Array<Policy>;
 };
 
 
@@ -329,9 +399,19 @@ export type QueryTagsArgs = {
   query: TagQuery;
 };
 
-export type Empty = {
-   __typename?: 'Empty';
-  empty?: Maybe<Scalars['Boolean']>;
+
+export type QueryInvitationsArgs = {
+  query?: Maybe<InvitationQuery>;
+};
+
+
+export type QueryPoliciesArgs = {
+  query: PolicyQuery;
+};
+
+export type CreateInvitationResponse = {
+   __typename?: 'CreateInvitationResponse';
+  token: Scalars['String'];
 };
 
 export type Mutation = {
@@ -350,6 +430,11 @@ export type Mutation = {
   addTags?: Maybe<Chart>;
   unTag?: Maybe<Chart>;
   setTagPositions?: Maybe<Array<Maybe<Chart>>>;
+  createInvitation: CreateInvitationResponse;
+  deleteInvitation?: Maybe<Empty>;
+  acceptInvitation?: Maybe<Empty>;
+  createPolicy?: Maybe<Policy>;
+  deletePolicy?: Maybe<Empty>;
 };
 
 
@@ -421,5 +506,31 @@ export type MutationSetTagPositionsArgs = {
   tagID: Scalars['Int'];
   chartIDs: Array<Scalars['Int']>;
   positions: Array<Scalars['Int']>;
+};
+
+
+export type MutationCreateInvitationArgs = {
+  invitation: NewInvitation;
+  tokenExpirationHours?: Maybe<Scalars['Int']>;
+};
+
+
+export type MutationDeleteInvitationArgs = {
+  invitationID: Scalars['Int'];
+};
+
+
+export type MutationAcceptInvitationArgs = {
+  token: Scalars['String'];
+};
+
+
+export type MutationCreatePolicyArgs = {
+  policy: NewPolicy;
+};
+
+
+export type MutationDeletePolicyArgs = {
+  policyID: Scalars['Int'];
 };
 

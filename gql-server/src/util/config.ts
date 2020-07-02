@@ -12,13 +12,17 @@ interface Config {
   GC_PROJECT_ID: string;
   GC_STORAGE_KEYFILE: string;
   GC_STORAGE_BUCKET_NAME: string;
+  CHORD_CLUB_TOKEN_AUDIENCE: string;
+  CHORD_CLUB_TOKEN_ISSUER: string;
+  CHORD_CLUB_TOKEN_KID: string;
+  PORT: string;
   [key: string]: string;
 }
 
 const requiredConfig = [
   'PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'PGDATABASE',
   'AUTH0_DOMAIN', 'AUTH0_CLIENT_ID', 'AUTH0_AUDIENCE',
-  'GC_PROJECT_ID', 'GC_STORAGE_KEYFILE', 'GC_STORAGE_BUCKET_NAME'
+  'GC_PROJECT_ID', 'GC_STORAGE_KEYFILE', 'GC_STORAGE_BUCKET_NAME',
 ];
 
 const validateConfig = (config: Partial<Config>) => {
@@ -38,6 +42,10 @@ const parseConfig = (): Config => {
   const secrets = JSON.parse(data);
   const config: Config = {
     PGHOST: process.env.PGHOST,
+    CHORD_CLUB_TOKEN_AUDIENCE: 'chordclub.app',
+    CHORD_CLUB_TOKEN_ISSUER: 'chordclub.app',
+    CHORD_CLUB_TOKEN_KID: '01',
+    PORT: '4000',
     ...secrets,
   };
   validateConfig(config);

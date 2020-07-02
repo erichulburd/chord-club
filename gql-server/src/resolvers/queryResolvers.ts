@@ -3,15 +3,21 @@ import {
   Tag,
   Extension,
   BaseScopes,
+  InvitationQuery,
+  PolicyQuery,
+  Invitation,
+  Policy,
 } from '../types';
 import { executeUserQuery, findUserByUID } from '../repositories/user';
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
 import { executeChartQuery } from '../repositories/chart';
 import { executeTagQuery } from '../repositories/tag';
-import { wrapTopLevelOp, Resolver } from './resolverUtils';
+import { wrapTopLevelOp, Resolver, assertResourceOwner } from './resolverUtils';
 import { findAllExtensions } from '../repositories/extensions';
 import { forbiddenResourceOpError } from '../util/errors';
+import { listInvitations } from '../repositories/invitation';
+import { listPolicies } from '../repositories/policy';
 
 interface UsersArgs {
   query: UserQuery;
@@ -25,12 +31,22 @@ interface TagsArgs {
   query: TagQuery;
 }
 
+interface InvitationsArgs {
+  query: InvitationQuery;
+}
+
+interface PoliciesArgs {
+  query: PolicyQuery;
+}
+
 interface QueryResolvers {
   me: Resolver<{}, User>;
   users: Resolver<UsersArgs, User[]>;
   charts: Resolver<ChartsArgs, Chart[]>;
   tags: Resolver<TagsArgs, Tag[]>;
   extensions: Resolver<{}, Extension[]>;
+  invitations: Resolver<InvitationsArgs, Invitation[]>;
+  policies: Resolver<PoliciesArgs, Policy[]>;
 }
 
 const Q: Partial<QueryResolvers> = {};
@@ -61,6 +77,16 @@ Q.tags = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: TagsArgs, context:
 
 Q.extensions = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: {}, context: Context): Promise<Extension[]>  => {
   return findAllExtensions(context.db);
+});
+
+Q.invitations = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: InvitationsArgs, context: Context): Promise<Invitation[]>  => {
+  await assertResourceOwner(context.uid, args.query.resource, context.db);
+  return listInvitations(args.query, context.db);
+});
+
+Q.policies = wrapTopLevelOp(async (_obj: TopLevelRootValue, args: PoliciesArgs, context: Context): Promise<Policy[]>  => {
+  await assertResourceOwner(context.uid, args.query.resource, context.db);
+  return listPolicies(args.query, context.db);
 });
 
 export default Q;

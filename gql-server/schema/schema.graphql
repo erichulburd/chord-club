@@ -272,6 +272,8 @@ enum ErrorType {
   UNHANDLED,
   INTERNAL_SERVER_ERROR,
   FORBIDDEN_RESOURCE_OPERATION,
+  INVALID_INVITATION_TOKEN,
+  NOT_FOUND,
 }
 
 type ErrorException {
@@ -284,16 +286,82 @@ type ErrorExtensions {
   exception: ErrorException
 }
 
+enum PolicyResourceType {
+  TAG
+}
+
+enum PolicyAction {
+  WILDCARD
+  READ
+  WRITE
+}
+
+input PolicyResource {
+  resourceType: PolicyResourceType!
+  resourceID: Int!
+}
+
+type Policy {
+  id: Int!
+  resourceType: PolicyResourceType!
+  resourceID: Int!
+  invitationID: Int
+  action: PolicyAction!
+  uid: String!
+  user: User
+  expirationTime: String
+  createdTime: String!
+}
+
+input NewPolicy {
+  resourceType: PolicyResourceType!
+  resourceID: Int!
+  action: PolicyAction!
+  uid: String!
+  expirationTime: String
+}
+
+input PolicyQuery {
+  resource: PolicyResource!
+}
+
+type Invitation {
+  id: Int!
+  resourceType: PolicyResourceType!
+  resourceID: Int!
+  action: PolicyAction!
+  expirationTime: String
+  createdTime: String!
+}
+
+input NewInvitation {
+  resourceType: PolicyResourceType!
+  resourceID: Int!
+  action: PolicyAction!
+  expirationTime: String
+}
+
+input InvitationQuery {
+  resource: PolicyResource!
+}
+
+type Empty {
+  empty: Boolean
+}
+
 type Query {
   me: User!
   users(query: UserQuery!): [User!]!
   charts(query: ChartQuery!): [Chart!]!
   tags(query: TagQuery!): [Tag!]!
   extensions: [Extension!]!
+
+  invitations(query: InvitationQuery): [Invitation!]!
+  policies(query: PolicyQuery!): [Policy!]!
 }
 
-type Empty {
-  empty: Boolean
+type CreateInvitationResponse {
+  token: String!
 }
 
 type Mutation {
@@ -311,4 +379,13 @@ type Mutation {
   addTags(chartID: Int!, tags: [TagNew!]!): Chart
   unTag(chartID: Int!, tagIDs: [Int!]!): Chart
   setTagPositions(tagID: Int!, chartIDs: [Int!]!, positions: [Int!]!): [Chart]
+
+  # Invitations
+  createInvitation(invitation: NewInvitation!, tokenExpirationHours: Int): CreateInvitationResponse!
+  deleteInvitation(invitationID: Int!): Empty
+  acceptInvitation(token: String!): Empty
+
+  # Policies
+  createPolicy(policy: NewPolicy!): Policy
+  deletePolicy(policyID: Int!): Empty
 }

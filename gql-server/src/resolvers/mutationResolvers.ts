@@ -1,6 +1,6 @@
 import {
   User, Chart,
-  UserNew, UserUpdate, ChartNew, ChartUpdate, TagNew, ReactionNew, Tag, BaseScopes,
+  UserNew, UserUpdate, ChartNew, ChartUpdate, TagNew, ReactionNew, Tag, BaseScopes, NewInvitation, NewPolicy, Policy, CreateInvitationResponse,
 } from '../types';
 import { insertUserNew, updateUser, deleteUser } from '../repositories/user';
 import { Context } from '../util/context';
@@ -8,9 +8,15 @@ import { TopLevelRootValue } from '../util/app';
 import { deleteChartsForUser, findChartByID, insertNewChart, updateChart, deleteChart, findChartsByID } from '../repositories/chart';
 import { upsertReactionNew, findReactionsByChartID, deleteReactionNew } from '../repositories/reaction';
 import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes, reconcileChartTags, updateTagPositions, findTagByID } from '../repositories/tag';
-import { wrapTopLevelOp, Resolver } from './resolverUtils';
+import { wrapTopLevelOp, Resolver, assertResourceOwner } from './resolverUtils';
 import { addExtensionsForChart, removeExtensionsForChart, reconcileChartExtensions } from '../repositories/extensions';
-import { chartNotFoundError, forbiddenResourceOpError, invalidTagPositionUpdate } from '../util/errors';
+import { chartNotFoundError, forbiddenResourceOpError, invalidTagPositionUpdate, notFoundError } from '../util/errors';
+import { insertInvitations, deleteInvitation, findInvitationByID } from '../repositories/invitation';
+import { makeNewPolicyFromInvitation, insertPolicies, deletePolicy, findPolicyByID } from '../repositories/policy';
+import * as tokens from '../util/tokens';
+import { invalidInvitationTokenError } from '../util/errors';
+import { SignOptions } from 'jsonwebtoken';
+import * as moment from 'moment';
 
 interface CreateAccountArgs {
   newUser: UserNew;
@@ -65,6 +71,27 @@ interface DeleteTagArgs {
   tagID: number;
 }
 
+interface CreateInvitationArgs {
+  invitation: NewInvitation;
+  tokenExpirationHours?: number;
+}
+
+interface DeleteInvitationArgs {
+  invitationID: number;
+}
+
+interface AcceptInvitationArgs {
+  token: string;
+}
+
+interface CreatePolicyArgs {
+  policy: NewPolicy;
+}
+
+interface DeletePolicyArgs {
+  policyID: number;
+}
+
 interface MutationResolvers {
   createUser: Resolver<CreateAccountArgs, User>;
   updateUser: Resolver<UpdateAccountArgs, User>;
@@ -80,6 +107,15 @@ interface MutationResolvers {
   removeExtensions: Resolver<AddRemoveExtensionsArgs, Chart>;
   createTags: Resolver<CreateTagArgs, Tag[]>;
   deleteTag: Resolver<DeleteTagArgs, void>;
+
+  // Invitations
+  createInvitation: Resolver<CreateInvitationArgs, CreateInvitationResponse>;
+  deleteInvitation: Resolver<DeleteInvitationArgs, void>;
+  acceptInvitation: Resolver<AcceptInvitationArgs, void>;
+
+  // Policies
+  createPolicy: Resolver<CreatePolicyArgs, Policy>;
+  deletePolicy: Resolver<DeletePolicyArgs, void>;
 }
 
 const M: Partial<MutationResolvers> = {};
@@ -246,6 +282,67 @@ M.createTags = wrapTopLevelOp(async (
 M.deleteTag = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: DeleteTagArgs, context: Context): Promise<void> => {
   await deleteTag(args.tagID, context.uid, context.db);
+});
+
+// Invitations
+M.createInvitation = wrapTopLevelOp(async (
+  _obj: TopLevelRootValue, args: CreateInvitationArgs, context: Context): Promise<CreateInvitationResponse> => {
+  await assertResourceOwner(context.uid, args.invitation, context.db);
+  const invitations = await insertInvitations([args.invitation], context.db);
+  const tokenOpts: Partial<SignOptions> = {};
+  if (args.tokenExpirationHours) {
+    tokenOpts.expiresIn = args.tokenExpirationHours * 3600;
+  }
+  const token = await tokens.sign({ invitationID: invitations[0].id.toString() }, tokenOpts);
+  return {token};
+});
+
+M.deleteInvitation = wrapTopLevelOp(async (
+  _obj: TopLevelRootValue, args: DeleteInvitationArgs, context: Context): Promise<void> => {
+  const invitation = await findInvitationByID(args.invitationID, context.db);
+  if (invitation === undefined) {
+    throw notFoundError(args);
+  }
+  await assertResourceOwner(context.uid, invitation, context.db);
+  await deleteInvitation(args.invitationID, context.db);
+});
+
+M.acceptInvitation = wrapTopLevelOp(async (
+  _obj: TopLevelRootValue, args: AcceptInvitationArgs, context: Context): Promise<void> => {
+    let payload:tokens.InvitationTokenPayload = { invitationID: 0 };
+    try {
+      payload = await tokens.parse<tokens.InvitationTokenPayload>(args.token);
+    } catch (err) {
+      context.logger.error(err);
+      throw invalidInvitationTokenError('failed to parse token');
+    }
+
+    const invitation = await findInvitationByID(payload.invitationID, context.db);
+    if (invitation === undefined) {
+      context.logger.error(
+        `could not find invitation for token with invitationID ${payload.invitationID}`);
+      throw invalidInvitationTokenError('valid invitation not found');
+    }
+    const newPolicy = makeNewPolicyFromInvitation(context.uid, invitation) as NewPolicy;
+    await insertPolicies([newPolicy], context.db);
+});
+
+// Policies
+M.createPolicy = wrapTopLevelOp(async (
+  _obj: TopLevelRootValue, args: CreatePolicyArgs, context: Context): Promise<Policy> => {
+    await assertResourceOwner(context.uid, args.policy, context.db);
+    const policies = await insertPolicies([args.policy], context.db);
+    return policies[0];
+});
+
+M.deletePolicy = wrapTopLevelOp(async (
+  _obj: TopLevelRootValue, args: DeletePolicyArgs, context: Context): Promise<void> => {
+    const policy = await findPolicyByID(args.policyID, context.db);
+    if (policy === undefined) {
+      throw notFoundError(args);
+    }
+    await assertResourceOwner(context.uid, policy, context.db);
+    await deletePolicy(args.policyID, context.db);
 });
 
 export default M;

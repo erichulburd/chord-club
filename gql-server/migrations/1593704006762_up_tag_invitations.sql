@@ -1,0 +1,33 @@
+CREATE TABLE invitation_data (
+  id SERIAL,
+  resource_type VARCHAR(180) NOT NULL,
+  resource_id INTEGER NOT NULL,
+  action SMALLINT NOT NULL DEFAULT 1,
+  expiration_time TIMESTAMP WITH TIME ZONE,
+  created_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  deleted_time TIMESTAMP WITH TIME ZONE,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+  PRIMARY KEY (id, deleted)
+) PARTITION BY LIST(deleted);
+CREATE TABLE invitation PARTITION OF invitation_data FOR VALUES IN (FALSE);
+CREATE TABLE invitation_deleted PARTITION OF invitation_data FOR VALUES IN (TRUE);
+
+CREATE TABLE policy_data (
+  id SERIAL,
+  resource_type VARCHAR(180) NOT NULL,
+  resource_id INTEGER NOT NULL,
+  uid VARCHAR(180) NOT NULL,
+  invitation_id INTEGER,
+  action SMALLINT NOT NULL DEFAULT 1,
+  invite_id INTEGER,
+  expiration_time TIMESTAMP WITH TIME ZONE,
+  created_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  deleted_time TIMESTAMP WITH TIME ZONE,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+  PRIMARY KEY (id, deleted)
+) PARTITION BY LIST(deleted);
+CREATE TABLE policy PARTITION OF policy_data FOR VALUES IN (FALSE);
+CREATE UNIQUE INDEX policy_resource_uid_idx ON policy(resource_type, resource_id, uid);
+CREATE TABLE policy_deleted PARTITION OF policy_data FOR VALUES IN (TRUE);

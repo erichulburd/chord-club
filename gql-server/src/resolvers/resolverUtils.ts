@@ -1,6 +1,10 @@
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
 import { unauthenticatedError, coerceUnhandledError } from '../util/errors';
+import { PolicyResource, PolicyResourceType } from '../types';
+import { findTagByID } from '../repositories/tag';
+import { Queryable } from '../repositories/db';
+import { forbiddenResourceOpError } from '../util/errors';
 
 export type Resolver<T, U, V = TopLevelRootValue> =
   (obj: V, args: T, context: Context) => Promise<U>;
@@ -31,3 +35,14 @@ export const wrapTopLevelOp =
     throw apolloError;
   }
 };
+
+export const assertResourceOwner = async (
+  uid: string, resource: PolicyResource, db: Queryable) => {
+  switch (resource.resourceType) {
+    case PolicyResourceType.Tag:
+      const tag = await findTagByID(resource.resourceID, [uid], db);
+    if (tag === undefined) {
+      throw forbiddenResourceOpError(resource);
+    }
+  }
+}
