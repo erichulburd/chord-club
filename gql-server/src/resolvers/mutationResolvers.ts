@@ -342,7 +342,9 @@ M.deletePolicy = wrapTopLevelOp(async (
     if (policy === undefined) {
       throw notFoundError(args);
     }
-    await assertResourceOwner(context.uid, policy, context.db);
+    if (policy.uid !== context.uid) {
+      await assertResourceOwner(context.uid, policy, context.db);
+    }
     await deletePolicy(args.policyID, context.db);
 });
 

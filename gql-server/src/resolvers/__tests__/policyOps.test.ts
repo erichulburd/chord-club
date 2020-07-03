@@ -138,4 +138,54 @@ describe('policy ops', () => {
     policies = res.body.data.policies;
     expect(policies.length).toEqual(0);
   });
+
+  test('subject can delete policy', async () => {
+    const expiresAt = moment().add(30, 'days').utc();
+    const policy: NewPolicy = {
+      uid: 'uid1',
+      resourceType: PolicyResourceType.Tag,
+      resourceID: tags[0][0].id,
+      action: PolicyAction.Read,
+      expiresAt: expiresAt.utc().format(),
+    };
+    let res = await graphql(token).send({
+      query: `
+        mutation CreatePolicy($policy: NewPolicy!) {
+          createPolicy(policy: $policy) {
+            id resourceType resourceID expiresAt user { uid username }
+          }
+        }
+      `,
+      variables: {
+        policy,
+      },
+    });
+    const { data, errors } = res.body;
+    expect(errors).toEqual(undefined);
+    const returnedPolicy: Policy = data.createPolicy
+
+    let savedPolicy = await findPolicyByID(returnedPolicy.id, client);
+    if (savedPolicy === undefined) {
+      expect(savedPolicy).toEqual(undefined);
+      return;
+    }
+
+    res = await graphql(token).send({
+      query: `
+        mutation DeletePolicy($policyID: Int!) {
+          deletePolicy(policyID: $policyID) {
+            empty
+          }
+        }
+      `,
+      variables: {
+        policyID: savedPolicy.id,
+      },
+    });
+    expect(res.body.errors).toEqual(undefined);
+
+    savedPolicy = await findPolicyByID(returnedPolicy.id, client);
+    expect(savedPolicy).toEqual(undefined);
+
+  })
 });
