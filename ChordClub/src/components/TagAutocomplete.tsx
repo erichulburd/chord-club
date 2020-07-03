@@ -2,7 +2,6 @@ import React, {createElement} from 'react';
 import {
   Autocomplete,
   AutocompleteItem,
-  CheckBox,
   IconProps,
   Spinner,
 } from '@ui-kitten/components';
@@ -26,6 +25,7 @@ interface ManualProps {
   onSelect: ((t: TagNew | Tag) => void) | ((t: Tag) => void);
   allowNewTags?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
+  createdBy?: string;
 }
 
 interface Props extends WithApolloClient<{}>, ManualProps, UserConsumerProps {}
@@ -56,6 +56,12 @@ export class TagAutocomplete extends React.Component<Props> {
     super(props);
 
     this.throttleQuery = throttle(() => this.execQuery(), 500);
+    const {query} = this.state;
+    if (props.createdBy) {
+      this.setState({ query: {...query, createdBy: props.createdBy} });
+    } else {
+      this.setState({ query: {...query, createdBy: props.userCtx.getUID()} });
+    }
   }
 
   private execQuery = async () => {
