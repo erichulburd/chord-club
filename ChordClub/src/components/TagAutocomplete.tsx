@@ -8,7 +8,7 @@ import {
 } from '@ui-kitten/components';
 import {View, StyleProp, ViewStyle} from 'react-native';
 import {GET_TAGS, GetTagsData, GetTagsVariables} from '../gql/tag';
-import {TagQuery, BaseScopes, TagType, TagNew, Tag} from '../types';
+import {TagQuery, TagType, TagNew, Tag} from '../types';
 import {ThemedIcon} from './FontAwesomeIcons';
 import throttle from 'lodash/throttle';
 import {makeTagNew, getTagMunge, areTagsEqual} from '../util/forms';
@@ -23,7 +23,6 @@ import logger from '../util/logger';
 
 interface ManualProps {
   placeholder?: string;
-  includePublic?: boolean;
   onSelect: ((t: TagNew | Tag) => void) | ((t: Tag) => void);
   allowNewTags?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
@@ -37,22 +36,19 @@ interface State {
   loading: boolean;
   options: any[];
   queryTs?: number;
-  includePublic: boolean;
 }
 
-const fauxResult = makeTagNew('No results', false, 'FAUX');
+const fauxResult = makeTagNew('No results');
 
 export class TagAutocomplete extends React.Component<Props> {
   public state: State = {
     query: {
       displayName: '',
-      scopes: [],
       tagTypes: [TagType.List],
       limit: 5,
     },
     loading: false,
     options: [],
-    includePublic: false,
   };
   private throttleQuery: () => Promise<void>;
 
@@ -62,26 +58,15 @@ export class TagAutocomplete extends React.Component<Props> {
     this.throttleQuery = throttle(() => this.execQuery(), 500);
   }
 
-  private includePublic() {
-    return this.props.includePublic === undefined
-      ? this.state.includePublic
-      : this.props.includePublic;
-  }
-
   private execQuery = async () => {
     const {query} = this.state;
-    const {client, userCtx} = this.props;
-    const {authState} = userCtx;
+    const {client} = this.props;
     const queryTs = Date.now();
     this.setState({loading: true, queryTs});
-    const scopes = [userCtx.getUID()];
-    if (this.includePublic()) {
-      scopes.push(BaseScopes.Public);
-    }
     try {
       const {data, errors} = await client.query<GetTagsData, GetTagsVariables>({
         query: GET_TAGS,
-        variables: {query: {...query, scopes}},
+        variables: {query},
       });
       if (this.state.queryTs !== queryTs) {
         return;
@@ -114,7 +99,7 @@ export class TagAutocomplete extends React.Component<Props> {
         (t) => t.munge === getTagMunge(query.displayName || ''),
       );
       if (!tagExists) {
-        const tagNew = makeTagNew(query.displayName, this.includePublic(), uid);
+        const tagNew = makeTagNew(query.displayName);
         options = [tagNew, ...options];
       }
     }
@@ -148,7 +133,7 @@ export class TagAutocomplete extends React.Component<Props> {
 
   public render() {
     const {placeholder = 'Add tag', containerStyle = {}} = this.props;
-    const {query, error, options, includePublic, loading} = this.state;
+    const {query, error, options, loading} = this.state;
 
     const renderCloseIcon = (props: IconProps) =>
       loading ? (
@@ -178,20 +163,10 @@ export class TagAutocomplete extends React.Component<Props> {
             <AutocompleteItem
               key={getTagMunge(tag)}
               title={tag.displayName}
-              accessoryLeft={ThemedIcon(
-                tag.scope === BaseScopes.Public ? 'users' : 'user',
-              )}
+              accessoryLeft={ThemedIcon('user')}
             />
           ))}
         </Autocomplete>
-        {this.props.includePublic === undefined && (
-          <CheckBox
-            status="control"
-            checked={includePublic}
-            onChange={(c) => this.setState({includePublic: c})}>
-            Include public?
-          </CheckBox>
-        )}
       </View>
     );
   }

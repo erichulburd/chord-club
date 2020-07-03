@@ -1,7 +1,6 @@
 import React, {useContext, useState} from 'react';
 import {
   TagQuery,
-  BaseScopes,
   TagType,
   TagQueryOrder,
   Tag,
@@ -20,8 +19,7 @@ import {Screens} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
 import { ModalContext } from './ModalProvider';
 
-const makeTagQuery = (scopes: string[]): TagQuery => ({
-  scopes,
+const makeTagQuery = (): TagQuery => ({
   tagTypes: [TagType.Descriptor, TagType.List],
   order: TagQueryOrder.DisplayName,
   asc: true,
@@ -33,7 +31,6 @@ export const TagList = ({}: Props) => {
   const userCtx = useContext(AuthContext);
   const modalCtx = useContext(ModalContext);
   const uid = userCtx.user?.uid;
-  const scopes = uid ? [uid, BaseScopes.Public] : [BaseScopes.Public];
   const [deleted, setDeleted] = useState<{[key: number]: boolean}>({});
   const [deleteMutation, _] = useMutation<{}, DeleteTagVariables>(DELETE_TAG);
   const onDelete = (tag: Tag) => {
@@ -48,7 +45,7 @@ export const TagList = ({}: Props) => {
       cancel: () => {},
     })
   }
-  const query = makeTagQuery(scopes);
+  const query = makeTagQuery();
   const {data, loading, error} = useQuery<GetTagsData, GetTagsVariables>(
     GET_TAGS,
     {
@@ -71,7 +68,6 @@ export const TagList = ({}: Props) => {
     userCtx.updateChartQuery('chords', {
       tagIDs: [tag.id],
       chartTypes: [ChartType.Chord],
-      scopes: query.scopes,
     });
     navigate(Screens.Chords);
   };
@@ -79,7 +75,6 @@ export const TagList = ({}: Props) => {
     userCtx.updateChartQuery('progressions', {
       tagIDs: [tag.id],
       chartTypes: [ChartType.Progression],
-      scopes: query.scopes,
     });
     navigate(Screens.Progressions);
   };
@@ -110,7 +105,6 @@ export const TagList = ({}: Props) => {
   const renderItem = ({item}: {item: Tag; index: number}) => (
     <ListItem
       disabled
-      accessoryLeft={ThemedIcon(item.scope === uid ? 'user-lock' : 'users')}
       title={item.displayName}
       accessoryRight={TagLinks(item)}
     />

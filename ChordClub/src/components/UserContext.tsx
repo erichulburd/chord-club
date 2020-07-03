@@ -4,7 +4,6 @@ import {
   User,
   ChartQuery,
   UserUpdate,
-  BaseScopes,
   ChartType,
   ChartQueryOrder,
 } from '../types';
@@ -92,11 +91,9 @@ const coalesceUserAndUpdate = (
 const ensureDefaultChartViewSettings = (user: User): UserSettings => {
   const {uid} = user;
   const settings: UserSettings = {...user.settings};
-  const defaultScopes = uid ? [BaseScopes.Public, uid] : [BaseScopes.Public];
   if (!settings.chords) {
     settings.chords = {
       query: {
-        scopes: defaultScopes,
         chartTypes: [ChartType.Chord],
       },
       compact: false,
@@ -105,7 +102,6 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
   if (!settings.progressions) {
     settings.progressions = {
       query: {
-        scopes: defaultScopes,
         chartTypes: [ChartType.Progression],
       },
       compact: false,
@@ -114,7 +110,6 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
   if (!settings.flashcards) {
     settings.flashcards = {
       query: {
-        scopes: defaultScopes,
         chartTypes: [ChartType.Chord],
         order: ChartQueryOrder.Random,
         limit: 10,

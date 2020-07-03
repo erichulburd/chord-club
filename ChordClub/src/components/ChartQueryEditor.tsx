@@ -1,9 +1,7 @@
-import React, { useContext, useCallback } from 'react';
+import React, { useContext } from 'react';
 import {View, StyleSheet, ViewProps} from 'react-native';
-import {ChartQuery, Tag, BaseScopes, ChartQueryOrder} from '../types';
+import {ChartQuery, Tag, ChartQueryOrder} from '../types';
 import {useState} from 'react';
-import {StringCheckboxGroup} from './shared/CheckboxGroup';
-import identity from 'lodash/identity';
 import {Row} from './shared/Row';
 import {Button, Card, Text, CheckBox} from '@ui-kitten/components';
 import {TagIDCollectionEditor} from './TagCollectionEditor';
@@ -24,30 +22,7 @@ const ChartQueryEditor = ({initialQuery, save, cancel}: Props) => {
   const [query, setQuery] = useState<ChartQuery>(initialQuery);
   const setTags = (tags: Tag[]) =>
     setQuery({...query, tagIDs: tags.map((t) => t.id)});
-  const selectedScopes: string[] = [];
-  if (query.scopes?.includes(BaseScopes.Public)) {
-    selectedScopes.push('Public');
-  }
-  if (query.scopes?.includes(uid)) {
-    selectedScopes.push('Private');
-  }
-  const toggleScopes = useCallback((s: string, checked: boolean) => {
-    const scope = s === 'Private' ? uid : BaseScopes.Public;
-    let index = query.scopes?.indexOf(scope);
-    if (index === undefined) {
-      index = -1;
-    }
-    if (checked && index < 0) {
-      setQuery({
-        ...query,
-        scopes: [...(query.scopes || []), scope],
-      });
-    } else if (!checked && index >= 0) {
-      const scopes = [...(query.scopes || [])];
-      scopes.splice(index, 1);
-      setQuery({...query, scopes});
-    }
-  }, [authState, query.scopes]);
+
   const Header = (props: ViewProps | undefined) => (
     <View {...props}>
       <Text category="h6">Query</Text>
@@ -91,15 +66,6 @@ const ChartQueryEditor = ({initialQuery, save, cancel}: Props) => {
       footer={Footer}
       status="basic">
       <Row>
-        <StringCheckboxGroup
-          multi
-          display={(ct) => identity(ct)}
-          choices={['Public', 'Private']}
-          selected={selectedScopes}
-          onToggle={toggleScopes}
-        />
-      </Row>
-      <Row>
         <CheckBox
           checked={query.order === ChartQueryOrder.Random}
           onChange={setChartQueryOrderRandom}>
@@ -110,7 +76,6 @@ const ChartQueryEditor = ({initialQuery, save, cancel}: Props) => {
         <TagIDCollectionEditor
           ids={query.tagIDs || []}
           onChange={setTags}
-          scopes={query.scopes?.filter(s => Boolean(s)) || []}
           allowNewTags={false}
         />
       </View>

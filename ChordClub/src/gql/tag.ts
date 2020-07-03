@@ -6,7 +6,6 @@ export const tagDBFields = gql`
     id
     displayName
     tagType
-    scope
     munge
   }
 `;

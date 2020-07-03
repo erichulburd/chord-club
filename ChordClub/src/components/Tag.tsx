@@ -1,10 +1,10 @@
 import React, { useContext, useCallback } from 'react';
-import {Tag, TagNew, BaseScopes, ChartType} from '../types';
+import {Tag, TagNew, ChartType} from '../types';
 import {View, StyleSheet} from 'react-native';
 import {Button} from '@ui-kitten/components';
 import {ThemedIcon} from './FontAwesomeIcons';
 import {Size} from '../util/themeHelpers';
-import { useNavigation, useNavigationState } from '@react-navigation/native';
+import { useNavigationState } from '@react-navigation/native';
 import { AuthContext } from './UserContext';
 import { Screens } from './AppScreen';
 import { ChartViewSetting } from 'src/util/settings';
@@ -29,14 +29,12 @@ export const TagLabelNavigable = ({tag, onDelete, size}: NavigableProps) => {
       userCtx.updateChartQuery('progressions', {
         tagIDs: [existingTag.id],
         chartTypes: [ChartType.Progression],
-        scopes: settings.query.scopes,
       });
     } else if (route.name === Screens.Chords) {
       const settings = userCtx.user?.settings.chords as ChartViewSetting;
       userCtx.updateChartQuery('chords', {
         tagIDs: [existingTag.id],
         chartTypes: [ChartType.Chord],
-        scopes: settings.query.scopes,
       });
     }
   }, [route.name, userCtx]);
@@ -60,10 +58,8 @@ export const TagLabel = ({tag, onDelete, onPress, size = 'tiny'}: Props) => {
       <Button
         size={size}
         appearance="outline"
-        status={tag.scope === BaseScopes.Public ? 'primary' : 'info'}
-        accessoryLeft={ThemedIcon(
-          tag.scope === BaseScopes.Public ? 'users' : 'user',
-        )}
+        status={'info'}
+        accessoryLeft={ThemedIcon('user')}
         onPress={onPress}>{` ${tag.displayName}`}</Button>
       {onDelete && (
         <Button

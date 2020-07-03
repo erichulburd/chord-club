@@ -2,7 +2,6 @@ import {
   ChartNew,
   ChartType,
   ChartQuality,
-  BaseScopes,
   TagNew,
   TagType,
   Tag,
@@ -21,7 +20,6 @@ export const makeChartNew = (
   description: '',
   hint: '',
   abc: '',
-  scope: uid,
   quality: ChartQuality.Major,
   extensionIDs: [],
   tags: [],
@@ -35,23 +33,18 @@ export interface ChartURLs extends Record<string, string> {
 
 export const makeTagNew = (
   displayName: string,
-  isPublic: boolean,
-  uid: string,
-): TagNew => {
-  const scope = isPublic ? BaseScopes.Public : uid;
-  return {
-    displayName,
-    scope,
-    tagType: TagType.List,
-  };
-};
+): TagNew => ({
+  displayName,
+  tagType: TagType.List,
+});
 
 export const getTagMunge = (displayName: string) => {
   return kebabCase(trim(displayName).toLowerCase());
 };
 
 export const getTagKey = (t: Tag | TagNew) =>
-  `${t.scope}-${getTagMunge(t.displayName)}`;
+  getTagMunge(t.displayName);
+
 export const areTagsEqual = (t1: Tag | TagNew, t2: Tag | TagNew) => {
   return getTagKey(t1) === getTagKey(t2);
 };

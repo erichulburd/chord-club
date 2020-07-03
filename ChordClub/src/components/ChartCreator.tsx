@@ -5,7 +5,6 @@ import {
   Input,
   TabBar,
   Tab,
-  CheckBox,
 } from '@ui-kitten/components';
 import {View, Image, StyleSheet} from 'react-native';
 import {TouchableHighlight} from 'react-native-gesture-handler';
@@ -15,7 +14,6 @@ import {
   ChartType,
   Extension,
   Note,
-  BaseScopes,
   ChartNew,
   TagNew,
   Tag,
@@ -192,31 +190,6 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
       });
     }
   };
-  const updatePublic = (isPublic: boolean) => {
-    if (
-      !isPublic &&
-      newChart.tags?.some((t) => t.scope === BaseScopes.Public)
-    ) {
-      modalCtx.message(
-        {
-          msg:
-            'Your public tags for this chart will be lost if you make it private.',
-          status: 'warning',
-        },
-        {
-          confirm: () => {
-            const tags = (newChart.tags || []).filter(
-              (t) => t.scope !== BaseScopes.Public,
-            );
-            setChart({...newChart, scope: uid, tags});
-          },
-          cancel: () => {},
-        },
-      );
-      return;
-    }
-    setChart({...newChart, scope: isPublic ? BaseScopes.Public : uid});
-  };
 
   return (
     <View style={styles.container}>
@@ -259,13 +232,6 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
             {image ? 'Remove' : 'Upload Chart'}
           </Button>
         </Row>
-        <Row>
-          <CheckBox
-            checked={newChart.scope === BaseScopes.Public}
-            onChange={updatePublic}
-          />
-          <Text category="label"> Share publicly?</Text>
-        </Row>
         {newChart.chartType === ChartType.Chord && (
           <>
             <Row style={styles.fullWidth}>
@@ -303,7 +269,6 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
           <TagAutocomplete
             containerStyle={{width: '100%'}}
             onSelect={addTag}
-            includePublic={newChart.scope === BaseScopes.Public}
           />
           <TagCollection tags={newChart.tags || []} onDelete={removeTag} />
         </Row>

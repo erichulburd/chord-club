@@ -4,7 +4,7 @@ import {GetTagsData, GetTagsVariables, GET_TAGS} from '../gql/tag';
 import {Spinner} from '@ui-kitten/components';
 import ErrorText from './ErrorText';
 import {TagCollection} from './TagCollection';
-import {TagType, Tag, BaseScopes} from '../types';
+import {TagType, Tag} from '../types';
 import TagAutocomplete from './TagAutocomplete';
 import {areTagsEqual} from '../util/forms';
 
@@ -12,7 +12,6 @@ const allTagTypes = [TagType.Descriptor, TagType.List];
 
 interface TagCollectionEditorProps {
   allowNewTags: boolean;
-  scopes: string[];
   initialTags: Tag[];
   onChange: (tags: Tag[]) => void;
 }
@@ -20,7 +19,6 @@ interface TagCollectionEditorProps {
 export const TagCollectionEditor = ({
   initialTags,
   onChange,
-  scopes,
   allowNewTags,
 }: TagCollectionEditorProps) => {
   const [tags, setTags] = useState<Tag[]>(initialTags);
@@ -45,7 +43,6 @@ export const TagCollectionEditor = ({
   return (
     <>
       <TagAutocomplete
-        includePublic={scopes.includes(BaseScopes.Public)}
         allowNewTags={allowNewTags}
         placeholder={'Select tags'}
         onSelect={addTag}
@@ -63,16 +60,14 @@ interface TagIDCollectionEditorProps
 
 export const TagIDCollectionEditor = ({
   ids,
-  scopes,
   tagTypes = allTagTypes,
   ...rest
 }: TagIDCollectionEditorProps) => {
-  console.warn('SCOPES', scopes);
   const {data, loading, error} = useQuery<GetTagsData, GetTagsVariables>(
     GET_TAGS,
     {
       variables: {
-        query: {ids, scopes, tagTypes},
+        query: {ids, tagTypes},
       },
     },
   );
@@ -86,6 +81,6 @@ export const TagIDCollectionEditor = ({
     return <ErrorText error={'An error occurred retrieving tags.'} />;
   }
   return (
-    <TagCollectionEditor {...rest} initialTags={data.tags} scopes={scopes} />
+    <TagCollectionEditor {...rest} initialTags={data.tags} />
   );
 };
