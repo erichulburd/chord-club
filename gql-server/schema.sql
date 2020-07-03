@@ -16,14 +16,14 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: citext; Type: EXTENSION; Schema: -; Owner: 
+-- Name: citext; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
@@ -232,7 +232,7 @@ CREATE TABLE public.invitation_data (
     resource_id integer NOT NULL,
     action smallint DEFAULT 1 NOT NULL,
     expiration_time timestamp with time zone,
-    created_time timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_time timestamp with time zone,
     deleted boolean DEFAULT false NOT NULL
 )
@@ -296,7 +296,7 @@ CREATE TABLE public.policy_data (
     action smallint DEFAULT 1 NOT NULL,
     invite_id integer,
     expiration_time timestamp with time zone,
-    created_time timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_time timestamp with time zone,
     deleted boolean DEFAULT false NOT NULL
 )
@@ -511,10 +511,10 @@ ALTER TABLE ONLY public.invitation ALTER COLUMN action SET DEFAULT 1;
 
 
 --
--- Name: invitation created_time; Type: DEFAULT; Schema: public; Owner: developer
+-- Name: invitation created_at; Type: DEFAULT; Schema: public; Owner: developer
 --
 
-ALTER TABLE ONLY public.invitation ALTER COLUMN created_time SET DEFAULT now();
+ALTER TABLE ONLY public.invitation ALTER COLUMN created_at SET DEFAULT now();
 
 
 --
@@ -546,10 +546,10 @@ ALTER TABLE ONLY public.invitation_deleted ALTER COLUMN action SET DEFAULT 1;
 
 
 --
--- Name: invitation_deleted created_time; Type: DEFAULT; Schema: public; Owner: developer
+-- Name: invitation_deleted created_at; Type: DEFAULT; Schema: public; Owner: developer
 --
 
-ALTER TABLE ONLY public.invitation_deleted ALTER COLUMN created_time SET DEFAULT now();
+ALTER TABLE ONLY public.invitation_deleted ALTER COLUMN created_at SET DEFAULT now();
 
 
 --
@@ -574,10 +574,10 @@ ALTER TABLE ONLY public.policy ALTER COLUMN action SET DEFAULT 1;
 
 
 --
--- Name: policy created_time; Type: DEFAULT; Schema: public; Owner: developer
+-- Name: policy created_at; Type: DEFAULT; Schema: public; Owner: developer
 --
 
-ALTER TABLE ONLY public.policy ALTER COLUMN created_time SET DEFAULT now();
+ALTER TABLE ONLY public.policy ALTER COLUMN created_at SET DEFAULT now();
 
 
 --
@@ -609,10 +609,10 @@ ALTER TABLE ONLY public.policy_deleted ALTER COLUMN action SET DEFAULT 1;
 
 
 --
--- Name: policy_deleted created_time; Type: DEFAULT; Schema: public; Owner: developer
+-- Name: policy_deleted created_at; Type: DEFAULT; Schema: public; Owner: developer
 --
 
-ALTER TABLE ONLY public.policy_deleted ALTER COLUMN created_time SET DEFAULT now();
+ALTER TABLE ONLY public.policy_deleted ALTER COLUMN created_at SET DEFAULT now();
 
 
 --
@@ -804,28 +804,28 @@ CREATE UNIQUE INDEX policy_resource_uid_idx ON public.policy USING btree (resour
 
 
 --
--- Name: invitation_deleted_pkey; Type: INDEX ATTACH; Schema: public; Owner: 
+-- Name: invitation_deleted_pkey; Type: INDEX ATTACH; Schema: public; Owner:
 --
 
 ALTER INDEX public.invitation_data_pkey ATTACH PARTITION public.invitation_deleted_pkey;
 
 
 --
--- Name: invitation_pkey; Type: INDEX ATTACH; Schema: public; Owner: 
+-- Name: invitation_pkey; Type: INDEX ATTACH; Schema: public; Owner:
 --
 
 ALTER INDEX public.invitation_data_pkey ATTACH PARTITION public.invitation_pkey;
 
 
 --
--- Name: policy_deleted_pkey; Type: INDEX ATTACH; Schema: public; Owner: 
+-- Name: policy_deleted_pkey; Type: INDEX ATTACH; Schema: public; Owner:
 --
 
 ALTER INDEX public.policy_data_pkey ATTACH PARTITION public.policy_deleted_pkey;
 
 
 --
--- Name: policy_pkey; Type: INDEX ATTACH; Schema: public; Owner: 
+-- Name: policy_pkey; Type: INDEX ATTACH; Schema: public; Owner:
 --
 
 ALTER INDEX public.policy_data_pkey ATTACH PARTITION public.policy_pkey;

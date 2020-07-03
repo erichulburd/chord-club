@@ -6,7 +6,7 @@ import moment from 'moment'
 
 const attrs = [
   'id', 'resourceType', 'resourceID', 'action',
-  'expirationTime', 'createdTime', 'deletedTime', 'deleted'
+  'expirationTime', 'createdAt', 'deletedTime', 'deleted'
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 'i');
@@ -15,7 +15,7 @@ const dbDataToInvitation = (row: {[key: string]: any}) => {
   const invitation = _dbDataToInvitation(row);
   invitation.action = dbActionToGQL(row.action);
   invitation.expirationTime = invitation.expirationTime && moment(invitation.expirationTime).utc().format();
-  invitation.createdTime = moment(invitation.createdTime).format();
+  invitation.createdAt = moment(invitation.createdAt).format();
   return invitation;
 };
 

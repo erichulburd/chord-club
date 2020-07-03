@@ -332,7 +332,7 @@ export type Policy = {
   uid: Scalars['String'];
   user?: Maybe<User>;
   expirationTime?: Maybe<Scalars['String']>;
-  createdTime: Scalars['String'];
+  createdAt: Scalars['String'];
 };
 
 export type NewPolicy = {
@@ -354,7 +354,7 @@ export type Invitation = {
   resourceID: Scalars['Int'];
   action: PolicyAction;
   expirationTime?: Maybe<Scalars['String']>;
-  createdTime: Scalars['String'];
+  createdAt: Scalars['String'];
 };
 
 export type NewInvitation = {

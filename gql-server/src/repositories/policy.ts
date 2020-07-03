@@ -6,7 +6,7 @@ import { pick } from 'lodash';
 
 const attrs = [
   'id', 'resourceType', 'resourceID', 'uid', 'action', 'invitationID',
-  'expirationTime', 'createdTime', 'deletedTime', 'deleted'
+  'expirationTime', 'createdAt', 'deletedTime', 'deleted'
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 'p');
@@ -15,7 +15,7 @@ const dbDataToPolicy = (row: {[key: string]: any}) => {
   const policy = _dbDataToPolicy(row);
   policy.action = dbActionToGQL(row.action);
   policy.expirationTime = policy.expirationTime && moment(policy.expirationTime).format();
-  policy.createdTime = moment(policy.createdTime).utc().format();
+  policy.createdAt = moment(policy.createdAt).utc().format();
   return policy;
 };
 
