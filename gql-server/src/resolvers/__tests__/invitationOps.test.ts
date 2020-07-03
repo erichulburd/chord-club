@@ -5,7 +5,7 @@ import supertest from 'supertest';
 import { getTestKey, signWithTestKey } from '../../../tests/testingKeys';
 import { makeUserNew, makeTagNew } from '../../../tests/factories';
 import express from 'express';
-import { NewInvitation, PolicyResourceType, PolicyAction, TagType, Tag, PolicyQuery } from '../../types';
+import { NewInvitation, PolicyResourceType, PolicyAction, TagType, Tag, PolicyQuery, Invitation, InvitationQuery } from '../../types';
 import { insertUserNew } from '../../repositories/user';
 import { insertNewTags } from '../../repositories/tag';
 import * as tokens from '../../util/tokens';
@@ -83,6 +83,29 @@ describe('invitation ops', () => {
     expect(savedInvitation.resourceType).toEqual(PolicyResourceType.Tag);
     expect(savedInvitation.expirationTime).toEqual(null);
 
+    const invitationQuery: InvitationQuery = {
+      resource: {
+        resourceType: savedInvitation.resourceType,
+        resourceID: savedInvitation.resourceID,
+      }
+    };
+    res = await graphql(token).send({
+      query: `
+        query Invitations($query: InvitationQuery!) {
+          invitations(query: $query) {
+            id resourceType resourceID
+          }
+        }
+      `,
+      variables: {
+        query: invitationQuery,
+      },
+    }).expect(200);
+    const invitations: Invitation[] = res.body.data.invitations;
+    expect(invitations.length).toEqual(1);
+    expect(invitations[0].resourceType).toEqual(savedInvitation.resourceType);
+    expect(invitations[0].resourceID).toEqual(savedInvitation.resourceID);
+
     res = await graphql(token1).send({
       query: `
         mutation AcceptInvitation($token: String!) {
@@ -95,14 +118,14 @@ describe('invitation ops', () => {
         token: data.createInvitation.token,
       },
     }).expect(200);
+    expect(res.body.errors).toEqual(undefined);
+
     const policyQuery: PolicyQuery = {
       resource: {
         resourceType: savedInvitation.resourceType,
         resourceID: savedInvitation.resourceID,
       }
     };
-    expect(res.body.errors).toEqual(undefined);
-
     const policies = await listPolicies(policyQuery, client);
     expect(policies.length).toEqual(1);
     expect(policies[0].resourceType).toEqual(savedInvitation.resourceType);

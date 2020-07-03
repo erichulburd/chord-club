@@ -14,6 +14,8 @@ const _dbDataToInvitation = makeDBDataToObject<Invitation>(attrs, 'Invitation');
 const dbDataToInvitation = (row: {[key: string]: any}) => {
   const invitation = _dbDataToInvitation(row);
   invitation.action = dbActionToGQL(row.action);
+  invitation.expirationTime = invitation.expirationTime && moment(invitation.expirationTime).utc().format();
+  invitation.createdTime = moment(invitation.createdTime).format();
   return invitation;
 };
 

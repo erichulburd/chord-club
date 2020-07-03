@@ -1,0 +1,141 @@
+import { makeDBPool, TestDBClientManager, DBTxManager } from '../../repositories/db';
+import { PoolClient } from 'pg';
+import { initializeApp } from '../../util/app';
+import supertest from 'supertest';
+import { getTestKey, signWithTestKey } from '../../../tests/testingKeys';
+import { makeUserNew, makeTagNew } from '../../../tests/factories';
+import express from 'express';
+import { PolicyResourceType, PolicyAction, TagType, Tag, PolicyQuery, NewPolicy, Policy } from '../../types';
+import { insertUserNew } from '../../repositories/user';
+import { insertNewTags } from '../../repositories/tag';
+import { findPolicyByID } from '../../repositories/policy';
+import moment from 'moment';
+
+describe('policy ops', () => {
+  const pool = makeDBPool();
+  let dbClientManager: TestDBClientManager;
+  let app: express.Express;
+  let client: PoolClient;
+  let txManager: DBTxManager;
+  let graphql: (t: string) => supertest.Test;
+  const token = signWithTestKey({ sub: 'uid' });
+  const token1 = signWithTestKey({ sub: 'uid1' });
+  let tags: Tag[][] = [];
+
+  beforeEach(async () => {
+    dbClientManager = await TestDBClientManager.new(pool);
+    app = initializeApp(dbClientManager, getTestKey);
+    const conn = await dbClientManager.newConnection();
+    client = conn[0];
+    txManager = conn[1];
+    graphql = (t: string) => supertest(app)
+      .post('/graphql')
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${t}`);
+
+    await insertUserNew(makeUserNew(), 'uid', client);
+    await insertUserNew(makeUserNew(), 'uid1', client);
+    await insertUserNew(makeUserNew(), 'uid2', client);
+    tags = await Promise.all(['uid', 'uid1'].map(async (uid) => {
+      return insertNewTags([
+        makeTagNew({ tagType: TagType.List, scope: uid }),
+        makeTagNew({ tagType: TagType.Descriptor, scope: uid }),
+      ], uid, client);
+    }));
+  });
+
+  afterEach(async () => {
+    await dbClientManager.rollbackAndRelease();
+  });
+  afterAll(async () => {
+    await pool.end();
+  });
+
+  test('create policy without expiration', async () => {
+    const expirationTime = moment().add(30, 'days').utc();
+    const policy: NewPolicy = {
+      uid: 'uid1',
+      resourceType: PolicyResourceType.Tag,
+      resourceID: tags[0][0].id,
+      action: PolicyAction.Read,
+      expirationTime: expirationTime.utc().format(),
+    };
+    let res = await graphql(token).send({
+      query: `
+        mutation CreatePolicy($policy: NewPolicy!) {
+          createPolicy(policy: $policy) {
+            id resourceType resourceID expirationTime user { uid username }
+          }
+        }
+      `,
+      variables: {
+        policy,
+      },
+    });
+    const { data, errors } = res.body;
+    expect(errors).toEqual(undefined);
+    const returnedPolicy: Policy = data.createPolicy
+    let savedPolicy = await findPolicyByID(returnedPolicy.id, client);
+    if (savedPolicy === undefined) {
+      expect(savedPolicy).not.toEqual(undefined);
+      return
+    }
+    expect(savedPolicy.action).toEqual(PolicyAction.Read);
+    expect(savedPolicy.resourceID).toEqual(tags[0][0].id);
+    expect(savedPolicy.resourceType).toEqual(PolicyResourceType.Tag);
+    expect(moment(savedPolicy.expirationTime).utc().format()).toEqual(expirationTime.format());
+
+    const query: PolicyQuery = {
+      resource: {
+        resourceID: savedPolicy.resourceID,
+        resourceType: savedPolicy.resourceType,
+      }
+    };
+    res = await graphql(token).send({
+      query: `
+        query Policies($query: PolicyQuery!) {
+          policies(query: $query) {
+            id resourceType resourceID expirationTime user { uid username }
+          }
+        }
+      `,
+      variables: {
+        query,
+      },
+    }).expect(200);
+    let policies: Policy[] = res.body.data.policies;
+    expect(policies.length).toEqual(1);
+    expect(policies[0].id).toEqual(savedPolicy.id);
+    expect(policies[0].expirationTime).toEqual(savedPolicy.expirationTime);
+
+    res = await graphql(token).send({
+      query: `
+        mutation DeletePolicy($policyID: Int!) {
+          deletePolicy(policyID: $policyID) {
+            empty
+          }
+        }
+      `,
+      variables: {
+        policyID: savedPolicy.id,
+      },
+    });
+    expect(res.body.errors).toEqual(undefined);
+
+    res = await graphql(token).send({
+      query: `
+        query Policies($query: PolicyQuery!) {
+          policies(query: $query) {
+            id resourceType resourceID expirationTime user { uid username }
+          }
+        }
+      `,
+      variables: {
+        query,
+      },
+    }).expect(200);
+    expect(res.body.errors).toEqual(undefined);
+    policies = res.body.data.policies;
+    expect(policies.length).toEqual(0);
+  });
+});

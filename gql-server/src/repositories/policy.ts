@@ -14,6 +14,8 @@ const _dbDataToPolicy = makeDBDataToObject<Policy>(attrs, 'Policy');
 const dbDataToPolicy = (row: {[key: string]: any}) => {
   const policy = _dbDataToPolicy(row);
   policy.action = dbActionToGQL(row.action);
+  policy.expirationTime = policy.expirationTime && moment(policy.expirationTime).format();
+  policy.createdTime = moment(policy.createdTime).utc().format();
   return policy;
 };
 
