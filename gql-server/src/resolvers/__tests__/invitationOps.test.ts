@@ -5,7 +5,7 @@ import supertest from 'supertest';
 import { getTestKey, signWithTestKey } from '../../../tests/testingKeys';
 import { makeUserNew, makeTagNew } from '../../../tests/factories';
 import express from 'express';
-import { NewInvitation, PolicyResourceType, PolicyAction, TagType, Tag, PolicyQuery, Invitation, InvitationQuery } from '../../types';
+import { NewInvitation, PolicyResourceType, PolicyAction, TagType, Tag, PolicyQuery, Invitation, InvitationQuery, ErrorType } from '../../types';
 import { insertUserNew } from '../../repositories/user';
 import { insertNewTags } from '../../repositories/tag';
 import * as tokens from '../../util/tokens';
@@ -52,6 +52,28 @@ describe('invitation ops', () => {
   afterAll(async () => {
     await pool.end();
   });
+
+  test('non-resource owner cannot create invitation', async () => {
+    const invitation: NewInvitation = {
+      resourceType: PolicyResourceType.Tag,
+      resourceID: tags[0][0].id,
+      action: PolicyAction.Wildcard,
+    };
+    let res = await graphql(token1).send({
+      query: `
+        mutation CreateInvitation($invitation: NewInvitation!, $tokenExpirationHours: Int) {
+          createInvitation(invitation: $invitation, tokenExpirationHours: $tokenExpirationHours) {
+            token
+          }
+        }
+      `,
+      variables: {
+        invitation, tokenExpirationHours: undefined,
+      },
+    }).expect(200);
+    expect(res.body.errors).not.toEqual(undefined);
+    expect(res.body.errors[0].extensions.code).toEqual(ErrorType.ForbiddenResourceOperation);
+  })
 
   test('create invitation without expiration', async () => {
     const invitation: NewInvitation = {
@@ -148,6 +170,72 @@ describe('invitation ops', () => {
     savedInvitation = await findInvitationByID(savedInvitation.id, client);
     expect(savedInvitation).toEqual(undefined);
   });
+
+
+  test('non-resource cannot list or delete invitations', async () => {
+    const invitation: NewInvitation = {
+      resourceType: PolicyResourceType.Tag,
+      resourceID: tags[0][0].id,
+      action: PolicyAction.Wildcard,
+    };
+    let res = await graphql(token).send({
+      query: `
+        mutation CreateInvitation($invitation: NewInvitation!, $tokenExpirationHours: Int) {
+          createInvitation(invitation: $invitation, tokenExpirationHours: $tokenExpirationHours) {
+            token
+          }
+        }
+      `,
+      variables: {
+        invitation, tokenExpirationHours: undefined,
+      },
+    }).expect(200);
+    const { data, errors } = res.body;
+    expect(errors).toEqual(undefined);
+    const payload: tokens.InvitationTokenPayload = await tokens.parse(data.createInvitation.token);
+    let savedInvitation = await findInvitationByID(payload.invitationID, client);
+    if (savedInvitation === undefined) {
+      expect(savedInvitation).not.toEqual(undefined);
+      return
+    }
+
+    const invitationQuery: InvitationQuery = {
+      resource: {
+        resourceType: savedInvitation.resourceType,
+        resourceID: savedInvitation.resourceID,
+      }
+    };
+    res = await graphql(token1).send({
+      query: `
+        query Invitations($query: InvitationQuery!) {
+          invitations(query: $query) {
+            id resourceType resourceID
+          }
+        }
+      `,
+      variables: {
+        query: invitationQuery,
+      },
+    }).expect(200);
+    expect(res.body.errors).not.toEqual(undefined);
+    expect(res.body.errors[0].extensions.code).toEqual(ErrorType.ForbiddenResourceOperation);
+
+    res = await graphql(token1).send({
+      query: `
+        mutation DeleteInvitation($invitationID: Int!) {
+          deleteInvitation(invitationID: $invitationID) {
+            empty
+          }
+        }
+      `,
+      variables: {
+        invitationID: savedInvitation.id,
+      },
+    }).expect(200);
+    expect(res.body.errors).not.toEqual(undefined);
+    expect(res.body.errors[0].extensions.code).toEqual(ErrorType.ForbiddenResourceOperation);
+  });
+
 
   test('create invitation with expiration', async () => {
     const expiresAt = moment().add(30, 'days');
