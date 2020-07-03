@@ -231,9 +231,10 @@ CREATE TABLE public.invitation_data (
     resource_type character varying(180) NOT NULL,
     resource_id integer NOT NULL,
     action smallint DEFAULT 1 NOT NULL,
-    expiration_time timestamp with time zone,
+    expires_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    deleted_time timestamp with time zone,
+    created_by character varying(180) NOT NULL,
+    deleted_at timestamp with time zone,
     deleted boolean DEFAULT false NOT NULL
 )
 PARTITION BY LIST (deleted);
@@ -295,9 +296,10 @@ CREATE TABLE public.policy_data (
     invitation_id integer,
     action smallint DEFAULT 1 NOT NULL,
     invite_id integer,
-    expiration_time timestamp with time zone,
+    expires_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    deleted_time timestamp with time zone,
+    created_by character varying(180) NOT NULL,
+    deleted_at timestamp with time zone,
     deleted boolean DEFAULT false NOT NULL
 )
 PARTITION BY LIST (deleted);

@@ -309,7 +309,7 @@ type Policy {
   action: PolicyAction!
   uid: String!
   user: User
-  expirationTime: String
+  expiresAt: String
   createdAt: String!
 }
 
@@ -318,7 +318,9 @@ input NewPolicy {
   resourceID: Int!
   action: PolicyAction!
   uid: String!
-  expirationTime: String
+  expiresAt: String
+  createdAt: String
+  createdBy: String
 }
 
 input PolicyQuery {
@@ -330,15 +332,16 @@ type Invitation {
   resourceType: PolicyResourceType!
   resourceID: Int!
   action: PolicyAction!
-  expirationTime: String
-  createdAt: String!
+  expiresAt: String
+  createdAt: String
+  createdBy: String
 }
 
 input NewInvitation {
   resourceType: PolicyResourceType!
   resourceID: Int!
   action: PolicyAction!
-  expirationTime: String
+  expiresAt: String
 }
 
 input InvitationQuery {

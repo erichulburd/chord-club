@@ -6,7 +6,7 @@ import { pick } from 'lodash';
 
 const attrs = [
   'id', 'resourceType', 'resourceID', 'uid', 'action', 'invitationID',
-  'expirationTime', 'createdAt', 'deletedTime', 'deleted'
+  'expiresAt', 'createdAt', 'createdBy', 'deletedAt', 'deleted'
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 'p');
@@ -14,7 +14,7 @@ const _dbDataToPolicy = makeDBDataToObject<Policy>(attrs, 'Policy');
 const dbDataToPolicy = (row: {[key: string]: any}) => {
   const policy = _dbDataToPolicy(row);
   policy.action = dbActionToGQL(row.action);
-  policy.expirationTime = policy.expirationTime && moment(policy.expirationTime).format();
+  policy.expiresAt = policy.expiresAt && moment(policy.expiresAt).format();
   policy.createdAt = moment(policy.createdAt).utc().format();
   return policy;
 };
@@ -35,27 +35,28 @@ export const dbActionToGQL = (val: number) => {
   }
 };
 
-const policyDynamicValues = {
+const policyDynamicValues = (uid: string) => ({
   resourceType: (newPolicy: NewPolicy) => `'${newPolicy.resourceType.toUpperCase()}'`,
   action: (newPolicy: NewPolicy) => `'${policyActionMap[newPolicy.action].toString()}'`,
-  expirationTime: (newPolicy: NewPolicy) => {
-    if (!newPolicy.expirationTime) {
+  expiresAt: (newPolicy: NewPolicy) => {
+    if (!newPolicy.expiresAt) {
       return NULL;
     }
-    const m = moment(newPolicy.expirationTime);
+    const m = moment(newPolicy.expiresAt);
     if (m.isValid()) {
       return `'${m.format()}'`;
     }
     return NULL;
-  }
-};
+  },
+  createdBy: `'${uid}'`,
+});
 
 const insertWhitelist = ['resource_id', 'invitation_id', 'uid'];
 
 export const insertPolicies = async (
-  newPolicies: (NewPolicy)[], queryable: Queryable) => {
+  newPolicies: (NewPolicy)[], uid: string, queryable: Queryable) => {
   const { columns, prep, values } = prepareDBInsert<NewPolicy>(
-    newPolicies, insertWhitelist, policyDynamicValues);
+    newPolicies, insertWhitelist, policyDynamicValues(uid));
   const res = await queryable.query(`
     INSERT INTO policy (${columns})
       VALUES ${prep} RETURNING ${dbFields.join(', ')}
@@ -66,13 +67,13 @@ export const insertPolicies = async (
 export const deletePolicy = async (
   policyID: number, queryable: Queryable) => {
   await queryable.query(`
-    UPDATE policy_data SET deleted=TRUE, deleted_time=NOW() WHERE id = $1
+    UPDATE policy_data SET deleted=TRUE, deleted_at=NOW() WHERE id = $1
   `, [policyID]);
 };
 
 export const makeNewPolicyFromInvitation = (uid: string, invitation: Invitation): Partial<NewPolicy & { invitationID: number | undefined }> => {
   return {
-    ...(pick(invitation, ['resourceType', 'resourceID', 'action', 'expirationTime'])),
+    ...(pick(invitation, ['resourceType', 'resourceID', 'action', 'expiresAt'])),
     uid,
     invitationID: invitation.id,
   };

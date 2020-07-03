@@ -6,7 +6,7 @@ import moment from 'moment'
 
 const attrs = [
   'id', 'resourceType', 'resourceID', 'action',
-  'expirationTime', 'createdAt', 'deletedTime', 'deleted'
+  'expiresAt', 'createdAt', 'createdBy', 'deletedAt', 'deleted'
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 'i');
@@ -14,32 +14,33 @@ const _dbDataToInvitation = makeDBDataToObject<Invitation>(attrs, 'Invitation');
 const dbDataToInvitation = (row: {[key: string]: any}) => {
   const invitation = _dbDataToInvitation(row);
   invitation.action = dbActionToGQL(row.action);
-  invitation.expirationTime = invitation.expirationTime && moment(invitation.expirationTime).utc().format();
+  invitation.expiresAt = invitation.expiresAt && moment(invitation.expiresAt).utc().format();
   invitation.createdAt = moment(invitation.createdAt).format();
   return invitation;
 };
 
-const invitationDynamicValues = {
+const invitationDynamicValues = (uid: string) => ({
   resourceType: (newInvitation: NewInvitation) => `'${newInvitation.resourceType.toUpperCase()}'`,
   action: (newInvitation: NewInvitation) => `'${policyActionMap[newInvitation.action].toString()}'`,
-  expirationTime: (newInvitation: NewInvitation) => {
-    if (!newInvitation.expirationTime) {
+  expiresAt: (newInvitation: NewInvitation) => {
+    if (!newInvitation.expiresAt) {
       return NULL;
     }
-    const m = moment(newInvitation.expirationTime);
+    const m = moment(newInvitation.expiresAt);
     if (m.isValid()) {
       return `'${m.format()}'`;
     }
     return NULL;
-  }
-};
+  },
+  createdBy: `'${uid}'`,
+});
 
 const insertWhitelist = ['resource_id'];
 
 export const insertInvitations = async (
-  newInvitations: NewInvitation[], queryable: Queryable) => {
+  newInvitations: NewInvitation[], uid: string, queryable: Queryable) => {
   const { columns, prep, values } = prepareDBInsert<NewInvitation>(
-    newInvitations, insertWhitelist, invitationDynamicValues);
+    newInvitations, insertWhitelist, invitationDynamicValues(uid));
   const res = await queryable.query(`
     INSERT INTO invitation (${columns})
       VALUES ${prep} RETURNING ${dbFields.join(', ')}
@@ -50,7 +51,7 @@ export const insertInvitations = async (
 export const deleteInvitation = async (
   invitationID: number, queryable: Queryable) => {
   await queryable.query(`
-    UPDATE invitation_data SET deleted=TRUE, deleted_time=NOW() WHERE id = $1
+    UPDATE invitation_data SET deleted=TRUE, deleted_at=NOW() WHERE id = $1
   `, [invitationID]);
 };
 

@@ -3,9 +3,10 @@ CREATE TABLE invitation_data (
   resource_type VARCHAR(180) NOT NULL,
   resource_id INTEGER NOT NULL,
   action SMALLINT NOT NULL DEFAULT 1,
-  expiration_time TIMESTAMP WITH TIME ZONE,
+  expires_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  deleted_time TIMESTAMP WITH TIME ZONE,
+  created_by VARCHAR(180) NOT NULL,
+  deleted_at TIMESTAMP WITH TIME ZONE,
   deleted BOOLEAN NOT NULL DEFAULT FALSE,
 
   PRIMARY KEY (id, deleted)
@@ -21,9 +22,10 @@ CREATE TABLE policy_data (
   invitation_id INTEGER,
   action SMALLINT NOT NULL DEFAULT 1,
   invite_id INTEGER,
-  expiration_time TIMESTAMP WITH TIME ZONE,
+  expires_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  deleted_time TIMESTAMP WITH TIME ZONE,
+  created_by VARCHAR(180) NOT NULL,
+  deleted_at TIMESTAMP WITH TIME ZONE,
   deleted BOOLEAN NOT NULL DEFAULT FALSE,
 
   PRIMARY KEY (id, deleted)

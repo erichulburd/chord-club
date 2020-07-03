@@ -52,19 +52,19 @@ describe('policy ops', () => {
   });
 
   test('create policy without expiration', async () => {
-    const expirationTime = moment().add(30, 'days').utc();
+    const expiresAt = moment().add(30, 'days').utc();
     const policy: NewPolicy = {
       uid: 'uid1',
       resourceType: PolicyResourceType.Tag,
       resourceID: tags[0][0].id,
       action: PolicyAction.Read,
-      expirationTime: expirationTime.utc().format(),
+      expiresAt: expiresAt.utc().format(),
     };
     let res = await graphql(token).send({
       query: `
         mutation CreatePolicy($policy: NewPolicy!) {
           createPolicy(policy: $policy) {
-            id resourceType resourceID expirationTime user { uid username }
+            id resourceType resourceID expiresAt user { uid username }
           }
         }
       `,
@@ -83,7 +83,7 @@ describe('policy ops', () => {
     expect(savedPolicy.action).toEqual(PolicyAction.Read);
     expect(savedPolicy.resourceID).toEqual(tags[0][0].id);
     expect(savedPolicy.resourceType).toEqual(PolicyResourceType.Tag);
-    expect(moment(savedPolicy.expirationTime).utc().format()).toEqual(expirationTime.format());
+    expect(moment(savedPolicy.expiresAt).utc().format()).toEqual(expiresAt.format());
 
     const query: PolicyQuery = {
       resource: {
@@ -95,7 +95,7 @@ describe('policy ops', () => {
       query: `
         query Policies($query: PolicyQuery!) {
           policies(query: $query) {
-            id resourceType resourceID expirationTime user { uid username }
+            id resourceType resourceID expiresAt user { uid username }
           }
         }
       `,
@@ -106,7 +106,7 @@ describe('policy ops', () => {
     let policies: Policy[] = res.body.data.policies;
     expect(policies.length).toEqual(1);
     expect(policies[0].id).toEqual(savedPolicy.id);
-    expect(policies[0].expirationTime).toEqual(savedPolicy.expirationTime);
+    expect(policies[0].expiresAt).toEqual(savedPolicy.expiresAt);
 
     res = await graphql(token).send({
       query: `
@@ -126,7 +126,7 @@ describe('policy ops', () => {
       query: `
         query Policies($query: PolicyQuery!) {
           policies(query: $query) {
-            id resourceType resourceID expirationTime user { uid username }
+            id resourceType resourceID expiresAt user { uid username }
           }
         }
       `,

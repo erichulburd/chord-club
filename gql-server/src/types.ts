@@ -331,7 +331,7 @@ export type Policy = {
   action: PolicyAction;
   uid: Scalars['String'];
   user?: Maybe<User>;
-  expirationTime?: Maybe<Scalars['String']>;
+  expiresAt?: Maybe<Scalars['String']>;
   createdAt: Scalars['String'];
 };
 
@@ -340,7 +340,9 @@ export type NewPolicy = {
   resourceID: Scalars['Int'];
   action: PolicyAction;
   uid: Scalars['String'];
-  expirationTime?: Maybe<Scalars['String']>;
+  expiresAt?: Maybe<Scalars['String']>;
+  createdAt?: Maybe<Scalars['String']>;
+  createdBy?: Maybe<Scalars['String']>;
 };
 
 export type PolicyQuery = {
@@ -353,15 +355,16 @@ export type Invitation = {
   resourceType: PolicyResourceType;
   resourceID: Scalars['Int'];
   action: PolicyAction;
-  expirationTime?: Maybe<Scalars['String']>;
-  createdAt: Scalars['String'];
+  expiresAt?: Maybe<Scalars['String']>;
+  createdAt?: Maybe<Scalars['String']>;
+  createdBy?: Maybe<Scalars['String']>;
 };
 
 export type NewInvitation = {
   resourceType: PolicyResourceType;
   resourceID: Scalars['Int'];
   action: PolicyAction;
-  expirationTime?: Maybe<Scalars['String']>;
+  expiresAt?: Maybe<Scalars['String']>;
 };
 
 export type InvitationQuery = {

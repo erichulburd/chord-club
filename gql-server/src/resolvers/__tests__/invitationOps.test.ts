@@ -81,7 +81,7 @@ describe('invitation ops', () => {
     }
     expect(savedInvitation.resourceID).toEqual(tags[0][0].id);
     expect(savedInvitation.resourceType).toEqual(PolicyResourceType.Tag);
-    expect(savedInvitation.expirationTime).toEqual(null);
+    expect(savedInvitation.expiresAt).toEqual(null);
 
     const invitationQuery: InvitationQuery = {
       resource: {
@@ -150,12 +150,12 @@ describe('invitation ops', () => {
   });
 
   test('create invitation with expiration', async () => {
-    const expirationTime = moment().add(30, 'days');
+    const expiresAt = moment().add(30, 'days');
     const invitation: NewInvitation = {
       resourceType: PolicyResourceType.Tag,
       resourceID: tags[0][0].id,
       action: PolicyAction.Wildcard,
-      expirationTime: expirationTime.format(),
+      expiresAt: expiresAt.format(),
     };
     const tokenExpirationHours = 3;
     let res = await graphql(token).send({
@@ -182,7 +182,7 @@ describe('invitation ops', () => {
     }
     expect(savedInvitation.resourceID).toEqual(tags[0][0].id);
     expect(savedInvitation.resourceType).toEqual(PolicyResourceType.Tag);
-    expect(moment(savedInvitation.expirationTime).utc().format()).toEqual(expirationTime.utc().format());
+    expect(moment(savedInvitation.expiresAt).utc().format()).toEqual(expiresAt.utc().format());
 
     res = await graphql(token1).send({
       query: `
@@ -210,6 +210,6 @@ describe('invitation ops', () => {
     expect(policies[0].resourceID).toEqual(savedInvitation.resourceID);
     expect(policies[0].invitationID).toEqual(savedInvitation.id);
     expect(policies[0].uid).toEqual('uid1');
-    expect(moment(policies[0].expirationTime).utc().format()).toEqual(expirationTime.utc().format());
+    expect(moment(policies[0].expiresAt).utc().format()).toEqual(expiresAt.utc().format());
   });
 });

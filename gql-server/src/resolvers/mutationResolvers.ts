@@ -288,7 +288,7 @@ M.deleteTag = wrapTopLevelOp(async (
 M.createInvitation = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: CreateInvitationArgs, context: Context): Promise<CreateInvitationResponse> => {
   await assertResourceOwner(context.uid, args.invitation, context.db);
-  const invitations = await insertInvitations([args.invitation], context.db);
+  const invitations = await insertInvitations([args.invitation], context.uid, context.db);
   const tokenOpts: Partial<SignOptions> = {};
   if (args.tokenExpirationHours) {
     tokenOpts.expiresIn = args.tokenExpirationHours * 3600;
@@ -324,14 +324,14 @@ M.acceptInvitation = wrapTopLevelOp(async (
       throw invalidInvitationTokenError('valid invitation not found');
     }
     const newPolicy = makeNewPolicyFromInvitation(context.uid, invitation) as NewPolicy;
-    await insertPolicies([newPolicy], context.db);
+    await insertPolicies([newPolicy], invitation.createdBy || '', context.db);
 });
 
 // Policies
 M.createPolicy = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: CreatePolicyArgs, context: Context): Promise<Policy> => {
     await assertResourceOwner(context.uid, args.policy, context.db);
-    const policies = await insertPolicies([args.policy], context.db);
+    const policies = await insertPolicies([args.policy], context.uid, context.db);
     return policies[0];
 });
 
