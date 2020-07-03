@@ -35,7 +35,7 @@ export const dbActionToGQL = (val: number) => {
   }
 };
 
-const policyDynamicValues = (uid: string) => ({
+const policyDynamicValues = (createdby: string) => ({
   resourceType: (newPolicy: NewPolicy) => `'${newPolicy.resourceType.toUpperCase()}'`,
   action: (newPolicy: NewPolicy) => `'${policyActionMap[newPolicy.action].toString()}'`,
   expiresAt: (newPolicy: NewPolicy) => {
@@ -48,15 +48,15 @@ const policyDynamicValues = (uid: string) => ({
     }
     return NULL;
   },
-  createdBy: `'${uid}'`,
+  createdBy: `'${createdby}'`,
 });
 
 const insertWhitelist = ['resource_id', 'invitation_id', 'uid'];
 
 export const insertPolicies = async (
-  newPolicies: (NewPolicy)[], uid: string, queryable: Queryable) => {
+  newPolicies: (NewPolicy)[], createdBy: string, queryable: Queryable) => {
   const { columns, prep, values } = prepareDBInsert<NewPolicy>(
-    newPolicies, insertWhitelist, policyDynamicValues(uid));
+    newPolicies, insertWhitelist, policyDynamicValues(createdBy));
   const res = await queryable.query(`
     INSERT INTO policy (${columns})
       VALUES ${prep} RETURNING ${dbFields.join(', ')}

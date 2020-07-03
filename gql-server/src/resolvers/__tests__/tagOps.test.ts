@@ -6,8 +6,9 @@ import { getTestKey, signWithTestKey } from '../../../tests/testingKeys';
 import { makeTagNew } from '../../../tests/factories';
 import { findTagByID } from '../../repositories/tag';
 import express from 'express';
-import { TagQuery, BaseScopes, TagType, Tag, TagNew } from '../../types';
+import { TagQuery, TagType, Tag, TagNew, PolicyResourceType, PolicyAction } from '../../types';
 import { insertNewTags } from '../../repositories/tag';
+import { insertPolicies } from '../../repositories/policy';
 
 
 describe('tag ops', () => {
@@ -32,6 +33,7 @@ describe('tag ops', () => {
   });
 
   afterEach(async () => {
+    // await txManager.commit(0);
     await dbClientManager.rollbackAndRelease();
   });
 
@@ -40,23 +42,32 @@ describe('tag ops', () => {
   });
 
   test('basic query', async () => {
-    await Promise.all(['uid', 'uid1'].map(async (uid) => {
-      await insertNewTags([
-        makeTagNew({ tagType: TagType.List, scope: BaseScopes.Public }),
-        makeTagNew({ tagType: TagType.Descriptor, scope: BaseScopes.Public }),
-        makeTagNew({ tagType: TagType.List, scope: uid }),
-        makeTagNew({ tagType: TagType.Descriptor, scope: uid }),
+    const uids = ['uid', 'uid1'];
+    await Promise.all(uids.map(async (uid) => {
+      const tags  = await insertNewTags([
+        makeTagNew({ tagType: TagType.List }),
+        makeTagNew({ tagType: TagType.Descriptor }),
+        makeTagNew({ tagType: TagType.List }),
+        makeTagNew({ tagType: TagType.Descriptor }),
+      ], uid, client);
+      await insertPolicies([
+        {
+          resourceType: PolicyResourceType.Tag, resourceID: tags[0].id,
+          uid: uids.find(id => id !== uid) || '', action: PolicyAction.Wildcard,
+        }, {
+          resourceType: PolicyResourceType.Tag, resourceID: tags[1].id,
+          uid: uids.find(id => id !== uid) || '', action: PolicyAction.Wildcard,
+        },
       ], uid, client);
     }));
     const query: TagQuery = {
-      scopes: ['uid', BaseScopes.Public],
       tagTypes: [TagType.Descriptor, TagType.List]
     }
     const res1 = await graphql().send({
       query: `
         query ($query: TagQuery!){
           tags(query: $query) {
-            id munge displayName tagType scope
+            id munge displayName tagType
           }
         }
       `,
@@ -72,7 +83,7 @@ describe('tag ops', () => {
       query: `
         query ($query: TagQuery!){
           tags(query: $query) {
-            id munge displayName tagType scope
+            id munge displayName tagType
           }
         }
       `,
@@ -83,46 +94,30 @@ describe('tag ops', () => {
     expect(
       res2.body.data.tags.every((t: Tag) => t.tagType === TagType.Descriptor),
     ).toEqual(true);
-
-    query.tagTypes = [TagType.Descriptor, TagType.List];
-    query.scopes = ['uid'];
-    const res3 = await graphql().send({
-      query: `
-        query ($query: TagQuery!){
-          tags(query: $query) {
-            id munge displayName tagType scope
-          }
-        }
-      `,
-      variables: { query },
-    }).expect(200);
-    expect(errors).toEqual(undefined);
-    expect(res3.body.data.tags.length).toEqual(2);
-    expect(
-      res3.body.data.tags.every((t: Tag) => t.scope === 'uid'),
-    ).toEqual(true);
   });
 
   test('query by tag ids', async () => {
     const tagss = await Promise.all(['uid', 'uid1'].map(async (uid) => {
       return insertNewTags([
-        makeTagNew({ tagType: TagType.List, scope: BaseScopes.Public }),
-        makeTagNew({ tagType: TagType.Descriptor, scope: BaseScopes.Public }),
-        makeTagNew({ tagType: TagType.List, scope: uid }),
-        makeTagNew({ tagType: TagType.Descriptor, scope: uid }),
+        // makeTagNew({ tagType: TagType.List, scope: BaseScopes.Public }),
+        makeTagNew({ tagType: TagType.List }),
+        // makeTagNew({ tagType: TagType.Descriptor, scope: BaseScopes.Public }),
+        makeTagNew({ tagType: TagType.Descriptor }),
+        makeTagNew({ tagType: TagType.List }),
+        makeTagNew({ tagType: TagType.Descriptor }),
       ], uid, client);
     }));
     const tagIDs = tagss[0].map(t => t.id).slice(0, 3);
     const query: TagQuery = {
       ids: tagIDs,
-      scopes: ['uid', BaseScopes.Public],
+      // scopes: ['uid'.Public],
       tagTypes: [TagType.Descriptor, TagType.List]
     }
     const res1 = await graphql().send({
       query: `
         query ($query: TagQuery!){
           tags(query: $query) {
-            id munge displayName tagType scope
+            id munge displayName tagType
           }
         }
       `,
@@ -145,7 +140,7 @@ describe('tag ops', () => {
       query: `
         mutation ($tagNews: [TagNew!]!) {
           createTags(tagNews: $tagNews) {
-            id munge displayName tagType scope createdBy
+            id munge displayName tagType createdBy
           }
         }
       `,
@@ -170,7 +165,7 @@ describe('tag ops', () => {
     const body2 = res2.body;
     expect(body2.errors).toEqual(undefined);
 
-    const tag = await findTagByID(tags[0].id, [tags[0].scope], client);
+    const tag = await findTagByID(tags[0].id, tags[0].createdBy, client);
     expect(tag).toEqual(undefined);
   });
 });

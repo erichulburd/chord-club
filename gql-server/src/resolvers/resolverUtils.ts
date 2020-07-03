@@ -40,7 +40,7 @@ export const assertResourceOwner = async (
   uid: string, resource: PolicyResource, db: Queryable) => {
   switch (resource.resourceType) {
     case PolicyResourceType.Tag:
-      const tag = await findTagByID(resource.resourceID, [uid], db);
+      const tag = await findTagByID(resource.resourceID, uid, db);
     if (tag === undefined) {
       throw forbiddenResourceOpError(resource);
     }

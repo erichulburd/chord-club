@@ -31,5 +31,4 @@ CREATE TABLE policy_data (
   PRIMARY KEY (id, deleted)
 ) PARTITION BY LIST(deleted);
 CREATE TABLE policy PARTITION OF policy_data FOR VALUES IN (FALSE);
-CREATE UNIQUE INDEX policy_resource_uid_idx ON policy(resource_type, resource_id, uid);
 CREATE TABLE policy_deleted PARTITION OF policy_data FOR VALUES IN (TRUE);

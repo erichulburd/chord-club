@@ -29,7 +29,6 @@ enum TagType {
 
 interface TagBase {
   displayName: String!
-  scope: String!
   tagType: TagType!
 }
 
@@ -39,7 +38,6 @@ type Tag implements TagBase {
   displayName: String!
   createdBy: String!
   createdAt: String!
-  scope: String!
   password: String!
   tagType: TagType!
   tagPosition: Int
@@ -48,11 +46,6 @@ type Tag implements TagBase {
 input TagNew {
   displayName: String!
   tagType: TagType!
-  scope: String!
-}
-
-enum BaseScopes {
-  PUBLIC,
 }
 
 enum TagQueryOrder {
@@ -64,7 +57,6 @@ input TagQuery {
   displayName: String
   ids: [Int!]
   tagTypes: [TagType!]!
-  scopes: [String!]!
   order: TagQueryOrder
   asc: Boolean
   after: Int
@@ -102,7 +94,6 @@ interface ChartBase {
   description: String
   abc: String!
   tags: [Tag!]!
-  scope: String!
   chartType: ChartType!
   bassNote: Note
   root: Note
@@ -125,7 +116,6 @@ type Chart implements ChartBase {
   description: String
   abc: String!
   tags: [Tag!]!
-  scope: String!
   chartType: ChartType!
   bassNote: Note
   root: Note
@@ -147,7 +137,6 @@ input ChartNew {
   name: String
   description: String
   abc: String!
-  scope: String!
   chartType: ChartType!
   bassNote: Note
   root: Note
@@ -200,7 +189,6 @@ input ChartUpdate {
   description: String
   abc: String
   imageURL: String
-  scope: String
   extensionIDs: [Int!]
   tags: [TagNew!]
 }
@@ -220,7 +208,6 @@ input ChartQuery {
   order: ChartQueryOrder
   asc: Boolean
   limit: Int
-  scopes: [String!]
 }
 
 interface UserBase {
@@ -262,10 +249,7 @@ enum ErrorType {
   UNAUTHENTICATED,
   # custom
   CHART_NOT_FOUND,
-  INVALID_TAG_QUERY_SCOPE_ERROR,
-  INVALID_TAG_SCOPE_ERROR,
   INVALID_CHART_TAG_ERROR,
-  INVALID_CHART_SCOPE,
   INVALID_CHART_REACTION,
   INVALID_TAG_POSITION_UPDATE,
   DUPLICATE_USERNAME,

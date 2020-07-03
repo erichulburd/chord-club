@@ -19,7 +19,7 @@ const dbDataToInvitation = (row: {[key: string]: any}) => {
   return invitation;
 };
 
-const invitationDynamicValues = (uid: string) => ({
+const invitationDynamicValues = (createdby: string) => ({
   resourceType: (newInvitation: NewInvitation) => `'${newInvitation.resourceType.toUpperCase()}'`,
   action: (newInvitation: NewInvitation) => `'${policyActionMap[newInvitation.action].toString()}'`,
   expiresAt: (newInvitation: NewInvitation) => {
@@ -32,15 +32,15 @@ const invitationDynamicValues = (uid: string) => ({
     }
     return NULL;
   },
-  createdBy: `'${uid}'`,
+  createdBy: `'${createdby}'`,
 });
 
 const insertWhitelist = ['resource_id'];
 
 export const insertInvitations = async (
-  newInvitations: NewInvitation[], uid: string, queryable: Queryable) => {
+  newInvitations: NewInvitation[], createdby: string, queryable: Queryable) => {
   const { columns, prep, values } = prepareDBInsert<NewInvitation>(
-    newInvitations, insertWhitelist, invitationDynamicValues(uid));
+    newInvitations, insertWhitelist, invitationDynamicValues(createdby));
   const res = await queryable.query(`
     INSERT INTO invitation (${columns})
       VALUES ${prep} RETURNING ${dbFields.join(', ')}

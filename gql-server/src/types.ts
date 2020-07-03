@@ -25,7 +25,6 @@ export enum TagType {
 
 export type TagBase = {
   displayName: Scalars['String'];
-  scope: Scalars['String'];
   tagType: TagType;
 };
 
@@ -36,7 +35,6 @@ export type Tag = TagBase & {
   displayName: Scalars['String'];
   createdBy: Scalars['String'];
   createdAt: Scalars['String'];
-  scope: Scalars['String'];
   password: Scalars['String'];
   tagType: TagType;
   tagPosition?: Maybe<Scalars['Int']>;
@@ -45,12 +43,7 @@ export type Tag = TagBase & {
 export type TagNew = {
   displayName: Scalars['String'];
   tagType: TagType;
-  scope: Scalars['String'];
 };
-
-export enum BaseScopes {
-  Public = 'PUBLIC'
-}
 
 export enum TagQueryOrder {
   DisplayName = 'DISPLAY_NAME',
@@ -61,7 +54,6 @@ export type TagQuery = {
   displayName?: Maybe<Scalars['String']>;
   ids?: Maybe<Array<Scalars['Int']>>;
   tagTypes: Array<TagType>;
-  scopes: Array<Scalars['String']>;
   order?: Maybe<TagQueryOrder>;
   asc?: Maybe<Scalars['Boolean']>;
   after?: Maybe<Scalars['Int']>;
@@ -100,7 +92,6 @@ export type ChartBase = {
   description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
-  scope: Scalars['String'];
   chartType: ChartType;
   bassNote?: Maybe<Note>;
   root?: Maybe<Note>;
@@ -125,7 +116,6 @@ export type Chart = ChartBase & {
   description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
-  scope: Scalars['String'];
   chartType: ChartType;
   bassNote?: Maybe<Note>;
   root?: Maybe<Note>;
@@ -147,7 +137,6 @@ export type ChartNew = {
   name?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
-  scope: Scalars['String'];
   chartType: ChartType;
   bassNote?: Maybe<Note>;
   root?: Maybe<Note>;
@@ -220,7 +209,6 @@ export type ChartUpdate = {
   description?: Maybe<Scalars['String']>;
   abc?: Maybe<Scalars['String']>;
   imageURL?: Maybe<Scalars['String']>;
-  scope?: Maybe<Scalars['String']>;
   extensionIDs?: Maybe<Array<Scalars['Int']>>;
   tags?: Maybe<Array<TagNew>>;
 };
@@ -240,7 +228,6 @@ export type ChartQuery = {
   order?: Maybe<ChartQueryOrder>;
   asc?: Maybe<Scalars['Boolean']>;
   limit?: Maybe<Scalars['Int']>;
-  scopes?: Maybe<Array<Scalars['String']>>;
 };
 
 export type UserBase = {
@@ -281,10 +268,7 @@ export type UserQuery = {
 export enum ErrorType {
   Unauthenticated = 'UNAUTHENTICATED',
   ChartNotFound = 'CHART_NOT_FOUND',
-  InvalidTagQueryScopeError = 'INVALID_TAG_QUERY_SCOPE_ERROR',
-  InvalidTagScopeError = 'INVALID_TAG_SCOPE_ERROR',
   InvalidChartTagError = 'INVALID_CHART_TAG_ERROR',
-  InvalidChartScope = 'INVALID_CHART_SCOPE',
   InvalidChartReaction = 'INVALID_CHART_REACTION',
   InvalidTagPositionUpdate = 'INVALID_TAG_POSITION_UPDATE',
   DuplicateUsername = 'DUPLICATE_USERNAME',

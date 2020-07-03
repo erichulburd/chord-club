@@ -1,10 +1,9 @@
-import {  kebabCase, groupBy, trim } from 'lodash';
-import { TagQuery, Tag, TagQueryOrder, TagNew, Chart, BaseScopes, TagBase, TagType } from '../types';
+import {  kebabCase, groupBy, trim, omit } from 'lodash';
+import { TagQuery, Tag, TagQueryOrder, TagNew, Chart, TagType } from '../types';
 import { makeDBFields, makeSelectFields, makeDBDataToObject, prepareDBInsert, Queryable } from './db';
-import {  invalidChartTagError, invalidTagQueryScopeError, invalidNewTagsScopeError } from '../util/errors';
 
 const attrs = [
-  'id', 'munge', 'displayName', 'createdBy', 'createdAt', 'scope', 'tagType',
+  'id', 'munge', 'displayName', 'createdBy', 'createdAt', 'tagType',
 ];
 const dbFields = makeDBFields(attrs);
 const selectFields = makeSelectFields(dbFields, 't');
@@ -15,58 +14,66 @@ interface BaseTagQuery {
   direction: 'ASC' | 'DESC';
   limit: number;
   tagTypes: TagType[];
-  scopes: string[];
 }
 interface BaseTagQueryAfter extends BaseTagQuery {
   after: number;
 }
 
-const searchForTag = async (displayName: string, query: BaseTagQuery, queryable: Queryable) => {
+const searchForTag = async (displayName: string, uid: string, query: BaseTagQuery, queryable: Queryable) => {
   const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM tag t
-      WHERE LOWER(t.display_name) LIKE $1 AND t.scope = ANY ($2) AND t.tag_type = ANY ($3)
-  `, [`${displayName.toLowerCase()}%`, query.scopes, query.tagTypes]);
+        LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
+      WHERE LOWER(t.display_name) LIKE $1
+        AND t.tag_type = ANY ($3)
+        AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
+  `, [`${displayName.toLowerCase()}%`, uid, query.tagTypes]);
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
-export const findTagsByID = async (ids: number[], scopes: string[], queryable: Queryable) => {
+export const findTagsByID = async (ids: number[], uid: string, queryable: Queryable) => {
   const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM tag t
-      WHERE t.id = ANY ($1) AND t.scope = ANY ($2)
-  `, [ids, scopes]);
+        LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
+      WHERE t.id = ANY ($1)
+        AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
+  `, [ids, uid]);
   return result.rows.map(dbDataToTag);
 };
 
-export const findTagByID = async (id: number, scopes: string[], queryable: Queryable) => {
+export const findTagByID = async (id: number, uid: string, queryable: Queryable) => {
   const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM tag t
-      WHERE t.id = $1 AND t.scope = ANY ($2)
-  `, [id, scopes]);
+        LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
+      WHERE t.id = $1
+        AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
+  `, [id, uid]);
   if (result.rows.length < 1) {
     return undefined;
   }
   return dbDataToTag(result.rows[0]) as Tag;
 };
 
-const findTags = async (query: BaseTagQuery, queryable: Queryable) => {
+const findTags = async (query: BaseTagQuery, uid: string, queryable: Queryable) => {
   const result = await queryable.query(`
   SELECT
     ${selectFields}
   FROM tag t
-  WHERE t.scope = ANY ($1) AND t.tag_type = ANY ($2)
+    LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
+  WHERE t.tag_type = ANY ($1)
+    AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
   ORDER BY $3, id ${query.direction}
   LIMIT $4
-  `, [query.scopes, query.tagTypes, query.orderBy, query.limit]);
+  `, [query.tagTypes, uid, query.orderBy, query.limit]);
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
-const findTagsAfter = async (query: BaseTagQueryAfter, queryable: Queryable) => {
+const findTagsAfter = async (query: BaseTagQueryAfter, uid: string, queryable: Queryable) => {
   const result = await queryable.query(`
   WITH ranks AS (
     SELECT
@@ -75,7 +82,9 @@ const findTagsAfter = async (query: BaseTagQueryAfter, queryable: Queryable) => 
         ORDER BY $1, t.id ${query.direction}
       ) rank_number
     FROM tag t
-    WHERE t.scope = ANY ($2) AND t.tag_type = ANY ($5)
+      LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
+    WHERE t.tag_type = ANY ($5)
+      AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
   )
   SELECT
     *
@@ -83,7 +92,7 @@ const findTagsAfter = async (query: BaseTagQueryAfter, queryable: Queryable) => 
   WHERE rank_number > (SELECT rank_number FROM ranks WHERE id = $3)
   ORDER BY $1, id ${query.direction}
   LIMIT $4
-  `, [query.orderBy, query.scopes, query.after, query.limit, query.tagTypes]);
+  `, [query.orderBy, uid, query.after, query.limit, query.tagTypes]);
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
@@ -91,17 +100,17 @@ export const getTagMunge = (displayName: string) => {
   return kebabCase(trim(displayName).toLowerCase());
 };
 
-export const findExistingTags =
-  async (tags: TagNew[], queryable: Queryable): Promise<Tag[]> => {
+export const findExistingTagsCreatedByUID =
+  async (tags: TagNew[], uid: string, queryable: Queryable): Promise<Tag[]> => {
   if (!tags || tags.length === 0) {
     return [];
   }
   const values: any[] = [];
   const prep: string[] = [];
   tags.forEach((tag, i) => {
-    prep.push(`(munge = $${i*2+1} AND scope = $${i*2+2})`);
+    prep.push(`(munge = $${i*2+1} AND created_by = $${i*2+2})`);
     values.push(getTagMunge(tag.displayName));
-    values.push(tag.scope);
+    values.push(uid);
   });
   const result = await queryable.query(`
     SELECT ${selectFields} FROM tag t
@@ -112,7 +121,7 @@ export const findExistingTags =
 
 export const insertNewTags = async (newTags: TagNew[], uid: string, queryable: Queryable) => {
   const { prep, values, columns } =
-    prepareDBInsert(newTags.map((t) => ({ ...t, munge: getTagMunge(t.displayName), createdBy: uid })), dbFields);
+    prepareDBInsert(newTags.map((t) => ({ ...t, munge: getTagMunge(t.displayName), createdBy: uid })), dbFields.filter(f => f !== 'id'));
   const result = await queryable.query(`
     INSERT INTO
       tag (${columns})
@@ -132,45 +141,15 @@ export const deleteTag = async (tagID: number, uid: string, queryable: Queryable
   `, [uid, tagID]);
 };
 
-const validatedTagQueryScopes = (scopes: string[], uid: string): void => {
-  const permittedScopes = {
-    [uid]: true,
-    [BaseScopes.Public]: true,
-  };
-  scopes.forEach((s) => {
-    if (!permittedScopes[s]) {
-      throw invalidTagQueryScopeError(s);
-    }
-  });
-};
-
-const validateTagScopesForChart = (tags: TagNew[], chart: Chart, uid: string): TagNew[] => {
-  const isPublic = chart.scope === BaseScopes.Public;
-  const defaultScope = uid;
-  const permittedScopes = {
-    [uid]: true,
-    [BaseScopes.Public]: isPublic,
-  };
-  tags.forEach((t) => {
-    if (t.scope && !permittedScopes[t.scope]) {
-      throw invalidChartTagError(chart.id, t as TagBase);
-    }
-  });
-  return tags.map((t) => ({
-    ...t,
-    scope: t.scope || defaultScope,
-  }), {});
-};
-
 export const addTagsForChart = async (chart: Chart, tags: TagNew[], uid: string, queryable: Queryable) => {
   if (!tags || tags.length === 0) {
     return;
   }
-  const validatedTags = validateTagScopesForChart(tags, chart, uid);
-  const existingTags = await findExistingTags(validatedTags, queryable);
+  const existingTags = await findExistingTagsCreatedByUID(
+    tags, uid, queryable);
   let savedTags = [...existingTags];
 
-  const newTags: TagNew[] = validatedTags
+  const newTags: TagNew[] = tags
     .filter((tag) => !existingTags.some(t => t.munge === getTagMunge(tag.displayName)));
   if (newTags.length > 0) {
     const createdTags = await insertNewTags(newTags, uid, queryable);
@@ -205,17 +184,15 @@ export const unTag = async (chartID: number, tagIDs: number[], uid: string, quer
 };
 
 export const findTagsForCharts = async (
-  chartIDs: readonly number[] | number[], uid: string | undefined, queryable: Queryable,
+  chartIDs: readonly number[] | number[], queryable: Queryable,
   ) => {
-  const tagScopes: string[] = [BaseScopes.Public];
-  if (uid !== undefined) tagScopes.push(uid);
   const result = await queryable.query(`
     SELECT ct.chart_id, ct.tag_position, ${selectFields}
       FROM tag t
         INNER JOIN chart_tag ct
         ON t.id = ct.tag_id
-      WHERE ct.chart_id = ANY ($1) AND t.scope = ANY ($2)
-  `, [chartIDs, tagScopes]);
+      WHERE ct.chart_id = ANY ($1)
+  `, [chartIDs]);
   const tagDataByChartID = groupBy(result.rows, 'chart_id');
   // this is a little hack around inability to call map on readonly? array.
   if (Array.isArray(chartIDs)) {
@@ -235,7 +212,7 @@ export const updateTagPositions = async (
 };
 
 export const getCompositeTagKey =
-  (t: TagNew | Tag) => `${t.scope}-${getTagMunge(t.displayName)}`;
+  (t: TagNew | Tag) => getTagMunge(t.displayName)
 
 export const tagsAreEqual = (t1: TagNew | Tag, t2: TagNew | Tag) =>
   getCompositeTagKey(t1) === getCompositeTagKey(t2);
@@ -250,28 +227,10 @@ export const reconcileChartTags = async (
   await addTagsForChart(chart, tagsToAdd, chart.createdBy, queryable);
 };
 
-export const validateNewTagsScopes = (tags: TagNew[], uid: string): TagNew[] => {
-  const defaultScope = uid;
-  const permittedScopes = {
-    [uid]: true,
-    [BaseScopes.Public]: true,
-  };
-  tags.forEach((t) => {
-    if (t.scope && !permittedScopes[t.scope]) {
-      throw invalidNewTagsScopeError(t as TagBase);
-    }
-  });
-  return tags.map((t) => ({
-    ...t,
-    scope: t.scope || defaultScope,
-  }), {});
-};
-
 export const executeTagQuery = async (
   rawQuery: TagQuery, uid: string, queryable: Queryable): Promise<Tag[]> => {
-    validatedTagQueryScopes(rawQuery.scopes, uid);
   if (rawQuery.ids) {
-    return findTagsByID(rawQuery.ids, rawQuery.scopes, queryable);
+    return findTagsByID(rawQuery.ids, uid, queryable);
   }
   const order = (rawQuery.order || TagQueryOrder.DisplayName).toLowerCase();
   const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
@@ -280,16 +239,15 @@ export const executeTagQuery = async (
 
   const query: BaseTagQuery = {
     orderBy, direction, limit, tagTypes: rawQuery.tagTypes,
-    scopes: rawQuery.scopes,
   };
   if (rawQuery.displayName) {
-    return searchForTag(rawQuery.displayName, query, queryable);
+    return searchForTag(rawQuery.displayName, uid, query, queryable);
   }
 
   if (rawQuery.after) {
     const afterQuery: BaseTagQueryAfter = { ...query, after: rawQuery.after };
-    return findTagsAfter(afterQuery, queryable);
+    return findTagsAfter(afterQuery, uid, queryable);
   }
-  return findTags(query, queryable);
+  return findTags(query, uid, queryable);
 };
 

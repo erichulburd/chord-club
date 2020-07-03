@@ -40,8 +40,8 @@ describe('invitation ops', () => {
     await insertUserNew(makeUserNew(), 'uid2', client);
     tags = await Promise.all(['uid', 'uid1'].map(async (uid) => {
       return insertNewTags([
-        makeTagNew({ tagType: TagType.List, scope: uid }),
-        makeTagNew({ tagType: TagType.Descriptor, scope: uid }),
+        makeTagNew({ tagType: TagType.List }),
+        makeTagNew({ tagType: TagType.Descriptor }),
       ], uid, client);
     }));
   });

@@ -53,6 +53,46 @@ CREATE TYPE public.reaction_type AS ENUM (
 
 ALTER TYPE public.reaction_type OWNER TO developer;
 
+--
+-- Name: chart_policies_for_uid(text); Type: FUNCTION; Schema: public; Owner: developer
+--
+
+CREATE FUNCTION public.chart_policies_for_uid(uid text) RETURNS TABLE(chart_id integer, policy_action smallint)
+    LANGUAGE sql
+    AS $_$
+
+  SELECT c.id AS chart_id, p.action AS policy_action
+    FROM chart c
+      INNER JOIN chart_tag ct ON ct.chart_id = c.id
+      INNER JOIN policy p ON p.resource_id = ct.tag_id
+  WHERE p.uid = $1 AND
+    p.resource_type = 'TAG' AND
+    (p.expires_at IS NULL OR p.expires_at >= NOW())
+
+$_$;
+
+
+ALTER FUNCTION public.chart_policies_for_uid(uid text) OWNER TO developer;
+
+--
+-- Name: tag_policies_for_uid(text); Type: FUNCTION; Schema: public; Owner: developer
+--
+
+CREATE FUNCTION public.tag_policies_for_uid(uid text) RETURNS TABLE(tag_id integer, policy_action smallint)
+    LANGUAGE sql
+    AS $_$
+
+  SELECT p.resource_id AS tag_id, p.action AS policy_action
+    FROM policy p
+    WHERE p.uid = $1 AND
+      p.resource_type = 'TAG' AND
+      (p.expires_at IS NULL OR p.expires_at >= NOW())
+
+$_$;
+
+
+ALTER FUNCTION public.tag_policies_for_uid(uid text) OWNER TO developer;
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -88,7 +128,7 @@ CREATE TABLE public.chart (
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone,
     created_by character varying(180) NOT NULL,
-    scope character varying(180) NOT NULL
+    _scope character varying(180)
 );
 
 
@@ -397,7 +437,7 @@ CREATE TABLE public.tag (
     tag_type character varying(180) NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     created_by character varying(180) NOT NULL,
-    scope character varying(180) NOT NULL,
+    _scope character varying(180),
     password character varying(180)
 );
 
@@ -425,37 +465,6 @@ ALTER TABLE public.tag_id_seq OWNER TO developer;
 
 ALTER SEQUENCE public.tag_id_seq OWNED BY public.tag.id;
 
-
---
--- Name: tag_position_1; Type: SEQUENCE; Schema: public; Owner: developer
---
-
-CREATE SEQUENCE public.tag_position_1
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.tag_position_1 OWNER TO developer;
-
---
--- Name: tag_position_2; Type: SEQUENCE; Schema: public; Owner: developer
---
-
-CREATE SEQUENCE public.tag_position_2
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.tag_position_2 OWNER TO developer;
-
 --
 -- Name: userr; Type: TABLE; Schema: public; Owner: developer
 --
@@ -463,8 +472,8 @@ ALTER TABLE public.tag_position_2 OWNER TO developer;
 CREATE TABLE public.userr (
     uid character varying(180) NOT NULL,
     username public.citext NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
-    settings jsonb DEFAULT '{}'::jsonb NOT NULL
+    settings jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT now()
 );
 
 
@@ -759,22 +768,6 @@ ALTER TABLE ONLY public.reaction
 
 
 --
--- Name: tag tag_display_name_unique; Type: CONSTRAINT; Schema: public; Owner: developer
---
-
-ALTER TABLE ONLY public.tag
-    ADD CONSTRAINT tag_display_name_unique UNIQUE (display_name, scope);
-
-
---
--- Name: tag tag_munge_unique; Type: CONSTRAINT; Schema: public; Owner: developer
---
-
-ALTER TABLE ONLY public.tag
-    ADD CONSTRAINT tag_munge_unique UNIQUE (munge, scope);
-
-
---
 -- Name: tag tag_pkey; Type: CONSTRAINT; Schema: public; Owner: developer
 --
 
@@ -799,10 +792,80 @@ ALTER TABLE ONLY public.userr
 
 
 --
--- Name: policy_resource_uid_idx; Type: INDEX; Schema: public; Owner: developer
+-- Name: chart_created_by_created_at_idx; Type: INDEX; Schema: public; Owner: developer
 --
 
-CREATE UNIQUE INDEX policy_resource_uid_idx ON public.policy USING btree (resource_type, resource_id, uid);
+CREATE INDEX chart_created_by_created_at_idx ON public.chart USING btree (created_by, created_at);
+
+
+--
+-- Name: chart_created_by_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_created_by_idx ON public.chart USING btree (created_by);
+
+
+--
+-- Name: chart_extension_chart_id_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_extension_chart_id_idx ON public.chart_extension USING btree (chart_id);
+
+
+--
+-- Name: chart_tag_chart_id_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_tag_chart_id_idx ON public.chart_tag USING btree (chart_id);
+
+
+--
+-- Name: chart_tag_tag_id_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_tag_tag_id_idx ON public.chart_tag USING btree (tag_id);
+
+
+--
+-- Name: policy_uid_resource_type_expires_at_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX policy_uid_resource_type_expires_at_idx ON public.policy USING btree (uid, resource_type, expires_at);
+
+
+--
+-- Name: reaction_chart_id_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX reaction_chart_id_idx ON public.reaction USING btree (chart_id);
+
+
+--
+-- Name: reaction_chart_id_reaction_type_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX reaction_chart_id_reaction_type_idx ON public.reaction USING btree (chart_id, reaction_type);
+
+
+--
+-- Name: tag_created_by_display_name_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE UNIQUE INDEX tag_created_by_display_name_idx ON public.tag USING btree (created_by, display_name);
+
+
+--
+-- Name: tag_created_by_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX tag_created_by_idx ON public.tag USING btree (created_by);
+
+
+--
+-- Name: tag_created_by_munge_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE UNIQUE INDEX tag_created_by_munge_idx ON public.tag USING btree (created_by, munge);
 
 
 --

@@ -3,15 +3,15 @@ import {
   insertNewChart, findChartByID, deleteChart, updateChart,
   deleteChartsForUser, executeChartQuery,
 } from '../chart';
-import { ChartNew, ChartUpdate, ChartQuery, ChartType, ChartQueryOrder, BaseScopes, TagType, Tag } from '../../types';
+import { ChartNew, ChartUpdate, ChartQuery, ChartType, ChartQueryOrder, TagType, Tag, PolicyResourceType, PolicyAction } from '../../types';
 import { makeChartNew, makeTagNew } from '../../../tests/factories';
 import { range } from 'lodash';
 import {
   insertNewTags, addTagsForChart, findTagsForCharts,
   updateTagPositions
 } from '../tag';
-import { ApolloError } from 'apollo-server-express';
 import { PoolClient } from 'pg';
+import { insertPolicies } from '../policy';
 
 describe('chart repository', () => {
   const pool = makeDBPool();
@@ -59,11 +59,6 @@ describe('chart repository', () => {
       expect(retrieved).toEqual(undefined);
     });
 
-    test('create fails if scope is invalid', async () => {
-      const chartNew: ChartNew = makeChartNew({ scope: 'uid2' });
-      expect(insertNewChart(chartNew, 'uid', client)).rejects.toThrow(ApolloError);
-    });
-
     test('delete charts for user', async () => {
       const chartIDs = await Promise.all(range(5).map(async (i) => {
         const chartNew: ChartNew = makeChartNew();
@@ -87,8 +82,8 @@ describe('chart repository', () => {
   describe('executeChartQuery', () => {
     let client: PoolClient;
     let txManager: DBTxManager;
-    let publicTags: Tag[];
-    let privateTags: Tag[][] = [];
+    let sharedTags: Tag[][] = [];
+    let unsharedTags: Tag[][] = [];
 
     beforeAll(async () => {
       dbClientManager = await TestDBClientManager.new(pool);
@@ -98,23 +93,28 @@ describe('chart repository', () => {
 
       const uids = ['uid1', 'uid2'];
 
-      publicTags = await insertNewTags([
-        makeTagNew({ scope: BaseScopes.Public, tagType: TagType.Descriptor }),
-        makeTagNew({ scope: BaseScopes.Public, tagType: TagType.List }),
-      ], 'uid', client);
-
       await Promise.all(uids.map(async (uid, i) => {
-        privateTags.push(await insertNewTags([
-          makeTagNew({ scope: uid, tagType: TagType.Descriptor }),
-          makeTagNew({ scope: uid, tagType: TagType.List }),
+        sharedTags.push(await insertNewTags([
+          makeTagNew({ tagType: TagType.Descriptor }),
+          makeTagNew({ tagType: TagType.List }),
+        ], uid, client));
+        await insertPolicies([
+          { resourceType: PolicyResourceType.Tag, action: PolicyAction.Wildcard,
+            resourceID: sharedTags[i][0].id, uid: uids.find(uidInner => uidInner != uid) || '' },
+          { resourceType: PolicyResourceType.Tag, action: PolicyAction.Wildcard,
+            resourceID: sharedTags[i][1].id, uid: uids.find(uidInner => uidInner != uid) || '' },
+        ], uid, client);
+
+        unsharedTags.push(await insertNewTags([
+          makeTagNew({ tagType: TagType.Descriptor }),
+          makeTagNew({ tagType: TagType.List }),
         ], uid, client));
 
-        const tagsToAdd = [publicTags[0], publicTags[1], privateTags[i][0], privateTags[i][1]];
+        const tagsToAdd = [sharedTags[i][0], sharedTags[i][1], unsharedTags[i][0], unsharedTags[i][1]];
         // private chords
         await Promise.all(range(5).map(async (i) => {
           const chartNew: ChartNew = makeChartNew({
             chartType: ChartType.Chord,
-            scope: uid,
           });
           const chart = await insertNewChart(chartNew, uid, client);
           // only tag with private tags
@@ -127,7 +127,6 @@ describe('chart repository', () => {
         await Promise.all(range(5).map(async (i) => {
           const chartNew: ChartNew = makeChartNew({
             chartType: ChartType.Chord,
-            scope: BaseScopes.Public,
           });
           const chart = await insertNewChart(chartNew, uid, client);
           if (i <= tagsToAdd.length - 1) {
@@ -139,7 +138,6 @@ describe('chart repository', () => {
         await Promise.all(range(5).map(async (i) => {
           const chartNew: ChartNew = makeChartNew({
             chartType: ChartType.Progression,
-            scope: uid,
           });
           const chart = await insertNewChart(chartNew, uid, client);
           // only tag with private tags
@@ -152,7 +150,6 @@ describe('chart repository', () => {
         await Promise.all(range(5).map(async (i) => {
           const chartNew: ChartNew = makeChartNew({
             chartType: ChartType.Progression,
-            scope: BaseScopes.Public,
           });
           const chart = await insertNewChart(chartNew, uid, client);
           if (i <= tagsToAdd.length - 1) {
@@ -165,6 +162,7 @@ describe('chart repository', () => {
 
     afterAll(async () => {
       await txManager.rollbackTx(0);
+      // await txManager.commit(0);
       client.release();
     });
 
@@ -176,7 +174,7 @@ describe('chart repository', () => {
         asc: false,
       };
       const charts = await executeChartQuery(query, 'uid1', client);
-      expect(charts.length).toEqual(15);
+      expect(charts.length).toEqual(12);
       expect(charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
     });
 
@@ -199,12 +197,12 @@ describe('chart repository', () => {
         asc: false,
       };
       const q1Charts = await executeChartQuery(query, 'uid1', client);
-      expect(q1Charts.length).toEqual(15);
+      expect(q1Charts.length).toEqual(12);
       expect(q1Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
 
       query.asc = true;
       let q2Charts = await executeChartQuery(query, 'uid1', client);
-      expect(q2Charts.length).toEqual(15);
+      expect(q2Charts.length).toEqual(12);
       expect(q2Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
 
       q2Charts.reverse();
@@ -219,7 +217,7 @@ describe('chart repository', () => {
         asc: false,
       };
       const charts = await executeChartQuery(query, 'uid1', client);
-      expect(charts.length).toEqual(30);
+      expect(charts.length).toEqual(24);
     });
 
     test('query all chords and progressions with limit', async () => {
@@ -246,7 +244,7 @@ describe('chart repository', () => {
       query.after = after;
       const q2Charts = await executeChartQuery(query, 'uid1', client);
       expect(q2Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
-      expect(q2Charts.length).toEqual(4);
+      expect(q2Charts.length).toEqual(1);
       expect(q2Charts[0].id).toEqual(q1Charts[11].id);
     });
 
@@ -272,7 +270,7 @@ describe('chart repository', () => {
         chartTypes: [ChartType.Chord],
         order: ChartQueryOrder.CreatedAt,
         asc: false,
-        tagIDs: [privateTags[0][0].id],
+        tagIDs: [unsharedTags[0][0].id],
       };
       const q1Charts = await executeChartQuery(query, 'uid1', client);
       expect(q1Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
@@ -285,7 +283,7 @@ describe('chart repository', () => {
         chartTypes: [ChartType.Chord],
         order: ChartQueryOrder.CreatedAt,
         asc: false,
-        tagIDs: [privateTags[0][0].id],
+        tagIDs: [unsharedTags[0][0].id],
       };
       const q1Charts = await executeChartQuery(query, 'uid1', client);
       expect(q1Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
@@ -299,7 +297,7 @@ describe('chart repository', () => {
     });
 
     test('query order tag position', async () => {
-      const tag = privateTags[0][0];
+      const tag = unsharedTags[0][0];
       const query: ChartQuery = {
         limit: 50,
         chartTypes: [ChartType.Chord],
@@ -310,7 +308,7 @@ describe('chart repository', () => {
       const q1Charts = await executeChartQuery(query, 'uid1', client);
       expect(q1Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
       expect(q1Charts.length).toEqual(2);
-      let tagss = await findTagsForCharts(q1Charts.map(c => c.id), 'uid1', client);
+      let tagss = await findTagsForCharts(q1Charts.map(c => c.id), client);
       expect(tagss[0].find(t => t.id === tag.id)?.tagPosition).toEqual(1);
       expect(tagss[1].find(t => t.id === tag.id)?.tagPosition).toEqual(2);
 
@@ -318,7 +316,7 @@ describe('chart repository', () => {
       const q2Charts = await executeChartQuery(query, 'uid1', client);
       expect(q2Charts.every((c) => c.chartType === ChartType.Chord)).toEqual(true);
       expect(q2Charts.length).toEqual(2);
-      tagss = await findTagsForCharts(q2Charts.map(c => c.id), 'uid1', client);
+      tagss = await findTagsForCharts(q2Charts.map(c => c.id), client);
       expect(tagss[0].find(t => t.id === tag.id)?.tagPosition).toEqual(2);
       expect(tagss[1].find(t => t.id === tag.id)?.tagPosition).toEqual(1);
 
@@ -326,7 +324,7 @@ describe('chart repository', () => {
 
       const q3Charts = await executeChartQuery(query, 'uid1', client);
       expect(q3Charts.length).toEqual(2);
-      tagss = await findTagsForCharts(q3Charts.map(c => c.id), 'uid1', client);
+      tagss = await findTagsForCharts(q3Charts.map(c => c.id), client);
       expect(tagss[0].find(t => t.id === tag.id)?.tagPosition).toEqual(1);
       expect(tagss[1].find(t => t.id === tag.id)?.tagPosition).toEqual(2);
     });

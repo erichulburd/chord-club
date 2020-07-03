@@ -1,13 +1,13 @@
 import {
   User, Chart,
-  UserNew, UserUpdate, ChartNew, ChartUpdate, TagNew, ReactionNew, Tag, BaseScopes, NewInvitation, NewPolicy, Policy, CreateInvitationResponse,
+  UserNew, UserUpdate, ChartNew, ChartUpdate, TagNew, ReactionNew, Tag, NewInvitation, NewPolicy, Policy, CreateInvitationResponse,
 } from '../types';
 import { insertUserNew, updateUser, deleteUser } from '../repositories/user';
 import { Context } from '../util/context';
 import { TopLevelRootValue } from '../util/app';
 import { deleteChartsForUser, findChartByID, insertNewChart, updateChart, deleteChart, findChartsByID } from '../repositories/chart';
 import { upsertReactionNew, findReactionsByChartID, deleteReactionNew } from '../repositories/reaction';
-import { addTagsForChart, unTag, insertNewTags, deleteTag, validateNewTagsScopes, reconcileChartTags, updateTagPositions, findTagByID } from '../repositories/tag';
+import { addTagsForChart, unTag, insertNewTags, deleteTag, reconcileChartTags, updateTagPositions, findTagByID } from '../repositories/tag';
 import { wrapTopLevelOp, Resolver, assertResourceOwner } from './resolverUtils';
 import { addExtensionsForChart, removeExtensionsForChart, reconcileChartExtensions } from '../repositories/extensions';
 import { chartNotFoundError, forbiddenResourceOpError, invalidTagPositionUpdate, notFoundError } from '../util/errors';
@@ -230,8 +230,8 @@ M.setTagPositions = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: SetTagPositionArgs, context: Context): Promise<Chart[]> => {
   const { tagID, chartIDs, positions } = args;
   // within transaction.
-  const tagScopes = [BaseScopes.Public, context.uid];
-  const tag = await findTagByID(tagID, tagScopes, context.db);
+  // const tagScopes = [BaseScopes.Public, context.uid];
+  const tag = await findTagByID(tagID, context.uid, context.db);
   if (!tag || tag.createdBy !== context.uid) {
     throw forbiddenResourceOpError();
   }
@@ -248,7 +248,8 @@ M.setTagPositions = wrapTopLevelOp(async (
     await txManager.rollbackTx(tx);
     throw err;
   }
-  return findChartsByID(chartIDs, [context.uid, BaseScopes.Public], context.db);
+  // return findChartsByID(chartIDs, [context.uid, BaseScopes.Public], context.db);
+  return findChartsByID(chartIDs, context.uid, context.db);
 });
 
 M.addExtensions = wrapTopLevelOp(async (
@@ -276,7 +277,7 @@ M.createTags = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: CreateTagArgs, context: Context,
 ): Promise<Tag[]> => {
   const { uid, db } = context;
-  return insertNewTags(validateNewTagsScopes(args.tagNews, uid), uid, db);
+  return insertNewTags(args.tagNews, uid, db);
 });
 
 M.deleteTag = wrapTopLevelOp(async (
