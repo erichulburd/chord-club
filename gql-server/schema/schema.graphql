@@ -55,6 +55,7 @@ enum TagQueryOrder {
 
 input TagQuery {
   displayName: String
+  createdBy: String
   ids: [Int!]
   tagTypes: [TagType!]!
   order: TagQueryOrder

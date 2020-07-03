@@ -14,21 +14,23 @@ interface BaseTagQuery {
   direction: 'ASC' | 'DESC';
   limit: number;
   tagTypes: TagType[];
+  createdBy: string | null | undefined;
 }
 interface BaseTagQueryAfter extends BaseTagQuery {
   after: number;
 }
 
 const searchForTag = async (displayName: string, uid: string, query: BaseTagQuery, queryable: Queryable) => {
+  const [createdBy, authorizationFilter] = getAuthorizationFilter(uid, query.createdBy, 3);
   const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM tag t
         LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
       WHERE LOWER(t.display_name) LIKE $1
-        AND t.tag_type = ANY ($3)
-        AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
-  `, [`${displayName.toLowerCase()}%`, uid, query.tagTypes]);
+        AND t.tag_type = ANY ($4)
+        AND ${authorizationFilter}
+  `, [`${displayName.toLowerCase()}%`, uid, createdBy, query.tagTypes]);
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
@@ -60,20 +62,22 @@ export const findTagByID = async (id: number, uid: string, queryable: Queryable)
 };
 
 const findTags = async (query: BaseTagQuery, uid: string, queryable: Queryable) => {
+  const [createdBy, authorizationFilter] = getAuthorizationFilter(uid, query.createdBy, 3);
   const result = await queryable.query(`
   SELECT
     ${selectFields}
   FROM tag t
     LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
   WHERE t.tag_type = ANY ($1)
-    AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
-  ORDER BY $3, id ${query.direction}
-  LIMIT $4
-  `, [query.tagTypes, uid, query.orderBy, query.limit]);
+    AND ${authorizationFilter}
+  ORDER BY $4, id ${query.direction}
+  LIMIT $5
+  `, [query.tagTypes, uid, createdBy, query.orderBy, query.limit]);
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
 const findTagsAfter = async (query: BaseTagQueryAfter, uid: string, queryable: Queryable) => {
+  const [createdBy, authorizationFilter] = getAuthorizationFilter(uid, query.createdBy, 3);
   const result = await queryable.query(`
   WITH ranks AS (
     SELECT
@@ -83,16 +87,16 @@ const findTagsAfter = async (query: BaseTagQueryAfter, uid: string, queryable: Q
       ) rank_number
     FROM tag t
       LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
-    WHERE t.tag_type = ANY ($5)
-      AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
+    WHERE t.tag_type = ANY ($6)
+      AND ${authorizationFilter}
   )
   SELECT
     *
   FROM ranks
-  WHERE rank_number > (SELECT rank_number FROM ranks WHERE id = $3)
+  WHERE rank_number > (SELECT rank_number FROM ranks WHERE id = $4)
   ORDER BY $1, id ${query.direction}
-  LIMIT $4
-  `, [query.orderBy, uid, query.after, query.limit, query.tagTypes]);
+  LIMIT $5
+  `, [query.orderBy, uid, createdBy, query.after, query.limit, query.tagTypes]);
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
@@ -239,6 +243,7 @@ export const executeTagQuery = async (
 
   const query: BaseTagQuery = {
     orderBy, direction, limit, tagTypes: rawQuery.tagTypes,
+    createdBy: rawQuery.createdBy,
   };
   if (rawQuery.displayName) {
     return searchForTag(rawQuery.displayName, uid, query, queryable);
@@ -251,3 +256,13 @@ export const executeTagQuery = async (
   return findTags(query, uid, queryable);
 };
 
+
+const getAuthorizationFilter = (uid: string, createdBy: string | null | undefined, paramIndex: number): [string, string] => {
+  if (uid === createdBy) {
+    return [uid, `t.created_by = $${paramIndex}`];
+  }
+  if (!createdBy) {
+    return [uid, `(t.created_by = $${paramIndex} OR tp.policy_action IS NOT NULL)`];
+  }
+  return [createdBy, `(t.created_by = $${paramIndex} AND tp.policy_action IS NOT NULL)`];
+}

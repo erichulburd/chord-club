@@ -1,9 +1,10 @@
 import { makeDBPool, TestDBClientManager, DBTxManager } from '../db';
 import { PoolClient } from 'pg';
-import { TagNew, ChartNew, ChartType, TagQuery, Tag, TagType, Chart } from '../../types';
+import { TagNew, ChartNew, ChartType, TagQuery, Tag, TagType, Chart, PolicyResourceType, PolicyAction } from '../../types';
 import { makeTagNew, makeChartNew } from '../../../tests/factories';
 import { insertNewTags, deleteTag, addTagsForChart, findTagsForCharts, unTag, executeTagQuery } from '../tag';
 import { insertNewChart } from '../chart';
+import { insertPolicies } from '../policy';
 
 describe('tag repository', () => {
   const pool = makeDBPool();
@@ -124,10 +125,16 @@ describe('tag repository', () => {
       const uids = ['uid1', 'uid2'];
 
       await Promise.all(uids.map(async (uid) => {
-        sharedTags.push(await insertNewTags([
+        const userSharedTags = await insertNewTags([
           makeTagNew({ tagType: TagType.Descriptor }),
           makeTagNew({ displayName: 'yADa1', tagType: TagType.List }),
-        ], uid, client));
+        ], uid, client);
+        sharedTags.push(userSharedTags);
+        await insertPolicies(userSharedTags.map(t => ({
+          resourceType: PolicyResourceType.Tag, resourceID: t.id,
+          uid: uids.find(uidInner => uidInner !== uid) || '',
+          action: PolicyAction.Wildcard,
+        })), uid, client);
 
         unsharedTags.push(await insertNewTags([
           makeTagNew({ displayName: 'yADa2', tagType: TagType.Descriptor }),
@@ -147,7 +154,7 @@ describe('tag repository', () => {
         tagTypes: [TagType.Descriptor, TagType.List],
       };
       const tags = await executeTagQuery(query, 'uid1', client);
-      expect(tags.length).toEqual(2);
+      expect(tags.length).toEqual(3);
       expect(tags.every((tag) => tag.displayName.slice(0, 4) === 'yADa')).toEqual(true);
     });
 
@@ -159,20 +166,46 @@ describe('tag repository', () => {
       const tags = await executeTagQuery(query, 'uid1', client);
       expect(tags.length).toEqual(1);
       expect(tags[0].id).toEqual(query.ids[0]);
-
     });
+
+    test('query by explicit createdBy', async () => {
+      let query: TagQuery = {
+        tagTypes: [TagType.Descriptor, TagType.List],
+        createdBy: 'uid1'
+      };
+      let tags = await executeTagQuery(query, 'uid1', client);
+      expect(tags.length).toEqual(4);
+      expect(tags.every(t => t.createdBy === 'uid1'));
+
+      query = {
+        tagTypes: [TagType.Descriptor, TagType.List],
+        createdBy: 'uid2'
+      };
+      tags = await executeTagQuery(query, 'uid1', client);
+      expect(tags.length).toEqual(2);
+      expect(tags.every(t => t.createdBy === 'uid2'));
+
+      query = {
+        tagTypes: [TagType.Descriptor, TagType.List],
+      };
+      tags = await executeTagQuery(query, 'uid1', client);
+      expect(tags.length).toEqual(6);
+    });
+
     test('findTags and paginate after', async () => {
       const query: TagQuery = {
         tagTypes: [TagType.Descriptor, TagType.List],
       };
       const tags = await executeTagQuery(query, 'uid1', client);
-      expect(tags.length).toEqual(4);
+      expect(tags.length).toEqual(6);
 
       query.after = tags[1].id;
       const tags2 = await executeTagQuery(query, 'uid1', client);
-      expect(tags2.length).toEqual(2);
+      expect(tags2.length).toEqual(4);
       expect(tags2[0].id).toEqual(tags[2].id);
       expect(tags2[1].id).toEqual(tags[3].id);
+      expect(tags2[2].id).toEqual(tags[4].id);
+      expect(tags2[3].id).toEqual(tags[5].id);
     });
   });
 });
