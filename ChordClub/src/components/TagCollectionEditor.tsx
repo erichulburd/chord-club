@@ -4,7 +4,7 @@ import {GetTagsData, GetTagsVariables, GET_TAGS} from '../gql/tag';
 import {Spinner} from '@ui-kitten/components';
 import ErrorText from './ErrorText';
 import {TagCollection} from './TagCollection';
-import {TagType, Tag} from '../types';
+import {TagType, Tag, TagNew} from '../types';
 import TagAutocomplete from './TagAutocomplete';
 import {areTagsEqual} from '../util/forms';
 
@@ -30,7 +30,7 @@ export const TagCollectionEditor = ({
     setTags(tagUpdate);
     onChange(tagUpdate);
   };
-  const removeTag = (tag: Tag) => {
+  const removeTag = (tag: Tag | TagNew) => {
     const index = tags.findIndex((t) => t.id === tag.id);
     if (index === -1) {
       return;

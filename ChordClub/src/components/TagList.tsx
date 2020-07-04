@@ -35,7 +35,7 @@ export const TagList = ({}: Props) => {
   const [deleteMutation, _] = useMutation<{}, DeleteTagVariables>(DELETE_TAG);
   const onDelete = (tag: Tag) => {
     modalCtx.message({
-      msg: 'This will delete this untag all chords and progressions and delete the tag. Confirm your intent.',
+      msg: 'This untag all chords and progressions and delete the tag. Confirm your intent.',
       status: 'danger',
     }, {
       confirm: () => {

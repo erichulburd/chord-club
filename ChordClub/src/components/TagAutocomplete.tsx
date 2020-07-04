@@ -32,6 +32,7 @@ interface Props extends WithApolloClient<{}>, ManualProps, UserConsumerProps {}
 
 interface State {
   query: TagQuery;
+  displayName: string;
   error?: ApolloError;
   loading: boolean;
   options: any[];
@@ -42,8 +43,8 @@ const fauxResult = makeTagNew('No results');
 
 export class TagAutocomplete extends React.Component<Props> {
   public state: State = {
+    displayName: '',
     query: {
-      displayName: '',
       tagTypes: [TagType.List],
       limit: 5,
     },
@@ -92,20 +93,21 @@ export class TagAutocomplete extends React.Component<Props> {
     data: GetTagsData,
     errors: readonly GraphQLError[] | undefined,
   ) => {
-    const {query} = this.state;
+    const {query, displayName} = this.state;
     const {userCtx, allowNewTags = true} = this.props;
     const {uid} = userCtx.authState;
     let error;
     if (errors && errors.length > 0) {
       error = new ApolloError({graphQLErrors: errors});
     }
-    let options: any[] = data.tags;
-    if (allowNewTags && query.displayName) {
+    const filter = displayName?.toLowerCase().trim();
+    let options: Tag[] = data.tags.filter(t => t.displayName.toLowerCase().indexOf(filter || '') >= 0);
+    if (allowNewTags && displayName) {
       const tagExists = options.some(
-        (t) => t.munge === getTagMunge(query.displayName || ''),
+        (t) => t.munge === getTagMunge(displayName || ''),
       );
       if (!tagExists) {
-        const tagNew = makeTagNew(query.displayName);
+        const tagNew = makeTagNew(displayName);
         options = [tagNew, ...options];
       }
     }
@@ -113,7 +115,7 @@ export class TagAutocomplete extends React.Component<Props> {
   };
 
   private updateQueryDisplayName = (displayName: string) => {
-    this.setState({query: {...this.state.query, displayName}}, () => {
+    this.setState({displayName}, () => {
       this.throttleQuery();
     });
   };
@@ -124,7 +126,7 @@ export class TagAutocomplete extends React.Component<Props> {
   };
 
   private onSelect = (index: number) => {
-    const {query, options} = this.state;
+    const {query, options, displayName} = this.state;
     const {onSelect} = this.props;
     const tag = options[index];
     if (tag === undefined || areTagsEqual(tag, fauxResult)) {
@@ -132,14 +134,15 @@ export class TagAutocomplete extends React.Component<Props> {
     }
     onSelect(tag);
     this.setState({
-      query: {...query, displayName: ''},
+      displayName: '',
+      query: {...query},
       options: [],
     });
   };
 
   public render() {
     const {placeholder = 'Add tag', containerStyle = {}} = this.props;
-    const {query, error, options, loading} = this.state;
+    const {query, error, options, loading, displayName} = this.state;
 
     const renderCloseIcon = (props: IconProps) =>
       loading ? (
@@ -161,7 +164,7 @@ export class TagAutocomplete extends React.Component<Props> {
         <Autocomplete
           autoCapitalize={'none'}
           placeholder={placeholder}
-          value={query.displayName || ''}
+          value={displayName || ''}
           accessoryRight={renderCloseIcon}
           onChangeText={this.updateQueryDisplayName}
           onSelect={this.onSelect}>
