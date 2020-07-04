@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, RefreshControl, StyleSheet} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
-import {ChartQuery, Chart} from '../types';
+import {FlatList, TouchableHighlight, TouchableOpacity} from 'react-native-gesture-handler';
+import {ChartQuery, Chart, ChartType} from '../types';
 import {
   ChartsQueryResponse,
   ChartsQueryVariables,
@@ -14,15 +14,28 @@ import {ModalContextProps, withModalContext} from './ModalProvider';
 import {Spinner, Text} from '@ui-kitten/components';
 import {ChordClubShim} from 'types/ChordClubShim';
 import ProgressionItem from './ProgressionItem';
+import { useNavigation } from '@react-navigation/native';
+import { Screens } from './AppScreen';
 
 
-const ListEmptyComponent = () => (
-  <View style={styles.emptyList}>
-    <Text category="h6" status="warning">
-      No progressions found.
-    </Text>
-  </View>
-);
+const ListEmptyComponent = () => {
+  const navigation = useNavigation();
+  return (
+    <View style={styles.emptyList}>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate(Screens.RecordAProgression, {
+            chartType: ChartType.Progression,
+          })
+        }
+      >
+      <Text category="h4" status="primary">
+        Click to get started by recording a progression and adding tags.
+      </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 interface ManualProps {
   query: ChartQuery;
