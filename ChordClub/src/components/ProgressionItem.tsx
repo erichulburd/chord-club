@@ -57,17 +57,17 @@ const ProgressionItem = ({
   };
   const Footer = (props?: ViewProps) => (
     <View {...props}>
-      <View>
+      <View style={styles.progressionDetail}>
         <View style={styles.attributeHeader}>
           <Text category="label">{chart.creator?.username}</Text>
           <Text>{moment(parseInt(chart.createdAt, 10)).fromNow()}</Text>
         </View>
       </View>
-      <View>
+      <View style={styles.progressionDetail}>
         <TagCollection navigable tags={chart.tags} />
       </View>
       {Boolean(chart.description) && (
-        <View>
+        <View style={styles.progressionDetail}>
           <View style={styles.attributeHeader}>
             <Text category="label">Description</Text>
           </View>
@@ -76,7 +76,7 @@ const ProgressionItem = ({
           </View>
         </View>
       )}
-      <View style={styles.actions}>
+      <View style={[styles.actions, styles.progressionDetail]}>
         <ChartReactions chart={chart} />
         {chart.createdBy === authState.uid && (
           <>
@@ -170,6 +170,10 @@ const styles = StyleSheet.create({
   },
   progressionItemAudioLength: {
     flex: 2,
+  },
+  progressionDetail: {
+    marginTop: 3,
+    marginBottom: 3,
   },
   actions: {
     display: 'flex',
