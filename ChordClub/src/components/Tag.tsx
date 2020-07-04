@@ -30,12 +30,6 @@ export const TagLabelNavigable = ({tag, onDelete, size}: NavigableProps) => {
         tagIDs: [existingTag.id],
         chartTypes: [ChartType.Progression],
       });
-    } else if (route.name === Screens.Chords) {
-      const settings = userCtx.user?.settings.chords as ChartViewSetting;
-      userCtx.updateChartQuery('chords', {
-        tagIDs: [existingTag.id],
-        chartTypes: [ChartType.Chord],
-      });
     }
   }, [route.name, userCtx]);
   return (

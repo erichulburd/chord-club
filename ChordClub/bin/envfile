@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# https://github.com/luggit/react-native-config#different-environments
+
+export ENVFILE=$1

@@ -25,7 +25,7 @@ const CreateProgressionLink = () => {
       appearance="outline"
       status="info"
       onPress={() =>
-        navigation.navigate(Screens.CreateAChart, {
+        navigation.navigate(Screens.RecordAProgression, {
           chartType: ChartType.Progression,
         })
       }>

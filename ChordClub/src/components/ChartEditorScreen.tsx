@@ -25,7 +25,7 @@ export const ChartEditorScreen = () => {
       navigation.goBack();
       return;
     }
-    navigation.navigate(Screens.Chords);
+    navigation.navigate(Screens.Progressions);
   };
   return (
     <AppScreen title={Screens.EditChart} menuItems={[]}>

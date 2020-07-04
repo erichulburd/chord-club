@@ -21,14 +21,12 @@ import {SafeAreaView, View, ViewProps, StyleSheet} from 'react-native';
 import {ChartCreatorScreen} from './ChartCreatorScreen';
 import {Screens, ScreenProps} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
-import {FlashcardsScreen} from './FlashcardsScreen';
 import {AccountScreen} from './AccountScreen';
 import {ChartEditorScreen} from './ChartEditorScreen';
 import {TagListScreen} from './TagListScreen';
 import { BlankScreen } from './BlankScreen';
 import { LogoutScreen } from './LogoutScreen';
 import LoginScreen from './LoginScreen';
-import AuthModal from './AuthModal';
 
 const {Navigator, Screen} = createDrawerNavigator();
 
@@ -73,21 +71,15 @@ const DrawerContent = ({
       selectedIndex={new IndexPath(state.index)}
       onSelect={goToRoute}>
       <SafeAreaView>
-        <DrawerItem accessoryLeft={ThemedIcon('list')} title={Screens.Chords} />
         <DrawerItem
           accessoryLeft={ThemedIcon('list')}
           title={Screens.Progressions}
           key={Screens.Progressions}
         />
         <DrawerItem
-          accessoryLeft={ThemedIcon('bolt')}
-          title={Screens.ChordFlashcards}
-          key={Screens.ChordFlashcards}
-        />
-        <DrawerItem
           accessoryLeft={ThemedIcon('circle', {solid: true})}
-          title={Screens.CreateAChart}
-          key={Screens.CreateAChart}
+          title={Screens.RecordAProgression}
+          key={Screens.RecordAProgression}
         />
         <DrawerItem accessoryLeft={ThemedIcon('tags')} title={Screens.Tags} />
         <DrawerItem
@@ -108,10 +100,8 @@ const DrawerContent = ({
 interface Props {}
 
 const routes: [Screens, React.FunctionComponent<ScreenProps> | React.ComponentClass][] = [
-  [Screens.Chords, ChordListScreen],
   [Screens.Progressions, ProgressionListScreen],
-  [Screens.ChordFlashcards, FlashcardsScreen],
-  [Screens.CreateAChart, ChartCreatorScreen],
+  [Screens.RecordAProgression, ChartCreatorScreen],
   [Screens.Tags, TagListScreen],
   [Screens.Account, AccountScreen],
   [Screens.Logout, LogoutScreen],
@@ -126,7 +116,7 @@ export const AppNavigator = ({}: Props) => (
       drawerContent={(props) => (
         <DrawerContent {...props} />
       )}
-      initialRouteName={Screens.Chords}
+      initialRouteName={Screens.Progressions}
     >
       {routes.map(([screenName, screen]) => (
         <Screen key={screenName} name={screenName} component={screen} />

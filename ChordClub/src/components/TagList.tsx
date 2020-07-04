@@ -64,13 +64,6 @@ export const TagList = ({}: Props) => {
       });
     return <ErrorText error={e} />;
   }
-  const goToChordTag = (tag: Tag) => {
-    userCtx.updateChartQuery('chords', {
-      tagIDs: [tag.id],
-      chartTypes: [ChartType.Chord],
-    });
-    navigate(Screens.Chords);
-  };
   const goToProgressionTag = (tag: Tag) => {
     userCtx.updateChartQuery('progressions', {
       tagIDs: [tag.id],
@@ -80,13 +73,6 @@ export const TagList = ({}: Props) => {
   };
   const TagLinks = (t: Tag) => (_props: ViewProps = {}) => (
     <View style={styles.tagLinks}>
-      <Button
-        size="tiny"
-        appearance="ghost"
-        status="basic"
-        onPress={() => goToChordTag(t)}>
-        Chords
-      </Button>
       <Button
         size="tiny"
         appearance="ghost"

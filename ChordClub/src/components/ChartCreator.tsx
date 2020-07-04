@@ -52,7 +52,7 @@ interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 
 const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const {uid} = userCtx.authState;
-  const route = useRoute<AppRouteProp<'CreateAChart'>>();
+  const route = useRoute<AppRouteProp<'RecordAProgression'>>();
   const defaultChartType =
     route.params?.chartType === undefined
       ? ChartType.Chord

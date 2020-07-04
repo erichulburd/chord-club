@@ -5,7 +5,6 @@ import {
   ChartQuery,
   UserUpdate,
   ChartType,
-  ChartQueryOrder,
 } from '../types';
 import {WithApolloClient, withApollo} from 'react-apollo';
 import {ApolloError} from 'apollo-client';
@@ -22,7 +21,6 @@ import {
   UserSettings,
   SettingsPath,
   ChartViewSetting,
-  FlashcardViewSetting,
 } from '../util/settings';
 import logger from '../util/logger';
 import {GraphQLError} from 'graphql';
@@ -91,14 +89,6 @@ const coalesceUserAndUpdate = (
 const ensureDefaultChartViewSettings = (user: User): UserSettings => {
   const {uid} = user;
   const settings: UserSettings = {...user.settings};
-  if (!settings.chords) {
-    settings.chords = {
-      query: {
-        chartTypes: [ChartType.Chord],
-      },
-      compact: false,
-    };
-  }
   if (!settings.progressions) {
     settings.progressions = {
       query: {
@@ -106,24 +96,8 @@ const ensureDefaultChartViewSettings = (user: User): UserSettings => {
       },
       compact: false,
     };
-  }
-  if (!settings.flashcards) {
-    settings.flashcards = {
-      query: {
-        chartTypes: [ChartType.Chord],
-        order: ChartQueryOrder.Random,
-        limit: 10,
-      },
-      compact: false,
-      options: {tone: false, quality: true, extensions: false},
-    };
-  }
-  if (!settings.flashcards.options) {
-    settings.flashcards.options = {
-      tone: false,
-      quality: true,
-      extensions: false,
-    };
+  } else {
+    delete settings.progressions.query['scopes'];
   }
   return settings;
 };
@@ -242,7 +216,7 @@ class UserProviderComponent extends React.Component<Props, UserContextState> {
 
   private updateSettings = async (
     settingsPath: SettingsPath,
-    update: Partial<ChartViewSetting> | Partial<FlashcardViewSetting>,
+    update: Partial<ChartViewSetting>,
   ) => {
     const settings = this.state.user?.settings || {};
     settings[settingsPath] = {...(settings[settingsPath] || {}), ...update};
