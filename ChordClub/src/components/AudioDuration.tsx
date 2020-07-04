@@ -8,7 +8,7 @@ interface Props {
   durationMs: number;
 }
 
-const formatMs = (ms: number) => {
+export const formatMs = (ms: number) => {
   const s = Math.ceil(ms / 1000);
   const minutes = Math.floor(s / 60);
   const seconds = s % 60;

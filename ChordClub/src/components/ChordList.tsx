@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {useQuery, useMutation} from '@apollo/react-hooks';
 import {ChartQuery, Chart, ChartType} from '../types';
-import last from 'lodash/last';
 import {
   CHARTS_QUERY,
   ChartsQueryResponse,

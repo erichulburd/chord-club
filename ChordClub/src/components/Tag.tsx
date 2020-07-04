@@ -2,20 +2,19 @@ import React, { useContext, useCallback } from 'react';
 import {Tag, TagNew, ChartType} from '../types';
 import {View, StyleSheet} from 'react-native';
 import {Button} from '@ui-kitten/components';
-import {ThemedIcon} from './FontAwesomeIcons';
 import {Size} from '../util/themeHelpers';
 import { useNavigationState } from '@react-navigation/native';
 import { AuthContext } from './UserContext';
 import { Screens } from './AppScreen';
-import { ChartViewSetting } from 'src/util/settings';
+import { ChartViewSetting } from '../util/settings';
+import { RenderProp } from '@ui-kitten/components/devsupport';
 
 interface NavigableProps {
   tag: Tag | TagNew;
-  onDelete?: undefined | (() => void);
   size?: Size;
 }
 
-export const TagLabelNavigable = ({tag, onDelete, size}: NavigableProps) => {
+export const TagLabelNavigable = ({tag, size}: NavigableProps) => {
   const route = useNavigationState(state => state.routes[state.index]);
   const userCtx = useContext(AuthContext);
 
@@ -35,7 +34,6 @@ export const TagLabelNavigable = ({tag, onDelete, size}: NavigableProps) => {
   return (
     <TagLabel
       tag={tag}
-      onDelete={onDelete}
       onPress={goToTag}
       size={size}
     />
@@ -44,26 +42,21 @@ export const TagLabelNavigable = ({tag, onDelete, size}: NavigableProps) => {
 
 interface Props extends NavigableProps {
   onPress?: () => void;
+  accessory?: RenderProp;
 }
 
-export const TagLabel = ({tag, onDelete, onPress, size = 'tiny'}: Props) => {
+export const TagLabel = ({tag, onPress, accessory, size = 'tiny'}: Props) => {
   return (
     <View style={styles.container}>
       <Button
         size={size}
         appearance="outline"
         status={'info'}
-        accessoryLeft={ThemedIcon('user')}
-        onPress={onPress}>{` ${tag.displayName}`}</Button>
-      {onDelete && (
-        <Button
-          size={size}
-          appearance="outline"
-          status="danger"
-          accessoryLeft={ThemedIcon('times')}
-          onPress={onDelete}
-        />
-      )}
+        onPress={onPress}
+        accessoryRight={accessory}
+      >
+        {tag.displayName}
+      </Button>
     </View>
   );
 };

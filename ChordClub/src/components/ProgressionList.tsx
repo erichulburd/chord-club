@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {View, RefreshControl, StyleSheet} from 'react-native';
-import {FlatList, TouchableHighlight, TouchableOpacity} from 'react-native-gesture-handler';
+import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
 import {ChartQuery, Chart, ChartType} from '../types';
 import {
   ChartsQueryResponse,
@@ -11,11 +11,16 @@ import {
 } from '../gql/chart';
 import {useQuery, useMutation} from 'react-apollo';
 import {ModalContextProps, withModalContext} from './ModalProvider';
-import {Spinner, Text} from '@ui-kitten/components';
+import {Spinner, Text, Card} from '@ui-kitten/components';
 import {ChordClubShim} from 'types/ChordClubShim';
 import ProgressionItem from './ProgressionItem';
 import { useNavigation } from '@react-navigation/native';
 import { Screens } from './AppScreen';
+import { AuthContext } from './UserContext';
+import ChartQueryEditor from './ChartQueryEditor';
+import { AudioPlayer } from './AudioPlayer';
+import { Audioable } from 'src/util/audio';
+import { AudioContext } from './AudioContextProvider';
 
 
 const ListEmptyComponent = () => {
@@ -63,6 +68,17 @@ export const ProgressionList = ({
   useEffect(() => {
     maybeDoRefetch();
   }, [mountID]);
+  const authCtx = useContext(AuthContext);
+  const [currentAudio, setCurrentAudio] = useState<[Audioable, number]>([{
+    audioURL: '',
+    audioLength: 0,
+  }, 0]);
+  const audioCtx = useContext(AudioContext);
+  useEffect(() => {
+    if (currentAudio[0].audioURL) {
+      audioCtx.startPlay(currentAudio[0]);
+    }
+  }, [currentAudio[0], currentAudio[1]]);
   /*
   const loadMore = () =>
     fetchMore({
@@ -107,14 +123,23 @@ export const ProgressionList = ({
     );
   }
   let flatList: ChordClubShim.FlatList<Chart> | null = null;
-  const next = (i: number) => {
-    if (flatList === null || i === charts.length - 1) {
-      return;
-    }
-    flatList.scrollToIndex({index: i + 1});
-  };
   return (
-    <View style={styles.container}>
+    <View>
+      <Card
+        disabled
+        status="basic"
+        style={styles.controls}
+      >
+        <AudioPlayer
+          displayAudioNameAndCreator
+          audio={currentAudio[0]}
+        />
+        <ChartQueryEditor
+          initialQuery={query}
+          save={(q) => authCtx.updateChartQuery('progressions', {...query, ...q})}
+        />
+      </Card>
+
       <FlatList
         onRefresh={maybeDoRefetch}
         refreshing={loading}
@@ -131,7 +156,8 @@ export const ProgressionList = ({
         renderItem={(item) => (
           <ProgressionItem
             compact={compact}
-            next={() => next(item.index)}
+            isPlaying={audioCtx.focusedAudioURL === item.item.audioURL}
+            onPlay={() => setCurrentAudio([item.item, currentAudio[1] + 1])}
             chart={item.item}
             editChart={editChart}
             onDeleteChart={onDeleteChart}
@@ -143,8 +169,8 @@ export const ProgressionList = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 0,
+  controls: {
+    marginBottom: 10,
   },
   emptyList: {
     padding: 20,

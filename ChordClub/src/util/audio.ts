@@ -7,8 +7,11 @@ import {
 } from 'react-native-audio-recorder-player';
 import {Platform} from 'react-native';
 import {v4} from 'react-native-uuid';
+import { User } from '../types';
 
 export interface Audioable {
+  name?: string | undefined | null;
+  creator?: User | undefined | null;
   audioURL: string;
   audioLength: number;
 }

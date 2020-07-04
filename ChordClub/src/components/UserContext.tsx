@@ -42,7 +42,7 @@ export interface UserContextValue extends UserContextState {
   updateUser: (update: Partial<User>) => void;
   updateSettings: (
     settingsPath: SettingsPath,
-    update: Partial<ChartViewSetting> | Partial<FlashcardViewSetting>,
+    update: Partial<ChartViewSetting>,
   ) => void;
   updateChartQuery: (settingsPath: SettingsPath, update: ChartQuery) => void;
   updateCompact: (settingsPath: SettingsPath, compact: boolean) => void;
