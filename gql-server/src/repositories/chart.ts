@@ -75,6 +75,24 @@ const findRandomCharts = async (chartTypes: ChartType[], uid: string, limit: num
   return charts;
 };
 
+const findRandomChartsByTagIDs = async (tagIDs: number[], chartTypes: ChartType[], uid: string, limit: number, queryable: Queryable) => {
+  const result = await queryable.query(`
+  WITH selection AS (
+    SELECT
+    ${selectFields}
+    FROM chart_tag ct
+      LEFT OUTER JOIN chart_policies_for_uid($2) cp ON ct.chart_id = cp.chart_id
+      INNER JOIN chart c ON ct.chart_id = c.id
+      INNER JOIN tag t ON ct.tag_id = t.id
+    WHERE t.id = ANY ($1) AND c.chart_type = ANY ($4) AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
+    LIMIT $3
+  )
+  SELECT * FROM selection c ORDER BY FLOOR(RANDOM() * $3) LIMIT $3
+  `, [tagIDs, uid, limit, chartTypes]);
+  const charts = result.rows.map(dbDataToChart) as Chart[];
+  return charts;
+};
+
 const findCharts = async (query: BaseChartQuery, uid: string, queryable: Queryable) => {
   const result = await queryable.query(`
   SELECT
@@ -204,7 +222,9 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, query
   const limit = Math.min(100, rawQuery.limit || 50);
   const chartTypes = rawQuery.chartTypes;
 
-  if (rawQuery.order === ChartQueryOrder.Random) {
+  if (rawQuery.order === ChartQueryOrder.Random && rawQuery.tagIDs?.length) {
+    return findRandomChartsByTagIDs(rawQuery.tagIDs, chartTypes, uid, limit, queryable);
+  } else if (rawQuery.order === ChartQueryOrder.Random) {
     return findRandomCharts(chartTypes, uid, limit, queryable);
   }
 

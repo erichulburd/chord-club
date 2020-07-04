@@ -9,8 +9,8 @@ ALTER TABLE tag RENAME COLUMN scope TO _scope;
 ALTER TABLE tag ALTER _scope DROP NOT NULL;
 
 -- Soft drop scope on chart
-DROP INDEX chart_scope_idx;
-DROP INDEX chart_scope_created_at_idx;
+DROP INDEX IF EXISTS chart_scope_idx;
+DROP INDEX IF EXISTS chart_scope_created_at_idx;
 
 ALTER TABLE chart RENAME COLUMN scope TO _scope;
 ALTER TABLE chart ALTER _scope DROP NOT NULL;
