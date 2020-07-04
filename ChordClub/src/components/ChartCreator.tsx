@@ -52,21 +52,11 @@ interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 
 const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const {uid} = userCtx.authState;
-  const route = useRoute<AppRouteProp<'RecordAProgression'>>();
-  const defaultChartType =
-    route.params?.chartType === undefined
-      ? ChartType.Chord
-      : route.params?.chartType;
   const [newChart, setChart] = useState(
     makeChartNew(uid, {
-      chartType: defaultChartType,
+      chartType: ChartType.Progression,
     }),
   );
-  const updateChartType = (ct: ChartType) =>
-    setChart({...newChart, chartType: ct});
-  useEffect(() => {
-    updateChartType(defaultChartType);
-  }, [defaultChartType]);
 
   const updateChartRoot = (n: Note) => setChart({...newChart, root: n});
   const [extensions, setExtensions] = useState<Extension[]>([]);
@@ -97,7 +87,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const reset = () => {
     setChart(
       makeChartNew(uid, {
-        chartType: defaultChartType,
+        chartType: ChartType.Progression,
       }),
     );
     setExtensions([]);
@@ -193,15 +183,6 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
 
   return (
     <View style={styles.container}>
-      <TabBar
-        style={styles.tabBar}
-        selectedIndex={newChart.chartType === ChartType.Chord ? 0 : 1}
-        onSelect={(index) =>
-          updateChartType(index === 0 ? ChartType.Chord : ChartType.Progression)
-        }>
-        <Tab title="CHORD" />
-        <Tab title="PROGRESSION" />
-      </TabBar>
       <KeyboardAwareScrollView>
         <Row style={styles.fullWidth}>
           <AudioRecorder
