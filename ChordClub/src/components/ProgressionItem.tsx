@@ -56,7 +56,7 @@ const ProgressionItem = ({
     toggleImage(true);
   };
   const Footer = (props?: ViewProps) => (
-    <View {...props}>
+    <View {...props} style={[styles.progressionDetails, props?.style]}>
       <View style={styles.progressionDetail}>
         <View style={styles.attributeHeader}>
           <Text category="label">{chart.creator?.username}</Text>
@@ -171,9 +171,14 @@ const styles = StyleSheet.create({
   progressionItemAudioLength: {
     flex: 2,
   },
+  progressionDetails: {
+    borderTopWidth: 1,
+    borderTopColor: 'white',
+    padding: 5,
+  },
   progressionDetail: {
-    marginTop: 3,
-    marginBottom: 3,
+    marginTop: 5,
+    marginBottom: 5,
   },
   actions: {
     display: 'flex',
@@ -183,8 +188,8 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 5,
     padding: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: 'grey',
+    borderBottomWidth: 2,
+    borderBottomColor: 'white',
   },
   headerAndFooter: {
     display: 'flex',
