@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
 import {ChartQueryModal} from './ChartQueryModal';
-import {View} from 'react-native';
-import {ChartQuery} from '../types';
+import {View, StyleSheet} from 'react-native';
+import {ChartQuery, ChartType} from '../types';
 import {AppScreen, Screens} from './AppScreen';
 import ErrorText from './ErrorText';
-import {Spinner} from '@ui-kitten/components';
+import {Spinner, Button} from '@ui-kitten/components';
 import {withUser, UserConsumerProps} from './UserContext';
 import {MenuItemData} from './Title';
 import {
@@ -12,6 +12,8 @@ import {
   SettingsPath,
   FlashcardViewSetting,
 } from '../util/settings';
+import { ThemedIcon } from './FontAwesomeIcons';
+import { useNavigation } from '@react-navigation/native';
 
 interface ManualProps<T> {
   title: Screens;
@@ -24,6 +26,31 @@ interface ManualProps<T> {
 interface Props<T> extends ManualProps<T>, UserConsumerProps {}
 
 type ChartViewProps = Props<ChartViewSetting> | Props<FlashcardViewSetting>;
+
+const styles = StyleSheet.create({
+  addButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+  }
+})
+
+const AddProgressionButton = () => {
+  const navigation = useNavigation();
+  return (
+    <Button
+      appearance="outline"
+      status="info"
+      style={styles.addButton}
+      accessoryRight={ThemedIcon('plus')}
+      onPress={() =>
+        navigation.navigate(Screens.RecordAProgression, {
+          chartType: ChartType.Progression,
+        })
+      }
+    />
+  );
+};
 
 const ChartQueryView = ({
   title,
@@ -69,7 +96,13 @@ const ChartQueryView = ({
   const {userError, userLoading, authState} = userCtx;
   const showResults = Boolean(authState.token) && !userLoading && !userError && settings;
   return (
-    <AppScreen title={title} menuItems={menuItems}>
+    <AppScreen
+      title={title}
+      menuItems={menuItems}
+      more={
+        <AddProgressionButton />
+      }
+    >
       <View>
         {userError && <ErrorText error={userError} />}
         {userLoading && <Spinner />}

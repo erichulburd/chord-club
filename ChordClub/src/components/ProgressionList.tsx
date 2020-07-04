@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, RefreshControl, StyleSheet} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
-import {ChartQuery, Chart, ChartType} from '../types';
+import {ChartQuery, Chart} from '../types';
 import {
   ChartsQueryResponse,
   ChartsQueryVariables,
@@ -10,29 +10,11 @@ import {
   DeleteChartMutationVariables,
 } from '../gql/chart';
 import {useQuery, useMutation} from 'react-apollo';
-import last from 'lodash/last';
 import {ModalContextProps, withModalContext} from './ModalProvider';
-import {Spinner, Text, Button} from '@ui-kitten/components';
+import {Spinner, Text} from '@ui-kitten/components';
 import {ChordClubShim} from 'types/ChordClubShim';
 import ProgressionItem from './ProgressionItem';
-import {useNavigation} from '@react-navigation/native';
-import {Screens} from './AppScreen';
 
-const CreateProgressionLink = () => {
-  const navigation = useNavigation();
-  return (
-    <Button
-      appearance="outline"
-      status="info"
-      onPress={() =>
-        navigation.navigate(Screens.RecordAProgression, {
-          chartType: ChartType.Progression,
-        })
-      }>
-      Create new progression!
-    </Button>
-  );
-};
 
 const ListEmptyComponent = () => (
   <View style={styles.emptyList}>
@@ -133,7 +115,6 @@ export const ProgressionList = ({
         data={charts}
         keyExtractor={(chart) => chart.id.toString()}
         ListEmptyComponent={ListEmptyComponent}
-        ListFooterComponent={<CreateProgressionLink />}
         renderItem={(item) => (
           <ProgressionItem
             compact={compact}
