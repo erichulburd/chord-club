@@ -34,6 +34,7 @@ export type Tag = TagBase & {
   munge: Scalars['String'];
   displayName: Scalars['String'];
   createdBy: Scalars['String'];
+  creator?: Maybe<User>;
   createdAt: Scalars['String'];
   password: Scalars['String'];
   tagType: TagType;
@@ -420,7 +421,7 @@ export type Mutation = {
   setTagPositions?: Maybe<Array<Maybe<Chart>>>;
   createInvitation: CreateInvitationResponse;
   deleteInvitation?: Maybe<Empty>;
-  acceptInvitation?: Maybe<Empty>;
+  acceptInvitation?: Maybe<Tag>;
   createPolicy?: Maybe<Policy>;
   deletePolicy?: Maybe<Empty>;
 };

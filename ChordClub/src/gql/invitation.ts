@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { CreateInvitationResponse, NewInvitation, Tag } from '../types';
+import { CreateInvitationResponse, NewInvitation, Tag, InvitationQuery, Invitation } from '../types';
 
 export const CREATE_INVITATION = gql`
   mutation CreateInvitation($invitation: NewInvitation!, $tokenExpirationHours: Int) {
@@ -32,4 +32,16 @@ export interface AcceptInvitationVariables {
 
 export interface AcceptInvitationData {
   acceptInvitation: Tag;
+}
+
+export const DELETE_INVITATION = gql`
+  mutation DeleteInvitation($invitationID: Int!) {
+    deleteInvitation(invitationID: $invitationID) {
+      empty
+    }
+  }
+`;
+
+export interface DeleteInvitationVariables {
+  invitationID: number;
 }

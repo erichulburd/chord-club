@@ -1,21 +1,16 @@
 import React, {useState, useEffect} from 'react';
-import {Card, Text, Button} from '@ui-kitten/components';
+import {Text, Button} from '@ui-kitten/components';
 import {ThemedIcon} from './FontAwesomeIcons';
 import moment from 'moment';
 import {Chart} from '../types';
 import {View, ViewProps, StyleSheet} from 'react-native';
 import {ModalImage} from './shared/ModalImage';
 import {ResizableImage} from '../util/imagePicker';
-import {AudioPlayer} from './AudioPlayer';
 import {UserConsumerProps, withUser} from './UserContext';
-import ChartOwnerMenu from './ChartOwnerMenu';
-import {ChartFooter} from './ChartFooter';
 import { formatMs } from './AudioDuration';
 import {TagCollection} from './TagCollection';
 import { CaretToggle } from './CaretToggle';
-import { Row } from './shared/Row';
 import ChartReactions from './ChartReactions';
-import { openInEditor } from 'reactotron-react-native';
 
 interface ManualProps {
   chart: Chart;

@@ -7,6 +7,8 @@ export const tagDBFields = gql`
     displayName
     tagType
     munge
+    createdBy
+    creator { uid username }
   }
 `;
 
@@ -35,8 +37,18 @@ export const DELETE_TAG = gql`
   }
 `;
 
-
 export interface DeleteTagVariables {
   tagID: number;
 }
 
+export const DELETE_TAG_ACCESS_POLICY = gql`
+  mutation DeleteTagAccessPolicy($tagID: Int!) {
+    deleteTagAccessPolicy(tagID: $tagID) {
+      empty
+    }
+  }
+`;
+
+export interface DeleteTagAccessPolicyVariables {
+  tagID: number;
+}

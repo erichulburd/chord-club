@@ -4,21 +4,18 @@ import {
   TagType,
   TagQueryOrder,
   Tag,
-  ChartType,
 } from '../types';
 import {AuthContext} from './UserContext';
 import {useQuery, useMutation} from 'react-apollo';
-import {GET_TAGS, GetTagsData, GetTagsVariables, DeleteTagVariables, DELETE_TAG} from '../gql/tag';
+import {GET_TAGS, GetTagsData, GetTagsVariables, DeleteTagVariables, DELETE_TAG, DELETE_TAG_ACCESS_POLICY, DeleteTagAccessPolicyVariables} from '../gql/tag';
 import {CenteredSpinner} from './CenteredSpinner';
 import ErrorText from './ErrorText';
 import {ApolloError} from 'apollo-client';
-import {List, ListItem, Button} from '@ui-kitten/components';
-import {View, ViewProps, StyleSheet} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {Screens} from './AppScreen';
-import {ThemedIcon} from './FontAwesomeIcons';
+import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
+import {View, StyleSheet} from 'react-native';
 import { ModalContext } from './ModalProvider';
 import { ModalShareTag } from './ModalShareTag';
+import { TagItem } from './TagItem';
 
 export const makeDefaultTagQuery = (): TagQuery => ({
   tagTypes: [TagType.Descriptor, TagType.List],
@@ -32,9 +29,11 @@ export const TagList = ({}: Props) => {
   const userCtx = useContext(AuthContext);
   const modalCtx = useContext(ModalContext);
   const [deleted, setDeleted] = useState<{[key: number]: boolean}>({});
-  const [deleteMutation, _] = useMutation<{}, DeleteTagVariables>(DELETE_TAG);
+  const [deleteMutation, _res1] = useMutation<{}, DeleteTagVariables>(DELETE_TAG);
+
+  const [deleteTagAccessPolicy, _res2] = useMutation<{}, DeleteTagAccessPolicyVariables>(DELETE_TAG_ACCESS_POLICY);
   const [sharingTagID, setSharingTagID] = useState<number | undefined>(undefined);
-  const onDelete = (tag: Tag) => {
+  const confirmDelete = (tag: Tag) => {
     modalCtx.message({
       msg: 'This untag all chords and progressions and delete the tag. Confirm your intent.',
       status: 'danger',
@@ -45,6 +44,25 @@ export const TagList = ({}: Props) => {
       },
       cancel: () => {},
     })
+  };
+  const confirmDeleteTagAccessPolicy = (tag: Tag) => {
+    modalCtx.message({
+      msg: `This will remove your access to progressions tagged '${tag.displayName}' by user ${tag.creator?.username}. Confirm your intent.`,
+      status: 'danger',
+    }, {
+      confirm: () => {
+        deleteTagAccessPolicy({ variables: { tagID: tag.id }});
+        setDeleted({...deleted, [tag.id]: true});
+      },
+      cancel: () => {},
+    })
+  };
+  const onDelete = (tag: Tag) => {
+    if (tag.createdBy === userCtx.getUID()) {
+      confirmDelete(tag);
+    } else {
+      confirmDeleteTagAccessPolicy(tag);
+    }
   }
   const query = makeDefaultTagQuery();
   const {data, loading, error, refetch} = useQuery<GetTagsData, GetTagsVariables>(
@@ -56,7 +74,6 @@ export const TagList = ({}: Props) => {
   const maybeDoRefetch = () => {
     refetch && refetch().catch(err => console.warn(err));
   };
-  const {navigate} = useNavigation();
   if (!data) {
     if (loading) {
       return <CenteredSpinner />;
@@ -68,46 +85,18 @@ export const TagList = ({}: Props) => {
       });
     return <ErrorText error={e} />;
   }
-  const goToProgressionTag = (tag: Tag) => {
-    userCtx.updateChartQuery('progressions', {
-      tagIDs: [tag.id],
-      chartTypes: [ChartType.Progression],
-    });
-    navigate(Screens.Progressions);
-  };
-  const TagLinks = (t: Tag, share: () => void) => (_props: ViewProps = {}) => (
-    <View style={styles.tagLinks}>
-      <Button
-        size="tiny"
-        appearance="ghost"
-        status="success"
-        accessoryLeft={ThemedIcon('list')}
-        onPress={() => goToProgressionTag(t)} />
-      <Button
-        size="tiny"
-        appearance="ghost"
-        status="success"
-        accessoryLeft={ThemedIcon('share')}
-        onPress={share} />
-      <Button
-        size="tiny"
-        appearance="ghost"
-        status="danger"
-        accessoryLeft={ThemedIcon('times')}
-        onPress={() => onDelete(t)} />
-    </View>
-  );
+
   const renderItem = ({item}: {item: Tag; index: number}) => (
-    <ListItem
-      disabled
-      title={item.displayName}
-      accessoryRight={TagLinks(item, () => setSharingTagID(item.id))}
+    <TagItem
+      tag={item}
+      onDelete={onDelete}
+      share={(t) => setSharingTagID(t.id)}
     />
   );
   const tags = data.tags.filter(t => !deleted[t.id]);
   return (
     <View>
-      <List
+      <FlatList
         refreshing={loading}
         onRefresh={maybeDoRefetch}
         data={tags}
