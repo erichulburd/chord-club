@@ -1,0 +1,12 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "1513247572.app.chordclub",
+                "paths": [ "/_/*"]
+            }
+        ]
+    }
+}
+

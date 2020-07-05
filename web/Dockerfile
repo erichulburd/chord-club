@@ -16,6 +16,7 @@ RUN [ "npm", "run", "build" ]
 
 FROM nginx:1.18-alpine
 COPY --from=build-deps /usr/src/app/dist /usr/share/nginx/html
+COPY .well-known/apple-app-site-association /usr/share/nginx/html/.well-known/apple-app-site-association
 COPY --from=build-deps /etc/nginx/nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

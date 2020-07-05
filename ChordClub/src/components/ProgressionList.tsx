@@ -19,7 +19,7 @@ import { Screens } from './AppScreen';
 import { AuthContext } from './UserContext';
 import ChartQueryEditor from './ChartQueryEditor';
 import { AudioPlayer } from './AudioPlayer';
-import { Audioable } from 'src/util/audio';
+import { Audioable } from '../util/audio';
 import { AudioContext } from './AudioContextProvider';
 
 

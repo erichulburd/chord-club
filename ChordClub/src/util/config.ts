@@ -13,6 +13,7 @@ const requiredVariables = [
   'AUTH0_DOMAIN',
   'AUTH0_CLIENT_ID',
   'AUTH0_TOKEN_AUDIENCE',
+  'WEB_BASE_URL',
 ];
 
 const validateConfiguration = (conf: NativeConfig) => {

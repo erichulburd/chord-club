@@ -101,13 +101,13 @@ export class TagAutocomplete extends React.Component<Props> {
       error = new ApolloError({graphQLErrors: errors});
     }
     const filter = displayName?.toLowerCase().trim();
-    let options: Tag[] = data.tags.filter(t => t.displayName.toLowerCase().indexOf(filter || '') >= 0);
+    let options: (Tag | TagNew)[] = data.tags.filter(t => t.displayName.toLowerCase().indexOf(filter || '') >= 0);
     if (allowNewTags && displayName) {
+      const tagNew = makeTagNew(displayName);
       const tagExists = options.some(
-        (t) => t.munge === getTagMunge(displayName || ''),
+        (t) => areTagsEqual(t, tagNew, userCtx.getUID()),
       );
       if (!tagExists) {
-        const tagNew = makeTagNew(displayName);
         options = [tagNew, ...options];
       }
     }
@@ -127,9 +127,9 @@ export class TagAutocomplete extends React.Component<Props> {
 
   private onSelect = (index: number) => {
     const {query, options, displayName} = this.state;
-    const {onSelect} = this.props;
+    const {onSelect, userCtx} = this.props;
     const tag = options[index];
-    if (tag === undefined || areTagsEqual(tag, fauxResult)) {
+    if (tag === undefined || areTagsEqual(tag, fauxResult,  userCtx.getUID())) {
       return;
     }
     onSelect(tag);

@@ -8,6 +8,8 @@ import {
 } from '../types';
 import kebabCase from 'lodash/kebabCase';
 import trim from 'lodash/trim';
+import id from 'lodash/has';
+import has from 'lodash/has';
 
 export const makeChartNew = (
   uid: string,
@@ -42,9 +44,21 @@ export const getTagMunge = (displayName: string) => {
   return kebabCase(trim(displayName).toLowerCase());
 };
 
-export const getTagKey = (t: Tag | TagNew) =>
-  getTagMunge(t.displayName);
+const isSavedTag = (t: Tag | TagNew) => {
+  return has(t, 'id');
+}
 
-export const areTagsEqual = (t1: Tag | TagNew, t2: Tag | TagNew) => {
-  return getTagKey(t1) === getTagKey(t2);
+export const areTagsEqual = (t1: Tag | TagNew, t2: Tag | TagNew, uid: string) => {
+  if (getTagMunge(t1.displayName) !== getTagMunge(t2.displayName)) {
+    return false;
+  }
+  let t1CreatedBy = uid;
+  let t2CreatedBy = uid;
+  if (isSavedTag(t1)) {
+    t1CreatedBy = (t1 as Tag).createdBy;
+  }
+  if (isSavedTag(t2)) {
+    t2CreatedBy = (t2 as Tag).createdBy;
+  }
+  return t1CreatedBy === t2CreatedBy;
 };

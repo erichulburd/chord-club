@@ -27,6 +27,7 @@ import {TagListScreen} from './TagListScreen';
 import { BlankScreen } from './BlankScreen';
 import { LogoutScreen } from './LogoutScreen';
 import LoginScreen from './LoginScreen';
+import { LinkHandler } from './LinkHandler';
 
 const {Navigator, Screen} = createDrawerNavigator();
 

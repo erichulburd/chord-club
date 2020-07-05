@@ -56,12 +56,22 @@ static void InitializeFlipper(UIApplication *application) {
 #endif
 }
 
-// BEGIN Auth0 config
+// BEGIN Deep linking, required for Auth0 config
+// https://reactnative.dev/docs/linking.html#enabling-deep-links
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
   return [RCTLinkingManager application:app openURL:url options:options];
 }
-// END Auth0 config
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity
+ restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler
+{
+ return [RCTLinkingManager application:application
+                  continueUserActivity:userActivity
+                    restorationHandler:restorationHandler];
+}
+// END Deep linking config
+
 
 @end

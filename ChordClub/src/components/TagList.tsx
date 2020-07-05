@@ -18,8 +18,9 @@ import {useNavigation} from '@react-navigation/native';
 import {Screens} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
 import { ModalContext } from './ModalProvider';
+import { ModalShareTag } from './ModalShareTag';
 
-const makeTagQuery = (): TagQuery => ({
+export const makeDefaultTagQuery = (): TagQuery => ({
   tagTypes: [TagType.Descriptor, TagType.List],
   order: TagQueryOrder.DisplayName,
   asc: true,
@@ -30,9 +31,9 @@ interface Props {}
 export const TagList = ({}: Props) => {
   const userCtx = useContext(AuthContext);
   const modalCtx = useContext(ModalContext);
-  const uid = userCtx.user?.uid;
   const [deleted, setDeleted] = useState<{[key: number]: boolean}>({});
   const [deleteMutation, _] = useMutation<{}, DeleteTagVariables>(DELETE_TAG);
+  const [sharingTagID, setSharingTagID] = useState<number | undefined>(undefined);
   const onDelete = (tag: Tag) => {
     modalCtx.message({
       msg: 'This untag all chords and progressions and delete the tag. Confirm your intent.',
@@ -45,13 +46,16 @@ export const TagList = ({}: Props) => {
       cancel: () => {},
     })
   }
-  const query = makeTagQuery();
-  const {data, loading, error} = useQuery<GetTagsData, GetTagsVariables>(
+  const query = makeDefaultTagQuery();
+  const {data, loading, error, refetch} = useQuery<GetTagsData, GetTagsVariables>(
     GET_TAGS,
     {
       variables: {query},
     },
   );
+  const maybeDoRefetch = () => {
+    refetch && refetch().catch(err => console.warn(err));
+  };
   const {navigate} = useNavigation();
   if (!data) {
     if (loading) {
@@ -71,15 +75,20 @@ export const TagList = ({}: Props) => {
     });
     navigate(Screens.Progressions);
   };
-  const TagLinks = (t: Tag) => (_props: ViewProps = {}) => (
+  const TagLinks = (t: Tag, share: () => void) => (_props: ViewProps = {}) => (
     <View style={styles.tagLinks}>
       <Button
         size="tiny"
         appearance="ghost"
-        status="basic"
-        onPress={() => goToProgressionTag(t)}>
-        Progressions
-      </Button>
+        status="success"
+        accessoryLeft={ThemedIcon('list')}
+        onPress={() => goToProgressionTag(t)} />
+      <Button
+        size="tiny"
+        appearance="ghost"
+        status="success"
+        accessoryLeft={ThemedIcon('share')}
+        onPress={share} />
       <Button
         size="tiny"
         appearance="ghost"
@@ -92,13 +101,25 @@ export const TagList = ({}: Props) => {
     <ListItem
       disabled
       title={item.displayName}
-      accessoryRight={TagLinks(item)}
+      accessoryRight={TagLinks(item, () => setSharingTagID(item.id))}
     />
   );
   const tags = data.tags.filter(t => !deleted[t.id]);
   return (
     <View>
-      <List data={tags} renderItem={renderItem} />
+      <List
+        refreshing={loading}
+        onRefresh={maybeDoRefetch}
+        data={tags}
+        renderItem={renderItem}
+      />
+      {sharingTagID &&
+        <ModalShareTag
+          tagID={sharingTagID}
+          visible={sharingTagID !== undefined}
+          close={() => setSharingTagID(undefined)}
+        />
+      }
     </View>
   );
 };

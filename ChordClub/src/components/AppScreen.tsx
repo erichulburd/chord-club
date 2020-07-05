@@ -7,7 +7,7 @@ import {DrawerNavigationEventMap} from '@react-navigation/drawer/lib/typescript/
 import {ChartType, Chart} from '../types';
 import { ContentContainer } from './ContentContainer';
 import { AuthContext } from './UserContext';
-import { ThemedIcon } from './FontAwesomeIcons';
+import { LinkHandler } from './LinkHandler';
 
 interface Props {
   title?: string;
@@ -82,6 +82,7 @@ export const AppScreen = ({
         </ContentContainer>
         {more}
       </Layout>
+      <LinkHandler />
     </SafeAreaView>
   );
 };

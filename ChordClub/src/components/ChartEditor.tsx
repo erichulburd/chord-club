@@ -156,16 +156,16 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
   const addTag = (tagNew: TagNew | Tag) => {
     const tags: TagNew[] = chartUpdate.tags || [];
     const entry = pick(tagNew, ['displayName', 'tagType']) as TagNew;
-    if (!tags.some((t) => areTagsEqual(t as Tag, entry))) {
+    if (!tags.some((t) => areTagsEqual(t as Tag, entry, userCtx.getUID()))) {
       setChart({...chartUpdate, tags: [...tags, entry]});
     }
   };
   const removeTag = (tagNew: Tag | TagNew) => {
     const tags: TagNew[] = chartUpdate.tags || [];
-    if (tags.some((t) => areTagsEqual(t as Tag, tagNew))) {
+    if (tags.some((t) => areTagsEqual(t as Tag, tagNew, userCtx.getUID()))) {
       setChart({
         ...chartUpdate,
-        tags: tags.filter((t) => !areTagsEqual(t as Tag, tagNew)),
+        tags: tags.filter((t) => !areTagsEqual(t as Tag, tagNew, userCtx.getUID())),
       });
     }
   };
@@ -257,6 +257,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
         )}
         <Row style={styles.fullWidth}>
           <TagAutocomplete
+            createdBy={userCtx.getUID()}
             containerStyle={{width: '100%'}}
             onSelect={addTag}
           />
