@@ -34,6 +34,7 @@ export type Tag = TagBase & {
   munge: Scalars['String'];
   displayName: Scalars['String'];
   createdBy: Scalars['String'];
+  creator?: Maybe<User>;
   createdAt: Scalars['String'];
   password: Scalars['String'];
   tagType: TagType;
@@ -415,12 +416,13 @@ export type Mutation = {
   removeExtensions?: Maybe<Chart>;
   createTags: Array<Tag>;
   deleteTag?: Maybe<Empty>;
+  deleteTagAccessPolicy?: Maybe<Empty>;
   addTags?: Maybe<Chart>;
   unTag?: Maybe<Chart>;
   setTagPositions?: Maybe<Array<Maybe<Chart>>>;
   createInvitation: CreateInvitationResponse;
   deleteInvitation?: Maybe<Empty>;
-  acceptInvitation?: Maybe<Empty>;
+  acceptInvitation?: Maybe<Tag>;
   createPolicy?: Maybe<Policy>;
   deletePolicy?: Maybe<Empty>;
 };
@@ -474,6 +476,11 @@ export type MutationCreateTagsArgs = {
 
 
 export type MutationDeleteTagArgs = {
+  tagID: Scalars['Int'];
+};
+
+
+export type MutationDeleteTagAccessPolicyArgs = {
   tagID: Scalars['Int'];
 };
 

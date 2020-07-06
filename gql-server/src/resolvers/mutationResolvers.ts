@@ -12,11 +12,11 @@ import { wrapTopLevelOp, Resolver, assertResourceOwner } from './resolverUtils';
 import { addExtensionsForChart, removeExtensionsForChart, reconcileChartExtensions } from '../repositories/extensions';
 import { chartNotFoundError, forbiddenResourceOpError, invalidTagPositionUpdate, notFoundError } from '../util/errors';
 import { insertInvitations, deleteInvitation, findInvitationByID } from '../repositories/invitation';
-import { makeNewPolicyFromInvitation, insertPolicies, deletePolicy, findPolicyByID } from '../repositories/policy';
+import { makeNewPolicyFromInvitation, insertPolicies, deletePolicy, findPolicyByID, findTagPolicyByTagID } from '../repositories/policy';
 import * as tokens from '../util/tokens';
 import { invalidInvitationTokenError } from '../util/errors';
 import { SignOptions } from 'jsonwebtoken';
-import * as moment from 'moment';
+import moment from 'moment';
 
 interface CreateAccountArgs {
   newUser: UserNew;
@@ -71,6 +71,10 @@ interface DeleteTagArgs {
   tagID: number;
 }
 
+interface DeleteTagAccessPolicyArgs {
+  tagID: number;
+}
+
 interface CreateInvitationArgs {
   invitation: NewInvitation;
   tokenExpirationHours?: number;
@@ -107,11 +111,12 @@ interface MutationResolvers {
   removeExtensions: Resolver<AddRemoveExtensionsArgs, Chart>;
   createTags: Resolver<CreateTagArgs, Tag[]>;
   deleteTag: Resolver<DeleteTagArgs, void>;
+  deleteTagAccessPolicy: Resolver<DeleteTagArgs, void>;
 
   // Invitations
   createInvitation: Resolver<CreateInvitationArgs, CreateInvitationResponse>;
   deleteInvitation: Resolver<DeleteInvitationArgs, void>;
-  acceptInvitation: Resolver<AcceptInvitationArgs, void>;
+  acceptInvitation: Resolver<AcceptInvitationArgs, Tag>;
 
   // Policies
   createPolicy: Resolver<CreatePolicyArgs, Policy>;
@@ -285,6 +290,15 @@ M.deleteTag = wrapTopLevelOp(async (
   await deleteTag(args.tagID, context.uid, context.db);
 });
 
+M.deleteTagAccessPolicy = wrapTopLevelOp(async (
+  _obj: TopLevelRootValue, args: DeleteTagAccessPolicyArgs, context: Context): Promise<void> => {
+  const policy = await findTagPolicyByTagID(args.tagID, context.uid, context.db);
+  if (!policy) {
+    throw notFoundError({ args, op: 'deleteTagAccessPolicy' });
+  }
+  await deletePolicy(policy.id, context.db);
+});
+
 // Invitations
 M.createInvitation = wrapTopLevelOp(async (
   _obj: TopLevelRootValue, args: CreateInvitationArgs, context: Context): Promise<CreateInvitationResponse> => {
@@ -309,7 +323,7 @@ M.deleteInvitation = wrapTopLevelOp(async (
 });
 
 M.acceptInvitation = wrapTopLevelOp(async (
-  _obj: TopLevelRootValue, args: AcceptInvitationArgs, context: Context): Promise<void> => {
+  _obj: TopLevelRootValue, args: AcceptInvitationArgs, context: Context): Promise<Tag> => {
     let payload:tokens.InvitationTokenPayload = { invitationID: 0 };
     try {
       payload = await tokens.parse<tokens.InvitationTokenPayload>(args.token);
@@ -324,8 +338,32 @@ M.acceptInvitation = wrapTopLevelOp(async (
         `could not find invitation for token with invitationID ${payload.invitationID}`);
       throw invalidInvitationTokenError('valid invitation not found');
     }
+
+    // Only create the policy IF request is for a different user.
+    const tag = await findTagByID(
+      invitation.resourceID, invitation.createdBy || '', context.db);
+    console.log('TAG', tag);
+    if (!tag) {
+      context.logger.error(`could not find tag for token with ${payload.invitationID}`);
+      throw invalidInvitationTokenError('tag not found');
+    } else if (tag.createdBy === context.uid) {
+      return tag;
+    }
+    // and there is a no existing policy with a later expiresAt timestamp.
+    const existingPolicy = await findTagPolicyByTagID(
+      invitation.resourceID, context.uid, context.db);
+    if (existingPolicy) {
+      if (!existingPolicy.expiresAt) {
+        return tag;
+      } else if (invitation.expiresAt && moment(existingPolicy.expiresAt).isAfter(moment(invitation.expiresAt))) {
+        return tag;
+      }
+      await deletePolicy(existingPolicy.id, context.db);
+    }
+
     const newPolicy = makeNewPolicyFromInvitation(context.uid, invitation) as NewPolicy;
     await insertPolicies([newPolicy], invitation.createdBy || '', context.db);
+    return tag;
 });
 
 // Policies

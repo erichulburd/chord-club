@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { CreateInvitationResponse, NewInvitation, Tag, InvitationQuery, Invitation } from '../types';
+import { userDBFields } from './user';
 
 export const CREATE_INVITATION = gql`
   mutation CreateInvitation($invitation: NewInvitation!, $tokenExpirationHours: Int) {
@@ -21,9 +22,10 @@ export interface CreateInvitationData {
 export const ACCEPT_INVITATION = gql`
   mutation AcceptInvitation($token: String!) {
     acceptInvitation(token: $token) {
-      id displayName creator { username }
+      id displayName creator { ...UserDBFields }
     }
   }
+  ${userDBFields}
 `;
 
 export interface AcceptInvitationVariables {

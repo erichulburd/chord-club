@@ -416,6 +416,7 @@ export type Mutation = {
   removeExtensions?: Maybe<Chart>;
   createTags: Array<Tag>;
   deleteTag?: Maybe<Empty>;
+  deleteTagAccessPolicy?: Maybe<Empty>;
   addTags?: Maybe<Chart>;
   unTag?: Maybe<Chart>;
   setTagPositions?: Maybe<Array<Maybe<Chart>>>;
@@ -475,6 +476,11 @@ export type MutationCreateTagsArgs = {
 
 
 export type MutationDeleteTagArgs = {
+  tagID: Scalars['Int'];
+};
+
+
+export type MutationDeleteTagAccessPolicyArgs = {
   tagID: Scalars['Int'];
 };
 

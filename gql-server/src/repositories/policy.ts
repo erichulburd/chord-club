@@ -1,5 +1,5 @@
 import { prepareDBInsert, Queryable, NULL } from './db';
-import { Invitation, PolicyAction, NewPolicy, Policy, PolicyQuery } from '../types';
+import { Invitation, PolicyAction, NewPolicy, Policy, PolicyQuery, PolicyResourceType } from '../types';
 import { makeDBFields, makeSelectFields, makeDBDataToObject } from './db';
 import moment from 'moment'
 import { pick } from 'lodash';
@@ -14,7 +14,7 @@ const _dbDataToPolicy = makeDBDataToObject<Policy>(attrs, 'Policy');
 const dbDataToPolicy = (row: {[key: string]: any}) => {
   const policy = _dbDataToPolicy(row);
   policy.action = dbActionToGQL(row.action);
-  policy.expiresAt = policy.expiresAt && moment(policy.expiresAt).format();
+  policy.expiresAt = policy.expiresAt && moment(policy.expiresAt).utc().format();
   policy.createdAt = moment(policy.createdAt).utc().format();
   return policy;
 };
@@ -90,6 +90,19 @@ export const findPolicyByID = async (
   }
   return dbDataToPolicy(result.rows[0]) as Policy;
 };
+
+export const findTagPolicyByTagID = async (
+  tagID: number, uid: string, queryable: Queryable) => {
+  const result = await queryable.query(`
+    SELECT ${selectFields} FROM policy p
+      WHERE resource_type = $1 AND resource_id = $2 AND uid = $3 AND (expires_at IS NULL OR expires_at > NOW())
+  `, [PolicyResourceType.Tag, tagID, uid]);
+  if (result.rows.length < 1) {
+    return undefined;
+  }
+  return dbDataToPolicy(result.rows[0]) as Policy;
+};
+
 
 export const listPolicies = async (
   query: PolicyQuery, queryable: Queryable) => {

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import {UserNew, User, UserUpdate} from '../types';
 
-const userDBFields = gql`
+export const userDBFields = gql`
   fragment UserDBFields on User {
     uid
     username

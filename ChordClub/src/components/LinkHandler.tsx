@@ -65,6 +65,7 @@ export const LinkHandler = ({ children }: PropsWithChildren<{}>) => {
     if (!acceptInvitationRes.error) {
       return
     }
+    console.error(acceptInvitationRes.error);
     modalCtx.message({
       msg: 'The sharing token provided is invalid or expired. Please request another from the inviting user.',
       status: 'warning',
@@ -73,6 +74,7 @@ export const LinkHandler = ({ children }: PropsWithChildren<{}>) => {
 
   const acceptedTag = acceptInvitationRes.data?.acceptInvitation;
   useEffect(() => {
+    console.info('ACCEPTED TAG', acceptedTag);
     // Once a tag has been accepted, update the chart query
     // and navigate to the progressions list.
     if (!acceptedTag || !authCtx.user) {

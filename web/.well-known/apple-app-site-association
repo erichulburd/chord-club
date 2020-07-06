@@ -1,12 +1,1 @@
-{
-    "applinks": {
-        "apps": [],
-        "details": [
-            {
-                "appID": "1513247572.app.chordclub",
-                "paths": [ "/_/*"]
-            }
-        ]
-    }
-}
-
+{"applinks":{"apps":[],"details":[{"appID":"1513247572.app.chordclub","paths":["/_/*"]},{"appID":"XQ6523A64X.app.chordclub","paths":["/_/*"]}]}}

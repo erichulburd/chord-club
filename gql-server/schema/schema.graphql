@@ -37,6 +37,7 @@ type Tag implements TagBase {
   munge: String!
   displayName: String!
   createdBy: String!
+  creator: User
   createdAt: String!
   password: String!
   tagType: TagType!
@@ -364,6 +365,7 @@ type Mutation {
   removeExtensions(chartID: Int!, extensionIDs: [Int!]!): Chart
   createTags(tagNews: [TagNew!]!): [Tag!]!
   deleteTag(tagID: Int!): Empty
+  deleteTagAccessPolicy(tagID: Int!): Empty
   addTags(chartID: Int!, tags: [TagNew!]!): Chart
   unTag(chartID: Int!, tagIDs: [Int!]!): Chart
   setTagPositions(tagID: Int!, chartIDs: [Int!]!, positions: [Int!]!): [Chart]
@@ -371,7 +373,7 @@ type Mutation {
   # Invitations
   createInvitation(invitation: NewInvitation!, tokenExpirationHours: Int): CreateInvitationResponse!
   deleteInvitation(invitationID: Int!): Empty
-  acceptInvitation(token: String!): Empty
+  acceptInvitation(token: String!): Tag
 
   # Policies
   createPolicy(policy: NewPolicy!): Policy
