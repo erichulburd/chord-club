@@ -3,8 +3,8 @@ import jwksClient from 'jwks-rsa';
 import { readFileSync } from 'fs';
 import { config } from './config';
 
-const JWKS_PATH = process.env.JWKS_PATH || '';
-const PRIVATE_SIGNING_KEY_PATH = process.env.PRIVATE_SIGNING_KEY_PATH || '';
+const JWKS_PATH = config.JWKS_PATH || '';
+const PRIVATE_SIGNING_KEY_PATH = config.PRIVATE_SIGNING_KEY_PATH || '';
 
 export const jwks = JSON.parse(readFileSync(JWKS_PATH, { encoding: 'utf-8' }).toString());
 const privateKey = readFileSync(PRIVATE_SIGNING_KEY_PATH, { encoding: 'utf-8' }).toString();
