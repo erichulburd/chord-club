@@ -342,7 +342,6 @@ M.acceptInvitation = wrapTopLevelOp(async (
     // Only create the policy IF request is for a different user.
     const tag = await findTagByID(
       invitation.resourceID, invitation.createdBy || '', context.db);
-    console.log('TAG', tag);
     if (!tag) {
       context.logger.error(`could not find tag for token with ${payload.invitationID}`);
       throw invalidInvitationTokenError('tag not found');
