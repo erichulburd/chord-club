@@ -102,7 +102,7 @@ export const TagItem = ({
   return (
     <View style={styles.container}>
       <View style={styles.mainRow}>
-        <Text category="h6">{getTitle(tag)}</Text>
+        <Text>{getTitle(tag)}</Text>
         <View style={styles.tagLinks}>
           <Button
             size="tiny"
@@ -168,7 +168,7 @@ export const TagItem = ({
         }
         {getTagAccessRes.data.invitations.length > 0 &&
           <View style={styles.table}>
-            <Text category="label">Sharing tokens</Text>
+            <Text category="label">Sharing links</Text>
             <View style={styles.tableRow}>
               <Text category="label" style={styles.tableCell}>Created at</Text>
               <Text category="label" style={styles.tableCell}>Expires at</Text>

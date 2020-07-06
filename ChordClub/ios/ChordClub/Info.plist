@@ -53,13 +53,14 @@
 	<key>NSCameraUsageDescription</key>
 	<string>This app uses the camera to upload photos of chord charts you want to share.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app uses the microphone to record your chords and progressions.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app uses the photo library to upload photos of chord charts you want to share.</string>
 	<key>UIAppFonts</key>
 	<array>
+		<string>FontAwesome.ttf</string>
 		<string>FontAwesome5_Brands.ttf</string>
 		<string>FontAwesome5_Regular.ttf</string>
 		<string>FontAwesome5_Solid.ttf</string>

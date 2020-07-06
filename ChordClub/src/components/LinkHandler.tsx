@@ -2,20 +2,21 @@ import React from 'react';
 import {Linking} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect, useContext, PropsWithChildren } from 'react';
-import { useMutation, useApolloClient } from 'react-apollo';
-import * as qs from 'querystring';
-import { URL } from 'url';
+import { useMutation } from 'react-apollo';
 import {
   ACCEPT_INVITATION, AcceptInvitationVariables,
   AcceptInvitationData,
 } from '../gql/invitation';
+import qs from 'qs';
 import { AuthContext } from './UserContext';
 import { Screens } from './AppScreen';
 import { GET_TAGS } from '../gql/tag';
 import { makeDefaultTagQuery } from './TagList';
+import { ModalContext } from './ModalProvider';
 
 export const LinkHandler = ({ children }: PropsWithChildren<{}>) => {
   const navigation = useNavigation();
+  const modalCtx = useContext(ModalContext);
   const authCtx = useContext(AuthContext);
   const [acceptInvitation, acceptInvitationRes] = useMutation<AcceptInvitationData, AcceptInvitationVariables>(ACCEPT_INVITATION, {
     refetchQueries: [{
@@ -43,16 +44,32 @@ export const LinkHandler = ({ children }: PropsWithChildren<{}>) => {
       return;
     }
     // Whenever a new URL is detected, parse it for an invitation token.
-    const parsedURL = new URL(url)
-    const query = qs.parse(parsedURL.search.replace(/^\?/, ''));
-    const token = query.inviteToken instanceof Array ? query.inviteToken[0] : query.inviteToken || '';
+    const parts = url.split('?');
+    if (parts.length < 2) {
+      return;
+    }
+    const queryString = parts.slice(1).join('?');
+    const query = qs.parse(queryString);
+    const token = query.inviteToken instanceof Array ?
+      query.inviteToken[0] :
+      query.inviteToken || '';
     if (token && authCtx.user) {
       // accept invitation
       acceptInvitation({
-        variables: { token },
+        variables: { token: token.toString() },
       });
     }
   }, [url]);
+
+  useEffect(() => {
+    if (!acceptInvitationRes.error) {
+      return
+    }
+    modalCtx.message({
+      msg: 'The sharing token provided is invalid or expired. Please request another from the inviting user.',
+      status: 'warning',
+    })
+  }, [acceptInvitationRes.error])
 
   const acceptedTag = acceptInvitationRes.data?.acceptInvitation;
   useEffect(() => {
