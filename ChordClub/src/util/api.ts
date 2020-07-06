@@ -4,7 +4,7 @@ import {v4} from 'react-native-uuid';
 import auth from '../util/auth';
 import {GraphQLError} from 'graphql';
 
-const BASE_URL = 'http://localhost:4000'; // config.API_BASE_URL
+const BASE_URL = config.API_BASE_URL
 
 const API_URL = `${BASE_URL}/v1`;
 export const GQL_URL = `${BASE_URL}/graphql`;

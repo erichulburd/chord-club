@@ -25,8 +25,8 @@ export interface ScreenProps {
 export enum Screens {
   // Chords = 'Chords',
   // ChordFlashcards = 'Chord Flashcards',
-  Progressions = 'Progressions',
-  RecordAProgression = 'Record a progression',
+  Progressions = 'Listen',
+  RecordAProgression = 'Record',
   Account = 'Account',
   Login = 'Login',
   Logout = 'Logout',

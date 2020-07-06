@@ -8,6 +8,7 @@ import { AuthContext } from './UserContext';
 import { Screens } from './AppScreen';
 import { ChartViewSetting } from '../util/settings';
 import { RenderProp } from '@ui-kitten/components/devsupport';
+import has from 'lodash/has';
 
 interface NavigableProps {
   tag: Tag | TagNew;
@@ -46,6 +47,11 @@ interface Props extends NavigableProps {
 }
 
 export const TagLabel = ({tag, onPress, accessory, size = 'tiny'}: Props) => {
+  const userCtx = useContext(AuthContext);
+  let displayName = tag.displayName;
+  if (has(tag, 'createdBy') && (tag as Tag).createdBy !== userCtx.getUID()) {
+    displayName += ` (${(tag as Tag).creator?.username}`;
+  }
   return (
     <View style={styles.container}>
       <Button
