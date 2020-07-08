@@ -155,7 +155,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
 
   const addTag = (tagNew: TagNew | Tag) => {
     const tags: TagNew[] = chartUpdate.tags || [];
-    const entry = pick(tagNew, ['displayName', 'tagType']) as TagNew;
+    const entry = omit(tagNew, ['id', '__typename', 'munge', 'createdBy', 'creator']) as TagNew;
     if (!tags.some((t) => areTagsEqual(t as Tag, entry, userCtx.getUID()))) {
       setChart({...chartUpdate, tags: [...tags, entry]});
     }

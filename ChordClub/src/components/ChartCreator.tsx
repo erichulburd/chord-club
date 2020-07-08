@@ -1,10 +1,8 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   Text,
   Button,
   Input,
-  TabBar,
-  Tab,
 } from '@ui-kitten/components';
 import {View, Image, StyleSheet} from 'react-native';
 import {TouchableHighlight} from 'react-native-gesture-handler';
@@ -37,8 +35,6 @@ import {withModalContext, ModalContextProps} from './ModalProvider';
 import TagAutocomplete from './TagAutocomplete';
 import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
-import {useRoute} from '@react-navigation/native';
-import {AppRouteProp} from './AppScreen';
 import {Audioable} from '../util/audio';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { ChartViewSetting } from '../util/settings';
@@ -166,7 +162,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
 
   const addTag = (tagNew: TagNew | Tag) => {
     const tags = newChart.tags || [];
-    const entry = omit(tagNew, ['id', '__typename', 'munge']) as TagNew;
+    const entry = omit(tagNew, ['id', '__typename', 'munge', 'createdBy', 'creator']) as TagNew;
     if (!tags.some((t) => areTagsEqual(t as Tag, entry, userCtx.getUID()))) {
       setChart({...newChart, tags: [...tags, entry]});
     }
