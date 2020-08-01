@@ -85,6 +85,10 @@ export const LinkHandler = ({ children }: PropsWithChildren<{}>) => {
       tagIDs: [acceptedTag.id],
     })
     navigation.navigate(Screens.Progressions);
+    modalCtx.message({
+      msg: `You now have access to ${acceptedTag.creator?.username}'s '${acceptedTag.displayName}' tag!`,
+      status: 'success',
+    })
   }, [acceptedTag?.id]);
 
   return <>{children}</>;
