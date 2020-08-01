@@ -88,6 +88,7 @@ export const ModalShareTag = ({tagID, visible, close}: Props) => {
             expiresAt={expiresAt}
             tokenExpirationHours={tokenExpirationHours}
             tagID={tagID}
+            cancel={close}
           />
         </View>
       </Card>
@@ -99,9 +100,10 @@ interface TagInvitationLinkProps {
   tagID: number;
   expiresAt?: string | undefined;
   tokenExpirationHours?: number | undefined;
+  cancel: () => void;
 }
 
-const TagInvitationLink = ({ tagID, expiresAt, tokenExpirationHours }: TagInvitationLinkProps) => {
+const TagInvitationLink = ({ cancel, tagID, expiresAt, tokenExpirationHours }: TagInvitationLinkProps) => {
   const [createInvitation, {data,loading}] = useMutation<CreateInvitationData, CreateInvitationVariables>(CREATE_INVITATION, {
     variables: {
       invitation: {
@@ -147,15 +149,25 @@ const TagInvitationLink = ({ tagID, expiresAt, tokenExpirationHours }: TagInvita
   }, [shareURL, loading]);
   return (
     <View>
-      <Input
-        value={shareURL}
-        disabled
-      />
-      <Button
-        onPress={onPress}
-      >
-        {Boolean(token) ? 'Copy link' : 'Generate link'}
-      </Button>
+      {shareURL &&
+        <Input
+          value={shareURL}
+          disabled
+        />
+      }
+      <View style={styles.controls}>
+        <Button
+          appearance="outline"
+          onPress={onPress}
+        >
+          {Boolean(token) ? 'Copy link' : 'Generate link'}
+        </Button>
+        <Button
+          appearance="outline"
+          status="warning"
+          onPress={cancel}
+        >Cancel</Button>
+      </View>
     </View>
   );
 }
@@ -172,5 +184,11 @@ const styles = StyleSheet.create({
   },
   numericInput: {
     width: 100,
+  },
+  controls: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around'
   }
 });

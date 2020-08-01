@@ -88,7 +88,10 @@ export class ModalProvider extends React.Component<{}, State> {
           backdropStyle={styles.backdrop}>
           {waiting && <Spinner />}
           {message && (
-            <Card status={message?.status || 'info'} footer={Footer}>
+            <Card
+              status={message?.status || 'info'}
+              footer={Footer}
+            >
               <View>
                 <Text status={message.status}>{message.msg}</Text>
               </View>
