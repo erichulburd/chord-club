@@ -55,7 +55,7 @@ spec:
       - name: secrets
         secret:
           defaultMode: 420
-          secretName: prd-chordclub-secrets--v005
+          secretName: prd-chordclub-secrets--v007
       - name: jwks
         secret:
           defaultMode: 420
