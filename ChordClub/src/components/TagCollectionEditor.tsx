@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import {useQuery} from 'react-apollo';
 import {GetTagsData, GetTagsVariables, GET_TAGS} from '../gql/tag';
 import {Spinner} from '@ui-kitten/components';
@@ -24,6 +24,9 @@ export const TagCollectionEditor = ({
   allowNewTags,
 }: TagCollectionEditorProps) => {
   const [tags, setTags] = useState<Tag[]>(initialTags);
+  useEffect(() => {
+    setTags(initialTags);
+  }, [initialTags]);
   const userCtx = useContext(AuthContext);
   const addTag = (tag: Tag) => {
     if (tags.some((t) => areTagsEqual(t, tag, userCtx.getUID()))) {
@@ -84,6 +87,10 @@ export const TagIDCollectionEditor = ({
     return <ErrorText error={'An error occurred retrieving tags.'} />;
   }
   const includedTags = data.tags.filter(t => ids.some(id => id === t.id));
+  console.log('TAGS', data.tags);
+  console.log('IDS', ids);
+  console.log('INCLUDED TAGS', includedTags);
+
   return (
     <TagCollectionEditor {...rest} initialTags={includedTags} />
   );

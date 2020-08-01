@@ -61,12 +61,6 @@ export const TagItem = ({
     navigate(Screens.Progressions);
   };
 
-  const getTitle = (t: Tag) => {
-    if (t.createdBy === userCtx.getUID()) {
-      return t.displayName;
-    }
-    return `${t.displayName} (${t.creator?.username})`;
-  }
   const refetchQueries = [{
     query: GET_TAG_POLICIES_AND_INVITATIONS,
     variables,
