@@ -15,7 +15,7 @@ spec:
         env: prd
     spec:
       containers:
-      - image: gcr.io/chord-club/gql-server:r2020-05-07.r03
+      - image: gcr.io/chord-club/gql-server:r2020-08-01.r02
         imagePullPolicy: IfNotPresent
         name: prd-chordclub-gql-server
         ports:
