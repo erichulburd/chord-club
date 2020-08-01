@@ -87,10 +87,6 @@ export const TagIDCollectionEditor = ({
     return <ErrorText error={'An error occurred retrieving tags.'} />;
   }
   const includedTags = data.tags.filter(t => ids.some(id => id === t.id));
-  console.log('TAGS', data.tags);
-  console.log('IDS', ids);
-  console.log('INCLUDED TAGS', includedTags);
-
   return (
     <TagCollectionEditor {...rest} initialTags={includedTags} />
   );
