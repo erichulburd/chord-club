@@ -67,6 +67,14 @@ export const ProgressionList = ({
     refetch && refetch().catch(err => console.warn(err));
   };
   useEffect(() => {
+    const chartsLength = data?.charts?.length || 0;
+    if (chartsLength < (query.limit || 50)) {
+      setIsListExhausted(true);
+    } else {
+      setIsListExhausted(false);
+    }
+  }, [data?.charts]);
+  useEffect(() => {
     maybeDoRefetch();
   }, [mountID]);
   const authCtx = useContext(AuthContext);

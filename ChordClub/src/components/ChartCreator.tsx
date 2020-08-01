@@ -144,6 +144,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
       }
       close();
     } catch (err) {
+      console.error(err)
       modalCtx.wait(false);
       modalCtx.message({msg: err.message, status: 'danger'});
     }

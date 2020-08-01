@@ -26,6 +26,7 @@ export const uploadFilesIfNecessary = async <T extends Record<string, string>>(
   let didUpload = false;
   if (Object.keys(filesToUpload).length > 0) {
     cache = {...existingUploadCache};
+    console.log('filesToUpload', filesToUpload)
     const newURLs = await upload(filesToUpload);
     Object.keys(newURLs).forEach((key) => {
       const filePath = fileLocalPaths[key];
