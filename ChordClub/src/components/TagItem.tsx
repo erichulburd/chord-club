@@ -102,7 +102,10 @@ export const TagItem = ({
   return (
     <View style={styles.container}>
       <View style={styles.mainRow}>
-        <Text>{getTitle(tag)}</Text>
+        <View>
+          <Text category="s1" style={styles.displayName}>{tag.displayName}</Text>
+          <Text style={styles.creator}>{tag.creator?.username}</Text>
+        </View>
         <View style={styles.tagLinks}>
           <Button
             size="tiny"
@@ -110,14 +113,12 @@ export const TagItem = ({
             status="success"
             accessoryLeft={ThemedIcon('list')}
             onPress={() => goToProgressionTag(tag)} />
-          {tag.createdBy === userCtx.getUID() &&
-            <Button
-              size="tiny"
-              appearance="ghost"
-              status="success"
-              accessoryLeft={ThemedIcon('share')}
-              onPress={() => share(tag)} />
-          }
+          <Button
+            size="tiny"
+            appearance="ghost"
+            status={tag.createdBy === userCtx.getUID() ? "success" : "basic"}
+            accessoryLeft={ThemedIcon('share')}
+            onPress={tag.createdBy === userCtx.getUID() ? () => share(tag) : undefined} />
           <Button
             size="tiny"
             appearance="ghost"
@@ -236,5 +237,11 @@ const styles = StyleSheet.create({
     flex: 4,
     flexWrap: 'wrap',
     padding: 3,
+  },
+  displayName: {
+    marginBottom: 3,
+  },
+  creator: {
+    fontStyle: 'italic'
   }
 });
