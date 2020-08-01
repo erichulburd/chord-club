@@ -132,7 +132,7 @@ describe('invitation ops', () => {
       query: `
         mutation AcceptInvitation($token: String!) {
           acceptInvitation(token: $token) {
-            empty
+            id displayName
           }
         }
       `,
@@ -166,7 +166,8 @@ describe('invitation ops', () => {
       variables: {
         invitationID: savedInvitation.id,
       },
-    }).expect(200);
+    })// .expect(200);
+    console.info(JSON.stringify(res.body, null, 2))
     savedInvitation = await findInvitationByID(savedInvitation.id, client);
     expect(savedInvitation).toEqual(undefined);
   });
@@ -276,7 +277,7 @@ describe('invitation ops', () => {
       query: `
         mutation AcceptInvitation($token: String!) {
           acceptInvitation(token: $token) {
-            empty
+            id displayName
           }
         }
       `,

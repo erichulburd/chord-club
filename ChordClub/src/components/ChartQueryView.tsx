@@ -106,11 +106,9 @@ const ChartQueryView = ({
         <AddProgressionButton />
       }
     >
-      <View>
-        {userError && <ErrorText error={userError} />}
-        {userLoading && <Spinner />}
-        {showResults && renderQueryResults(settings)}
-      </View>
+      {userError && <View><ErrorText error={userError} /></View>}
+      {userLoading && <View><Spinner /></View>}
+      {showResults && renderQueryResults(settings)}
     </AppScreen>
   );
 };

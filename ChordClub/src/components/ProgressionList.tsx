@@ -35,7 +35,7 @@ const ListEmptyComponent = () => {
         }
       >
       <Text category="h4" status="primary">
-        Click to get started by recording a progression and adding tags.
+        Get started with a recording
       </Text>
       </TouchableOpacity>
     </View>
@@ -124,7 +124,7 @@ export const ProgressionList = ({
   }
   let flatList: ChordClubShim.FlatList<Chart> | null = null;
   return (
-    <View>
+    <View style={styles.container}>
       <Card
         disabled
         status="basic"
@@ -175,6 +175,7 @@ const styles = StyleSheet.create({
   emptyList: {
     padding: 20,
   },
+  container: { flex: 1 },
 });
 
 export default withModalContext<ManualProps>(ProgressionList);
