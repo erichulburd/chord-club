@@ -228,3 +228,5 @@ export const makeDBDataToObject = <U extends GQLType>(attrs: string[], __typenam
     }), { __typename }) as U;
   };
 };
+
+export const NULL = 'NULL';

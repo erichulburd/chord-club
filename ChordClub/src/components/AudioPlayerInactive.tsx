@@ -11,15 +11,18 @@ interface Props {
 export const AudioPlayerInactive = ({audio, extraActions = []}: Props) => {
   const audioCtx = useContext(AudioContext);
   const actions: AudioAction[] = [
-    {iconName: 'step-backward'},
     {
-      onPress: () => audioCtx.startPlay(audio),
+      iconName: 'step-backward',
+      disabled: !audio.audioURL,
+    }, {
+      onPress: audio.audioURL ? () => audioCtx.startPlay(audio) : undefined,
       iconName: 'play-circle',
     },
     ...extraActions,
   ];
   return (
     <AudioControls
+
       currentPositionMs={0}
       durationMs={audio.audioLength}
       actions={actions}

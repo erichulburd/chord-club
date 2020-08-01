@@ -15,7 +15,7 @@ spec:
         env: prd
     spec:
       containers:
-      - image: gcr.io/chord-club/gql-server:r2020-14-05.r01
+      - image: gcr.io/chord-club/gql-server:r2020-05-07.r03
         imagePullPolicy: IfNotPresent
         name: prd-chordclub-gql-server
         ports:
@@ -48,9 +48,16 @@ spec:
         - mountPath: /data
           name: secrets
           readOnly: true
+        - mountPath: /jwks
+          name: jwks
+          readOnly: true
       volumes:
       - name: secrets
         secret:
           defaultMode: 420
-          secretName: prd-chordclub-secrets--v003
+          secretName: prd-chordclub-secrets--v007
+      - name: jwks
+        secret:
+          defaultMode: 420
+          secretName: prd-chordclub-jwks--v001
 

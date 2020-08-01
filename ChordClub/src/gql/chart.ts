@@ -18,7 +18,6 @@ export const chartQueryFields = gql`
     order
     asc
     limit
-    scopes
   }
 `;
 
@@ -32,7 +31,6 @@ export const chartDBFields = gql`
     hint
     description
     abc
-    scope
     chartType
     bassNote
     root

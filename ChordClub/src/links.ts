@@ -36,7 +36,6 @@ const authLink = setContext(async (_request, previousContext) => {
 });
 
 const errorLink = onError(({graphQLErrors, networkError}) => {
-  console.log('GRAPHQL ERRORS', graphQLErrors);
 
   if (graphQLErrors) {
     if (

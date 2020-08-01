@@ -5,7 +5,6 @@ import {
   Input,
   TabBar,
   Tab,
-  CheckBox,
   Toggle,
 } from '@ui-kitten/components';
 import {View, Image, StyleSheet} from 'react-native';
@@ -17,7 +16,6 @@ import {
   ChartType,
   Extension,
   Note,
-  BaseScopes,
   TagNew,
   Tag,
   Chart,
@@ -122,7 +120,7 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
         }
       }
       payload.tags = payload.tags?.map(
-        (t) => pick(t, ['displayName', 'scope', 'tagType']) as TagNew,
+        (t) => pick(t, ['displayName', 'tagType']) as TagNew,
       );
 
       await updateChart({variables: {chartUpdate: payload}});
@@ -157,43 +155,19 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
 
   const addTag = (tagNew: TagNew | Tag) => {
     const tags: TagNew[] = chartUpdate.tags || [];
-    const entry = pick(tagNew, ['displayName', 'scope', 'tagType']) as TagNew;
-    if (!tags.some((t) => areTagsEqual(t as Tag, entry))) {
+    const entry = omit(tagNew, ['id', '__typename', 'munge', 'createdBy', 'creator']) as TagNew;
+    if (!tags.some((t) => areTagsEqual(t as Tag, entry, userCtx.getUID()))) {
       setChart({...chartUpdate, tags: [...tags, entry]});
     }
   };
   const removeTag = (tagNew: Tag | TagNew) => {
     const tags: TagNew[] = chartUpdate.tags || [];
-    if (tags.some((t) => areTagsEqual(t as Tag, tagNew))) {
+    if (tags.some((t) => areTagsEqual(t as Tag, tagNew, userCtx.getUID()))) {
       setChart({
         ...chartUpdate,
-        tags: tags.filter((t) => !areTagsEqual(t as Tag, tagNew)),
+        tags: tags.filter((t) => !areTagsEqual(t as Tag, tagNew, userCtx.getUID())),
       });
     }
-  };
-  const updatePublic = (isPublic: boolean) => {
-    const tags: TagNew[] = chartUpdate.tags || [];
-    if (!isPublic && tags.some((t) => t.scope === BaseScopes.Public)) {
-      modalCtx.message(
-        {
-          msg:
-            'Your public tags for this chart will be lost if you make it private.',
-          status: 'warning',
-        },
-        {
-          confirm: () => {
-            const allTags = chartUpdate.tags || [];
-            const privateTags = allTags.filter(
-              (t: TagNew) => t.scope !== BaseScopes.Public,
-            );
-            setChart({...chartUpdate, scope: uid, tags: privateTags});
-          },
-          cancel: () => {},
-        },
-      );
-      return;
-    }
-    setChart({...chartUpdate, scope: isPublic ? BaseScopes.Public : uid});
   };
 
   return (
@@ -248,13 +222,6 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
             </Button>
           )}
         </Row>
-        <Row>
-          <CheckBox
-            checked={chartUpdate.scope === BaseScopes.Public}
-            onChange={updatePublic}
-          />
-          <Text category="label"> Share publicly?</Text>
-        </Row>
         {chart.chartType === ChartType.Chord && (
           <>
             <Row style={{flexDirection: 'column', alignItems: 'stretch'}}>
@@ -290,9 +257,9 @@ const ChartEditor = ({close, modalCtx, userCtx, chart, mountID}: Props) => {
         )}
         <Row style={styles.fullWidth}>
           <TagAutocomplete
+            createdBy={userCtx.getUID()}
             containerStyle={{width: '100%'}}
             onSelect={addTag}
-            includePublic={chartUpdate.scope === BaseScopes.Public}
           />
           <TagCollection tags={chartUpdate.tags || []} onDelete={removeTag} />
         </Row>

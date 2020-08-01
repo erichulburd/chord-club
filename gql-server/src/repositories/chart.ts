@@ -1,4 +1,4 @@
-import { BaseScopes, ChartQuery, Chart, ChartQueryOrder, ChartNew, ChartUpdate, ChartType } from '../types';
+import { ChartQuery, Chart, ChartQueryOrder, ChartNew, ChartUpdate, ChartType } from '../types';
 import { omit } from 'lodash';
 import {
   prepareDBUpdate, makeDBFields, makeSelectFields,
@@ -6,11 +6,10 @@ import {
   prepareDBInsert,
   Queryable
 } from './db';
-import { invalidChartScope } from '../util/errors';
 
 const attrs = [
   'id', 'audioURL', 'audioLength', 'imageURL', 'hint', 'name', 'description', 'abc',
-  'scope', 'chartType', 'bassNote', 'root', 'quality', 'createdAt', 'createdBy',
+  'chartType', 'bassNote', 'root', 'quality', 'createdAt', 'createdBy',
   'updatedAt',
 ];
 const dbFields = makeDBFields(attrs);
@@ -36,66 +35,80 @@ interface ChartQueryByTags extends BaseChartQuery {
 
 interface ChartQueryByTagsAfter extends ChartQueryByTags, AfterQuery {}
 
-const validateChartScope = (scope: string, uid: string) => {
-  const validScopes = [BaseScopes.Public, uid];
-  if (validScopes.indexOf(scope) < 0) {
-    throw invalidChartScope(scope);
-  }
-};
-
 export const findChartByID = async (id: number, uid: string, queryable: Queryable) => {
-  const scopes = [BaseScopes.Public, uid];
   const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM chart c
-      WHERE c.id = $1 AND c.scope = ANY ($2)
-  `, [id, scopes]);
+        LEFT OUTER JOIN chart_policies_for_uid($2) cp ON c.id = cp.chart_id
+      WHERE c.id = $1 AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
+  `, [id, uid]);
   if (result.rows.length < 1) {
     return undefined;
   }
   return dbDataToChart(result.rows[0]) as Chart;
 };
 
-export const findChartsByID = async (chartIDs: number[], uid: string[], queryable: Queryable) => {
-  const scopes = [uid, BaseScopes.Public];
+export const findChartsByID = async (chartIDs: number[], uid: string, queryable: Queryable) => {
   const result = await queryable.query(`
     SELECT
       ${selectFields}
       FROM chart c
-      WHERE c.id = ANY ($1) AND c.scope = ANY ($2)
-  `, [chartIDs, scopes]);
+        LEFT OUTER JOIN chart_policies_for_uid($2) cp ON c.id = cp.chart_id
+      WHERE c.id = ANY ($1) AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
+  `, [chartIDs, uid]);
   return result.rows.map(dbDataToChart);
 };
 
-const findRandomCharts = async (chartTypes: ChartType[], scopes: string[], limit: number, queryable: Queryable) => {
+const findRandomCharts = async (chartTypes: ChartType[], uid: string, limit: number, queryable: Queryable) => {
   const result = await queryable.query(`
   WITH selection AS (
     SELECT
     ${selectFields}
     FROM chart c
-      WHERE c.chart_type = ANY ($1) AND c.scope = ANY ($2)
+      LEFT OUTER JOIN chart_policies_for_uid($2) cp ON c.id = cp.chart_id
+      WHERE c.chart_type = ANY ($1) AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
   )
   SELECT ${selectFields} FROM selection c ORDER BY FLOOR(RANDOM() * $3) LIMIT $3
-  `, [chartTypes, scopes, limit]);
+  `, [chartTypes, uid, limit]);
   const charts = result.rows.map(dbDataToChart) as Chart[];
   return charts;
 };
 
-const findCharts = async (query: BaseChartQuery, scopes: string[], queryable: Queryable) => {
+const findRandomChartsByTagIDs = async (tagIDs: number[], chartTypes: ChartType[], uid: string, limit: number, queryable: Queryable) => {
+  const result = await queryable.query(`
+  WITH selection AS (
+    SELECT
+    ${selectFields}
+    FROM chart_tag ct
+      LEFT OUTER JOIN chart_policies_for_uid($2) cp ON ct.chart_id = cp.chart_id
+      INNER JOIN chart c ON ct.chart_id = c.id
+      INNER JOIN tag t ON ct.tag_id = t.id
+    WHERE t.id = ANY ($1) AND c.chart_type = ANY ($4) AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
+    LIMIT $3
+  )
+  SELECT * FROM selection c ORDER BY FLOOR(RANDOM() * $3) LIMIT $3
+  `, [tagIDs, uid, limit, chartTypes]);
+  const charts = result.rows.map(dbDataToChart) as Chart[];
+  return charts;
+};
+
+const findCharts = async (query: BaseChartQuery, uid: string, queryable: Queryable) => {
   const result = await queryable.query(`
   SELECT
-    ${selectFields}
+    ${selectFields}, cp.policy_action
   FROM chart c
-    WHERE c.chart_type = ANY ($1) AND c.scope = ANY ($2)
+    LEFT OUTER JOIN chart_policies_for_uid($2) cp ON c.id = cp.chart_id
+    WHERE c.chart_type = ANY ($1)
+      AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
     ORDER BY $3, c.id ${query.direction}
   LIMIT $4
-  `, [query.chartTypes, scopes, query.orderBy, query.limit]);
+  `, [query.chartTypes, uid, query.orderBy, query.limit]);
   return result.rows.map(dbDataToChart) as Chart[];
 };
 
 const findChartsAfter = async (
-  query: BaseChartQueryAfter, scopes: string[], queryable: Queryable) => {
+  query: BaseChartQueryAfter, uid: string, queryable: Queryable) => {
 
   const result = await queryable.query(`
   WITH ranks AS (
@@ -105,34 +118,36 @@ const findChartsAfter = async (
         ORDER BY $1, c.id ${query.direction}
       ) rank_number
     FROM chart c
-    WHERE c.scope = ANY ($2) AND c.chart_type = ANY ($5)
+      LEFT OUTER JOIN chart_policies_for_uid($2) cp ON c.id = cp.chart_id
+    WHERE c.chart_type = ANY ($5) AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
   )
   SELECT * FROM ranks
   WHERE rank_number > (SELECT rank_number FROM ranks WHERE id = $3)
   ORDER BY $1, id ${query.direction}
   LIMIT $4
-  `, [query.orderBy, scopes, query.after, query.limit, query.chartTypes]);
+  `, [query.orderBy, uid, query.after, query.limit, query.chartTypes]);
   return result.rows.map(dbDataToChart) as Chart[];
 };
 
 const findChartsByTags = async (
-  query: ChartQueryByTags, scopes: string[], queryable: Queryable,
+  query: ChartQueryByTags, uid: string, queryable: Queryable,
 ) => {
   const result = await queryable.query(`
   SELECT
     ${selectFields}
   FROM chart_tag ct
+    LEFT OUTER JOIN chart_policies_for_uid($2) cp ON ct.chart_id = cp.chart_id
     INNER JOIN chart c ON ct.chart_id = c.id
     INNER JOIN tag t ON ct.tag_id = t.id
-  WHERE t.id = ANY ($1) AND t.scope = ANY ($2) AND c.chart_type = ANY ($5)
+  WHERE t.id = ANY ($1) AND c.chart_type = ANY ($5) AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
   ORDER BY $3, c.id ${query.direction}
   LIMIT $4
-  `, [query.tagIDs, scopes, query.orderBy, query.limit, query.chartTypes]);
+  `, [query.tagIDs, uid, query.orderBy, query.limit, query.chartTypes]);
   return result.rows.map(dbDataToChart) as Chart[];
 };
 
 const findChartsByTagsAfter = async (
-  query: ChartQueryByTagsAfter, scopes: string[], queryable: Queryable,
+  query: ChartQueryByTagsAfter, uid: string, queryable: Queryable,
 ) => {
   const result = await queryable.query(`
   WITH ranks AS (
@@ -143,15 +158,16 @@ const findChartsByTagsAfter = async (
         ORDER BY $4, c.id ${query.direction}
       ) rank_number
     FROM chart c
+      LEFT OUTER JOIN chart_policies_for_uid($2) cp ON c.id = cp.chart_id
       INNER JOIN chart_tag ct ON ct.chart_id = c.id
       INNER JOIN tag t ON ct.tag_id = t.id
-    WHERE t.id = ANY ($1) AND t.scope = ANY ($2) AND c.scope = ANY ($2) AND c.chart_type = ANY ($6)
+    WHERE t.id = ANY ($1) AND c.chart_type = ANY ($6) AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
   )
   SELECT * FROM ranks
     WHERE rank_number > (SELECT rank_number FROM ranks WHERE ranks.id = $3)
   ORDER BY $4, ranks.id ${query.direction}
   LIMIT $5
-  `, [query.tagIDs, scopes, query.after, query.orderBy, query.limit, query.chartTypes]);
+  `, [query.tagIDs, uid, query.after, query.orderBy, query.limit, query.chartTypes]);
   return result.rows.map(dbDataToChart) as Chart[];
 };
 
@@ -162,7 +178,6 @@ export const deleteChartsForUser = async (uid: string, queryable: Queryable) => 
 };
 
 export const insertNewChart = async (chartNew: ChartNew, uid: string, queryable: Queryable) => {
-  validateChartScope(chartNew.scope, uid);
   const payload = { ...chartNew, createdBy: uid };
   const { values, columns, prep } = prepareDBInsert([omit(payload, ['id'])], dbFields);
   const result = await queryable.query(`
@@ -175,9 +190,6 @@ export const insertNewChart = async (chartNew: ChartNew, uid: string, queryable:
 
 export const updateChart = async (
   update: ChartUpdate, uid: string, queryable: Queryable) => {
-  if (update.scope) {
-    validateChartScope(update.scope, uid);
-  }
   const { prep, values } = prepareDBUpdate(omit(update, ['id']), dbFields);
   const result = await queryable.query(`
     UPDATE chart
@@ -209,10 +221,11 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, query
 
   const limit = Math.min(100, rawQuery.limit || 50);
   const chartTypes = rawQuery.chartTypes;
-  const scopes = rawQuery.scopes || [uid, BaseScopes.Public];
 
-  if (rawQuery.order === ChartQueryOrder.Random) {
-    return findRandomCharts(chartTypes, scopes, limit, queryable);
+  if (rawQuery.order === ChartQueryOrder.Random && rawQuery.tagIDs?.length) {
+    return findRandomChartsByTagIDs(rawQuery.tagIDs, chartTypes, uid, limit, queryable);
+  } else if (rawQuery.order === ChartQueryOrder.Random) {
+    return findRandomCharts(chartTypes, uid, limit, queryable);
   }
 
   let order = (rawQuery.order || ChartQueryOrder.CreatedAt).toLowerCase();
@@ -232,22 +245,22 @@ export const executeChartQuery = async (rawQuery: ChartQuery, uid: string, query
     const chartTagQueryAfter: ChartQueryByTagsAfter = {
       ...query, tagIDs: rawQuery.tagIDs, after,
     };
-    return findChartsByTagsAfter(chartTagQueryAfter, scopes, queryable);
+    return findChartsByTagsAfter(chartTagQueryAfter, uid, queryable);
   }
 
   if (rawQuery.tagIDs?.length) {
     const chartTagQuery: ChartQueryByTags = {
       ...query, tagIDs: rawQuery.tagIDs,
     };
-    return findChartsByTags(chartTagQuery, scopes, queryable);
+    return findChartsByTags(chartTagQuery, uid, queryable);
   }
 
   if (after) {
     const chartQueryAfter: BaseChartQueryAfter = {
       ...query, after,
     };
-    return findChartsAfter(chartQueryAfter, scopes, queryable);
+    return findChartsAfter(chartQueryAfter, uid, queryable);
   }
-  const charts = await findCharts(query, scopes, queryable);
+  const charts = await findCharts(query, uid, queryable);
   return charts;
 };

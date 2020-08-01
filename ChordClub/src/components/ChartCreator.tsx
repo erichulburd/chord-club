@@ -1,11 +1,8 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   Text,
   Button,
   Input,
-  TabBar,
-  Tab,
-  CheckBox,
 } from '@ui-kitten/components';
 import {View, Image, StyleSheet} from 'react-native';
 import {TouchableHighlight} from 'react-native-gesture-handler';
@@ -15,7 +12,6 @@ import {
   ChartType,
   Extension,
   Note,
-  BaseScopes,
   ChartNew,
   TagNew,
   Tag,
@@ -39,8 +35,6 @@ import {withModalContext, ModalContextProps} from './ModalProvider';
 import TagAutocomplete from './TagAutocomplete';
 import {TagCollection} from './TagCollection';
 import omit from 'lodash/omit';
-import {useRoute} from '@react-navigation/native';
-import {AppRouteProp} from './AppScreen';
 import {Audioable} from '../util/audio';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { ChartViewSetting } from '../util/settings';
@@ -54,21 +48,11 @@ interface Props extends ManualProps, UserConsumerProps, ModalContextProps {}
 
 const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const {uid} = userCtx.authState;
-  const route = useRoute<AppRouteProp<'CreateAChart'>>();
-  const defaultChartType =
-    route.params?.chartType === undefined
-      ? ChartType.Chord
-      : route.params?.chartType;
   const [newChart, setChart] = useState(
     makeChartNew(uid, {
-      chartType: defaultChartType,
+      chartType: ChartType.Progression,
     }),
   );
-  const updateChartType = (ct: ChartType) =>
-    setChart({...newChart, chartType: ct});
-  useEffect(() => {
-    updateChartType(defaultChartType);
-  }, [defaultChartType]);
 
   const updateChartRoot = (n: Note) => setChart({...newChart, root: n});
   const [extensions, setExtensions] = useState<Extension[]>([]);
@@ -99,7 +83,7 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
   const reset = () => {
     setChart(
       makeChartNew(uid, {
-        chartType: defaultChartType,
+        chartType: ChartType.Progression,
       }),
     );
     setExtensions([]);
@@ -178,57 +162,23 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
 
   const addTag = (tagNew: TagNew | Tag) => {
     const tags = newChart.tags || [];
-    const entry = omit(tagNew, ['id', '__typename', 'munge']) as TagNew;
-    if (!tags.some((t) => areTagsEqual(t as Tag, entry))) {
+    const entry = omit(tagNew, ['id', '__typename', 'munge', 'createdBy', 'creator']) as TagNew;
+    if (!tags.some((t) => areTagsEqual(t as Tag, entry, userCtx.getUID()))) {
       setChart({...newChart, tags: [...tags, entry]});
     }
   };
   const removeTag = (tagNew: Tag | TagNew) => {
     const tags = newChart.tags || [];
-    if (tags.some((t) => areTagsEqual(t as Tag, tagNew))) {
+    if (tags.some((t) => areTagsEqual(t as Tag, tagNew, userCtx.getUID()))) {
       setChart({
         ...newChart,
-        tags: tags.filter((t) => !areTagsEqual(t as Tag, tagNew)),
+        tags: tags.filter((t) => !areTagsEqual(t as Tag, tagNew, userCtx.getUID())),
       });
     }
-  };
-  const updatePublic = (isPublic: boolean) => {
-    if (
-      !isPublic &&
-      newChart.tags?.some((t) => t.scope === BaseScopes.Public)
-    ) {
-      modalCtx.message(
-        {
-          msg:
-            'Your public tags for this chart will be lost if you make it private.',
-          status: 'warning',
-        },
-        {
-          confirm: () => {
-            const tags = (newChart.tags || []).filter(
-              (t) => t.scope !== BaseScopes.Public,
-            );
-            setChart({...newChart, scope: uid, tags});
-          },
-          cancel: () => {},
-        },
-      );
-      return;
-    }
-    setChart({...newChart, scope: isPublic ? BaseScopes.Public : uid});
   };
 
   return (
     <View style={styles.container}>
-      <TabBar
-        style={styles.tabBar}
-        selectedIndex={newChart.chartType === ChartType.Chord ? 0 : 1}
-        onSelect={(index) =>
-          updateChartType(index === 0 ? ChartType.Chord : ChartType.Progression)
-        }>
-        <Tab title="CHORD" />
-        <Tab title="PROGRESSION" />
-      </TabBar>
       <KeyboardAwareScrollView>
         <Row style={styles.fullWidth}>
           <AudioRecorder
@@ -258,13 +208,6 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
             }>
             {image ? 'Remove' : 'Upload Chart'}
           </Button>
-        </Row>
-        <Row>
-          <CheckBox
-            checked={newChart.scope === BaseScopes.Public}
-            onChange={updatePublic}
-          />
-          <Text category="label"> Share publicly?</Text>
         </Row>
         {newChart.chartType === ChartType.Chord && (
           <>
@@ -301,9 +244,9 @@ const ChartCreator = ({close, modalCtx, userCtx, mountID}: Props) => {
         )}
         <Row style={styles.fullWidth}>
           <TagAutocomplete
+            createdBy={userCtx.getUID()}
             containerStyle={{width: '100%'}}
             onSelect={addTag}
-            includePublic={newChart.scope === BaseScopes.Public}
           />
           <TagCollection tags={newChart.tags || []} onDelete={removeTag} />
         </Row>

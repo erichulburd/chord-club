@@ -15,6 +15,8 @@ import omit from 'lodash/omit';
 import { uploadHandler } from '../handlers/upload';
 import { makeMetaMiddleware } from '../handlers/metaMiddleware';
 import { health } from '../handlers/health';
+import { jwksJSON } from '../handlers/jwks';
+import { download } from '../handlers/download';
 
 export type TopLevelRootValue = Maybe<OperationDefinitionNode>;
 
@@ -41,6 +43,8 @@ export const initializeApp =
   const metaMiddleware = makeMetaMiddleware(clientManager, getKey);
   app.post('/v1/upload', metaMiddleware, uploadHandler);
   app.get('/v1/health', metaMiddleware, health);
+  app.get('/v1/charts/:chartID/:media', metaMiddleware, download);
+  app.get('/.well-known/jwks.json', jwksJSON);
   app.post('/graphql', metaMiddleware);
 
   server.applyMiddleware({ app });

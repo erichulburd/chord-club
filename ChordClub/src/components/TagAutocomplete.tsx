@@ -2,13 +2,12 @@ import React, {createElement} from 'react';
 import {
   Autocomplete,
   AutocompleteItem,
-  CheckBox,
   IconProps,
   Spinner,
 } from '@ui-kitten/components';
 import {View, StyleProp, ViewStyle} from 'react-native';
 import {GET_TAGS, GetTagsData, GetTagsVariables} from '../gql/tag';
-import {TagQuery, BaseScopes, TagType, TagNew, Tag} from '../types';
+import {TagQuery, TagType, TagNew, Tag} from '../types';
 import {ThemedIcon} from './FontAwesomeIcons';
 import throttle from 'lodash/throttle';
 import {makeTagNew, getTagMunge, areTagsEqual} from '../util/forms';
@@ -23,36 +22,34 @@ import logger from '../util/logger';
 
 interface ManualProps {
   placeholder?: string;
-  includePublic?: boolean;
   onSelect: ((t: TagNew | Tag) => void) | ((t: Tag) => void);
   allowNewTags?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
+  createdBy?: string;
 }
 
 interface Props extends WithApolloClient<{}>, ManualProps, UserConsumerProps {}
 
 interface State {
   query: TagQuery;
+  displayName: string;
   error?: ApolloError;
   loading: boolean;
   options: any[];
   queryTs?: number;
-  includePublic: boolean;
 }
 
-const fauxResult = makeTagNew('No results', false, 'FAUX');
+const fauxResult = makeTagNew('No results');
 
 export class TagAutocomplete extends React.Component<Props> {
   public state: State = {
+    displayName: '',
     query: {
-      displayName: '',
-      scopes: [],
       tagTypes: [TagType.List],
       limit: 5,
     },
     loading: false,
     options: [],
-    includePublic: false,
   };
   private throttleQuery: () => Promise<void>;
 
@@ -60,28 +57,23 @@ export class TagAutocomplete extends React.Component<Props> {
     super(props);
 
     this.throttleQuery = throttle(() => this.execQuery(), 500);
-  }
-
-  private includePublic() {
-    return this.props.includePublic === undefined
-      ? this.state.includePublic
-      : this.props.includePublic;
+    const {query} = this.state;
+    if (props.createdBy) {
+      this.setState({ query: {...query, createdBy: props.createdBy} });
+    } else {
+      this.setState({ query: {...query, createdBy: props.userCtx.getUID()} });
+    }
   }
 
   private execQuery = async () => {
     const {query} = this.state;
-    const {client, userCtx} = this.props;
-    const {authState} = userCtx;
+    const {client} = this.props;
     const queryTs = Date.now();
     this.setState({loading: true, queryTs});
-    const scopes = [userCtx.getUID()];
-    if (this.includePublic()) {
-      scopes.push(BaseScopes.Public);
-    }
     try {
       const {data, errors} = await client.query<GetTagsData, GetTagsVariables>({
         query: GET_TAGS,
-        variables: {query: {...query, scopes}},
+        variables: {query},
       });
       if (this.state.queryTs !== queryTs) {
         return;
@@ -101,20 +93,21 @@ export class TagAutocomplete extends React.Component<Props> {
     data: GetTagsData,
     errors: readonly GraphQLError[] | undefined,
   ) => {
-    const {query} = this.state;
+    const {query, displayName} = this.state;
     const {userCtx, allowNewTags = true} = this.props;
     const {uid} = userCtx.authState;
     let error;
     if (errors && errors.length > 0) {
       error = new ApolloError({graphQLErrors: errors});
     }
-    let options: any[] = data.tags;
-    if (allowNewTags && query.displayName) {
+    const filter = displayName?.toLowerCase().trim();
+    let options: (Tag | TagNew)[] = data.tags.filter(t => t.displayName.toLowerCase().indexOf(filter || '') >= 0);
+    if (allowNewTags && displayName) {
+      const tagNew = makeTagNew(displayName);
       const tagExists = options.some(
-        (t) => t.munge === getTagMunge(query.displayName || ''),
+        (t) => areTagsEqual(t, tagNew, userCtx.getUID()),
       );
       if (!tagExists) {
-        const tagNew = makeTagNew(query.displayName, this.includePublic(), uid);
         options = [tagNew, ...options];
       }
     }
@@ -122,7 +115,7 @@ export class TagAutocomplete extends React.Component<Props> {
   };
 
   private updateQueryDisplayName = (displayName: string) => {
-    this.setState({query: {...this.state.query, displayName}}, () => {
+    this.setState({displayName}, () => {
       this.throttleQuery();
     });
   };
@@ -133,22 +126,23 @@ export class TagAutocomplete extends React.Component<Props> {
   };
 
   private onSelect = (index: number) => {
-    const {query, options} = this.state;
-    const {onSelect} = this.props;
+    const {query, options, displayName} = this.state;
+    const {onSelect, userCtx} = this.props;
     const tag = options[index];
-    if (tag === undefined || areTagsEqual(tag, fauxResult)) {
+    if (tag === undefined || areTagsEqual(tag, fauxResult,  userCtx.getUID())) {
       return;
     }
     onSelect(tag);
     this.setState({
-      query: {...query, displayName: ''},
+      displayName: '',
+      query: {...query},
       options: [],
     });
   };
 
   public render() {
     const {placeholder = 'Add tag', containerStyle = {}} = this.props;
-    const {query, error, options, includePublic, loading} = this.state;
+    const {query, error, options, loading, displayName} = this.state;
 
     const renderCloseIcon = (props: IconProps) =>
       loading ? (
@@ -170,7 +164,7 @@ export class TagAutocomplete extends React.Component<Props> {
         <Autocomplete
           autoCapitalize={'none'}
           placeholder={placeholder}
-          value={query.displayName || ''}
+          value={displayName || ''}
           accessoryRight={renderCloseIcon}
           onChangeText={this.updateQueryDisplayName}
           onSelect={this.onSelect}>
@@ -178,20 +172,10 @@ export class TagAutocomplete extends React.Component<Props> {
             <AutocompleteItem
               key={getTagMunge(tag)}
               title={tag.displayName}
-              accessoryLeft={ThemedIcon(
-                tag.scope === BaseScopes.Public ? 'users' : 'user',
-              )}
+              accessoryLeft={ThemedIcon('user')}
             />
           ))}
         </Autocomplete>
-        {this.props.includePublic === undefined && (
-          <CheckBox
-            status="control"
-            checked={includePublic}
-            onChange={(c) => this.setState({includePublic: c})}>
-            Include public?
-          </CheckBox>
-        )}
       </View>
     );
   }

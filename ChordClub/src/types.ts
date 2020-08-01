@@ -14,25 +14,28 @@ export type Scalars = {
   JSONObject: any;
 };
 
+
+
+
+
 export enum TagType {
   Descriptor = 'DESCRIPTOR',
-  List = 'LIST',
+  List = 'LIST'
 }
 
 export type TagBase = {
   displayName: Scalars['String'];
-  scope: Scalars['String'];
   tagType: TagType;
 };
 
 export type Tag = TagBase & {
-  __typename?: 'Tag';
+   __typename?: 'Tag';
   id: Scalars['Int'];
   munge: Scalars['String'];
   displayName: Scalars['String'];
   createdBy: Scalars['String'];
+  creator?: Maybe<User>;
   createdAt: Scalars['String'];
-  scope: Scalars['String'];
   password: Scalars['String'];
   tagType: TagType;
   tagPosition?: Maybe<Scalars['Int']>;
@@ -41,23 +44,18 @@ export type Tag = TagBase & {
 export type TagNew = {
   displayName: Scalars['String'];
   tagType: TagType;
-  scope: Scalars['String'];
 };
-
-export enum BaseScopes {
-  Public = 'PUBLIC',
-}
 
 export enum TagQueryOrder {
   DisplayName = 'DISPLAY_NAME',
-  CreatedAt = 'CREATED_AT',
+  CreatedAt = 'CREATED_AT'
 }
 
 export type TagQuery = {
   displayName?: Maybe<Scalars['String']>;
+  createdBy?: Maybe<Scalars['String']>;
   ids?: Maybe<Array<Scalars['Int']>>;
   tagTypes: Array<TagType>;
-  scopes: Array<Scalars['String']>;
   order?: Maybe<TagQueryOrder>;
   asc?: Maybe<Scalars['Boolean']>;
   after?: Maybe<Scalars['Int']>;
@@ -66,11 +64,11 @@ export type TagQuery = {
 
 export enum ReactionType {
   Star = 'STAR',
-  Flag = 'FLAG',
+  Flag = 'FLAG'
 }
 
 export type Reaction = {
-  __typename?: 'Reaction';
+   __typename?: 'Reaction';
   chartID: Scalars['Int'];
   reactionType: ReactionType;
   createdBy: Scalars['String'];
@@ -85,7 +83,7 @@ export type ReactionNew = {
 
 export enum ChartType {
   Chord = 'CHORD',
-  Progression = 'PROGRESSION',
+  Progression = 'PROGRESSION'
 }
 
 export type ChartBase = {
@@ -96,7 +94,6 @@ export type ChartBase = {
   description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
-  scope: Scalars['String'];
   chartType: ChartType;
   bassNote?: Maybe<Note>;
   root?: Maybe<Note>;
@@ -105,13 +102,13 @@ export type ChartBase = {
 };
 
 export type ReactionCounts = {
-  __typename?: 'ReactionCounts';
+   __typename?: 'ReactionCounts';
   stars: Scalars['Int'];
   flags: Scalars['Int'];
 };
 
 export type Chart = ChartBase & {
-  __typename?: 'Chart';
+   __typename?: 'Chart';
   id: Scalars['Int'];
   audioURL: Scalars['String'];
   audioLength: Scalars['Int'];
@@ -121,7 +118,6 @@ export type Chart = ChartBase & {
   description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
   tags: Array<Tag>;
-  scope: Scalars['String'];
   chartType: ChartType;
   bassNote?: Maybe<Note>;
   root?: Maybe<Note>;
@@ -143,7 +139,6 @@ export type ChartNew = {
   name?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   abc: Scalars['String'];
-  scope: Scalars['String'];
   chartType: ChartType;
   bassNote?: Maybe<Note>;
   root?: Maybe<Note>;
@@ -173,7 +168,7 @@ export enum Note {
   Fs = 'Fs',
   Gs = 'Gs',
   As = 'As',
-  Bs = 'Bs',
+  Bs = 'Bs'
 }
 
 export enum ChartQuality {
@@ -182,23 +177,23 @@ export enum ChartQuality {
   Sus2 = 'SUS2',
   Sus4 = 'SUS4',
   Diminished = 'DIMINISHED',
-  Augmented = 'AUGMENTED',
+  Augmented = 'AUGMENTED'
 }
 
 export enum ExtensionType {
   Sharp = 'SHARP',
   Flat = 'FLAT',
-  Plain = 'PLAIN',
+  Plain = 'PLAIN'
 }
 
 export type ExtensionNew = {
-  __typename?: 'ExtensionNew';
+   __typename?: 'ExtensionNew';
   extensionType: ExtensionType;
   degree: Scalars['Int'];
 };
 
 export type Extension = {
-  __typename?: 'Extension';
+   __typename?: 'Extension';
   id: Scalars['Int'];
   extensionType: ExtensionType;
   degree: Scalars['Int'];
@@ -216,7 +211,6 @@ export type ChartUpdate = {
   description?: Maybe<Scalars['String']>;
   abc?: Maybe<Scalars['String']>;
   imageURL?: Maybe<Scalars['String']>;
-  scope?: Maybe<Scalars['String']>;
   extensionIDs?: Maybe<Array<Scalars['Int']>>;
   tags?: Maybe<Array<TagNew>>;
 };
@@ -225,7 +219,7 @@ export enum ChartQueryOrder {
   ThumbsUp = 'THUMBS_UP',
   CreatedAt = 'CREATED_AT',
   TagPosition = 'TAG_POSITION',
-  Random = 'RANDOM',
+  Random = 'RANDOM'
 }
 
 export type ChartQuery = {
@@ -236,7 +230,6 @@ export type ChartQuery = {
   order?: Maybe<ChartQueryOrder>;
   asc?: Maybe<Scalars['Boolean']>;
   limit?: Maybe<Scalars['Int']>;
-  scopes?: Maybe<Array<Scalars['String']>>;
 };
 
 export type UserBase = {
@@ -244,7 +237,7 @@ export type UserBase = {
 };
 
 export type User = UserBase & {
-  __typename?: 'User';
+   __typename?: 'User';
   uid: Scalars['String'];
   username: Scalars['String'];
   createdAt: Scalars['String'];
@@ -262,7 +255,7 @@ export type UserUpdate = {
 
 export enum UserQueryOrder {
   CreatedBy = 'CREATED_BY',
-  Username = 'USERNAME',
+  Username = 'USERNAME'
 }
 
 export type UserQuery = {
@@ -277,58 +270,141 @@ export type UserQuery = {
 export enum ErrorType {
   Unauthenticated = 'UNAUTHENTICATED',
   ChartNotFound = 'CHART_NOT_FOUND',
-  InvalidTagQueryScopeError = 'INVALID_TAG_QUERY_SCOPE_ERROR',
-  InvalidTagScopeError = 'INVALID_TAG_SCOPE_ERROR',
   InvalidChartTagError = 'INVALID_CHART_TAG_ERROR',
-  InvalidChartScope = 'INVALID_CHART_SCOPE',
   InvalidChartReaction = 'INVALID_CHART_REACTION',
   InvalidTagPositionUpdate = 'INVALID_TAG_POSITION_UPDATE',
   DuplicateUsername = 'DUPLICATE_USERNAME',
   Unhandled = 'UNHANDLED',
   InternalServerError = 'INTERNAL_SERVER_ERROR',
   ForbiddenResourceOperation = 'FORBIDDEN_RESOURCE_OPERATION',
+  InvalidInvitationToken = 'INVALID_INVITATION_TOKEN',
+  NotFound = 'NOT_FOUND'
 }
 
 export type ErrorException = {
-  __typename?: 'ErrorException';
+   __typename?: 'ErrorException';
   stacktrace?: Maybe<Array<Scalars['String']>>;
 };
 
 export type ErrorExtensions = {
-  __typename?: 'ErrorExtensions';
+   __typename?: 'ErrorExtensions';
   msgArgs?: Maybe<Array<Scalars['String']>>;
   code: ErrorType;
   exception?: Maybe<ErrorException>;
 };
 
+export enum PolicyResourceType {
+  Tag = 'TAG'
+}
+
+export enum PolicyAction {
+  Wildcard = 'WILDCARD',
+  Read = 'READ',
+  Write = 'WRITE'
+}
+
+export type PolicyResource = {
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+};
+
+export type Policy = {
+   __typename?: 'Policy';
+  id: Scalars['Int'];
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+  invitationID?: Maybe<Scalars['Int']>;
+  action: PolicyAction;
+  uid: Scalars['String'];
+  user?: Maybe<User>;
+  expiresAt?: Maybe<Scalars['String']>;
+  createdAt: Scalars['String'];
+};
+
+export type NewPolicy = {
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+  action: PolicyAction;
+  uid: Scalars['String'];
+  expiresAt?: Maybe<Scalars['String']>;
+  createdAt?: Maybe<Scalars['String']>;
+  createdBy?: Maybe<Scalars['String']>;
+};
+
+export type PolicyQuery = {
+  resource: PolicyResource;
+};
+
+export type Invitation = {
+   __typename?: 'Invitation';
+  id: Scalars['Int'];
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+  action: PolicyAction;
+  expiresAt?: Maybe<Scalars['String']>;
+  createdAt?: Maybe<Scalars['String']>;
+  createdBy?: Maybe<Scalars['String']>;
+};
+
+export type NewInvitation = {
+  resourceType: PolicyResourceType;
+  resourceID: Scalars['Int'];
+  action: PolicyAction;
+  expiresAt?: Maybe<Scalars['String']>;
+};
+
+export type InvitationQuery = {
+  resource: PolicyResource;
+};
+
+export type Empty = {
+   __typename?: 'Empty';
+  empty?: Maybe<Scalars['Boolean']>;
+};
+
 export type Query = {
-  __typename?: 'Query';
+   __typename?: 'Query';
   me: User;
   users: Array<User>;
   charts: Array<Chart>;
   tags: Array<Tag>;
   extensions: Array<Extension>;
+  invitations: Array<Invitation>;
+  policies: Array<Policy>;
 };
+
 
 export type QueryUsersArgs = {
   query: UserQuery;
 };
 
+
 export type QueryChartsArgs = {
   query: ChartQuery;
 };
+
 
 export type QueryTagsArgs = {
   query: TagQuery;
 };
 
-export type Empty = {
-  __typename?: 'Empty';
-  empty?: Maybe<Scalars['Boolean']>;
+
+export type QueryInvitationsArgs = {
+  query?: Maybe<InvitationQuery>;
+};
+
+
+export type QueryPoliciesArgs = {
+  query: PolicyQuery;
+};
+
+export type CreateInvitationResponse = {
+   __typename?: 'CreateInvitationResponse';
+  token: Scalars['String'];
 };
 
 export type Mutation = {
-  __typename?: 'Mutation';
+   __typename?: 'Mutation';
   createUser?: Maybe<User>;
   updateUser?: Maybe<User>;
   deleteUser?: Maybe<Empty>;
@@ -340,65 +416,116 @@ export type Mutation = {
   removeExtensions?: Maybe<Chart>;
   createTags: Array<Tag>;
   deleteTag?: Maybe<Empty>;
+  deleteTagAccessPolicy?: Maybe<Empty>;
   addTags?: Maybe<Chart>;
   unTag?: Maybe<Chart>;
   setTagPositions?: Maybe<Array<Maybe<Chart>>>;
+  createInvitation: CreateInvitationResponse;
+  deleteInvitation?: Maybe<Empty>;
+  acceptInvitation?: Maybe<Tag>;
+  createPolicy?: Maybe<Policy>;
+  deletePolicy?: Maybe<Empty>;
 };
+
 
 export type MutationCreateUserArgs = {
   newUser: UserNew;
 };
 
+
 export type MutationUpdateUserArgs = {
   userUpdate: UserUpdate;
 };
+
 
 export type MutationReactArgs = {
   reactionNew?: Maybe<ReactionNew>;
 };
 
+
 export type MutationCreateChartArgs = {
   chartNew: ChartNew;
 };
+
 
 export type MutationUpdateChartArgs = {
   chartUpdate: ChartUpdate;
 };
 
+
 export type MutationDeleteChartArgs = {
   chartID: Scalars['Int'];
 };
+
 
 export type MutationAddExtensionsArgs = {
   chartID: Scalars['Int'];
   extensionIDs: Array<Scalars['Int']>;
 };
 
+
 export type MutationRemoveExtensionsArgs = {
   chartID: Scalars['Int'];
   extensionIDs: Array<Scalars['Int']>;
 };
 
+
 export type MutationCreateTagsArgs = {
   tagNews: Array<TagNew>;
 };
 
+
 export type MutationDeleteTagArgs = {
   tagID: Scalars['Int'];
 };
+
+
+export type MutationDeleteTagAccessPolicyArgs = {
+  tagID: Scalars['Int'];
+};
+
 
 export type MutationAddTagsArgs = {
   chartID: Scalars['Int'];
   tags: Array<TagNew>;
 };
 
+
 export type MutationUnTagArgs = {
   chartID: Scalars['Int'];
   tagIDs: Array<Scalars['Int']>;
 };
+
 
 export type MutationSetTagPositionsArgs = {
   tagID: Scalars['Int'];
   chartIDs: Array<Scalars['Int']>;
   positions: Array<Scalars['Int']>;
 };
+
+
+export type MutationCreateInvitationArgs = {
+  invitation: NewInvitation;
+  tokenExpirationHours?: Maybe<Scalars['Int']>;
+};
+
+
+export type MutationDeleteInvitationArgs = {
+  invitationID: Scalars['Int'];
+};
+
+
+export type MutationAcceptInvitationArgs = {
+  token: Scalars['String'];
+};
+
+
+export type MutationCreatePolicyArgs = {
+  policy: NewPolicy;
+};
+
+
+export type MutationDeletePolicyArgs = {
+  policyID: Scalars['Int'];
+};
+

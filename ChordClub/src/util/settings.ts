@@ -1,7 +1,9 @@
 import {ChartQuery} from '../types';
 
+interface LegacyQuery extends ChartQuery, Record<string, any> {}
+
 export interface ChartViewSetting {
-  query: ChartQuery;
+  query: LegacyQuery;
   compact?: boolean;
 }
 

@@ -1,4 +1,4 @@
-import {ChartQuality, Extension, Note, Chart} from 'src/types';
+import {ChartQuality, Extension, Note, Chart} from '../types';
 import {FlashcardOptions} from './settings';
 
 export interface FlashcardAnswer {

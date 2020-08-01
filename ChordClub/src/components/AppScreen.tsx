@@ -1,16 +1,18 @@
 import React, {PropsWithChildren, useEffect, useContext, useState} from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import Title, {MenuItemData} from './Title';
-import {Divider, Layout} from '@ui-kitten/components';
-import {NavigationHelpers, RouteProp, useRoute, useNavigation, EventListenerCallback, EventMapCore, NavigationState, useNavigationState} from '@react-navigation/native';
+import {Divider, Layout, Button} from '@ui-kitten/components';
+import {NavigationHelpers, RouteProp, useNavigation,  useNavigationState} from '@react-navigation/native';
 import {DrawerNavigationEventMap} from '@react-navigation/drawer/lib/typescript/src/types';
 import {ChartType, Chart} from '../types';
 import { ContentContainer } from './ContentContainer';
 import { AuthContext } from './UserContext';
+import { LinkHandler } from './LinkHandler';
 
 interface Props {
   title?: string;
   menuItems?: MenuItemData[];
+  more?: React.ReactNode;
 }
 
 export interface ScreenProps {
@@ -21,10 +23,10 @@ export interface ScreenProps {
 }
 
 export enum Screens {
-  Chords = 'Chords',
-  ChordFlashcards = 'Chord Flashcards',
-  Progressions = 'Progressions',
-  CreateAChart = 'Create a Chart',
+  // Chords = 'Chords',
+  // ChordFlashcards = 'Chord Flashcards',
+  Progressions = 'Listen',
+  RecordAProgression = 'Record',
   Account = 'Account',
   Login = 'Login',
   Logout = 'Logout',
@@ -34,10 +36,8 @@ export enum Screens {
 }
 
 interface AppParamList {
-  Chords: {};
-  ChordFlashcards: {};
   Progressions: {};
-  CreateAChart: {
+  RecordAProgression: {
     chartType?: ChartType;
   };
   Account: {};
@@ -57,6 +57,7 @@ export const AppScreen = ({
   title = 'Chord Club',
   menuItems,
   children,
+  more,
 }: PropsWithChildren<Props>) => {
   const userCtx = useContext(AuthContext);
   const navigation = useNavigation();
@@ -67,7 +68,7 @@ export const AppScreen = ({
     if (!isLoggedIn && route.name !== Screens.Login) {
       navigation.navigate(Screens.Login);
     } else if (isLoggedIn && route.name === Screens.Login) {
-      navigation.navigate(Screens.Chords);
+      navigation.navigate(Screens.Progressions);
     }
   }, [route.name, userCtx]);
 
@@ -79,7 +80,9 @@ export const AppScreen = ({
         <ContentContainer>
           {children}
         </ContentContainer>
+        {more}
       </Layout>
+      <LinkHandler />
     </SafeAreaView>
   );
 };

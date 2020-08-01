@@ -9,6 +9,7 @@ import {AudioDuration} from './AudioDuration';
 export interface AudioAction {
   iconName: string;
   status?: string;
+  disabled?: boolean;
   onPress?: () => void;
 }
 

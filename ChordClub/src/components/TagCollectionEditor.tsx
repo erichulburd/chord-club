@@ -1,18 +1,19 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {useQuery} from 'react-apollo';
 import {GetTagsData, GetTagsVariables, GET_TAGS} from '../gql/tag';
 import {Spinner} from '@ui-kitten/components';
 import ErrorText from './ErrorText';
 import {TagCollection} from './TagCollection';
-import {TagType, Tag, BaseScopes} from '../types';
+import {TagType, Tag, TagNew} from '../types';
 import TagAutocomplete from './TagAutocomplete';
-import {areTagsEqual} from '../util/forms';
+import {areTagsEqual, getTagMunge} from '../util/forms';
+import { makeDefaultTagQuery } from './TagList';
+import { AuthContext } from './UserContext';
 
 const allTagTypes = [TagType.Descriptor, TagType.List];
 
 interface TagCollectionEditorProps {
   allowNewTags: boolean;
-  scopes: string[];
   initialTags: Tag[];
   onChange: (tags: Tag[]) => void;
 }
@@ -20,20 +21,20 @@ interface TagCollectionEditorProps {
 export const TagCollectionEditor = ({
   initialTags,
   onChange,
-  scopes,
   allowNewTags,
 }: TagCollectionEditorProps) => {
   const [tags, setTags] = useState<Tag[]>(initialTags);
+  const userCtx = useContext(AuthContext);
   const addTag = (tag: Tag) => {
-    if (tags.some((t) => areTagsEqual(t, tag))) {
+    if (tags.some((t) => areTagsEqual(t, tag, userCtx.getUID()))) {
       return;
     }
     const tagUpdate = [...tags, tag];
     setTags(tagUpdate);
     onChange(tagUpdate);
   };
-  const removeTag = (tag: Tag) => {
-    const index = tags.findIndex((t) => t.id === tag.id);
+  const removeTag = (tag: Tag | TagNew) => {
+    const index = tags.findIndex((t) => areTagsEqual(t, tag, userCtx.getUID()));
     if (index === -1) {
       return;
     }
@@ -45,7 +46,6 @@ export const TagCollectionEditor = ({
   return (
     <>
       <TagAutocomplete
-        includePublic={scopes.includes(BaseScopes.Public)}
         allowNewTags={allowNewTags}
         placeholder={'Select tags'}
         onSelect={addTag}
@@ -63,16 +63,14 @@ interface TagIDCollectionEditorProps
 
 export const TagIDCollectionEditor = ({
   ids,
-  scopes,
   tagTypes = allTagTypes,
   ...rest
 }: TagIDCollectionEditorProps) => {
-  console.warn('SCOPES', scopes);
   const {data, loading, error} = useQuery<GetTagsData, GetTagsVariables>(
     GET_TAGS,
     {
       variables: {
-        query: {ids, scopes, tagTypes},
+        query: makeDefaultTagQuery(),
       },
     },
   );
@@ -85,7 +83,8 @@ export const TagIDCollectionEditor = ({
     }
     return <ErrorText error={'An error occurred retrieving tags.'} />;
   }
+  const includedTags = data.tags.filter(t => ids.some(id => id === t.id));
   return (
-    <TagCollectionEditor {...rest} initialTags={data.tags} scopes={scopes} />
+    <TagCollectionEditor {...rest} initialTags={includedTags} />
   );
 };

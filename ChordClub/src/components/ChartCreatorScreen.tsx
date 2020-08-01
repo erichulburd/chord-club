@@ -13,7 +13,7 @@ export const ChartCreatorScreen = ({navigation}: ScreenProps) => {
     }, []),
   );
   return (
-    <AppScreen title={Screens.CreateAChart}>
+    <AppScreen title={Screens.RecordAProgression}>
       <ChartCreator mountID={mountID} close={() => navigation.goBack()} />
     </AppScreen>
   );

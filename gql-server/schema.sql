@@ -16,14 +16,14 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: citext; Type: EXTENSION; Schema: -; Owner: 
+-- Name: citext; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
@@ -52,6 +52,46 @@ CREATE TYPE public.reaction_type AS ENUM (
 
 
 ALTER TYPE public.reaction_type OWNER TO developer;
+
+--
+-- Name: chart_policies_for_uid(text); Type: FUNCTION; Schema: public; Owner: developer
+--
+
+CREATE FUNCTION public.chart_policies_for_uid(uid text) RETURNS TABLE(chart_id integer, policy_action smallint)
+    LANGUAGE sql
+    AS $_$
+
+  SELECT c.id AS chart_id, p.action AS policy_action
+    FROM chart c
+      INNER JOIN chart_tag ct ON ct.chart_id = c.id
+      INNER JOIN policy p ON p.resource_id = ct.tag_id
+  WHERE p.uid = $1 AND
+    p.resource_type = 'TAG' AND
+    (p.expires_at IS NULL OR p.expires_at >= NOW())
+
+$_$;
+
+
+ALTER FUNCTION public.chart_policies_for_uid(uid text) OWNER TO developer;
+
+--
+-- Name: tag_policies_for_uid(text); Type: FUNCTION; Schema: public; Owner: developer
+--
+
+CREATE FUNCTION public.tag_policies_for_uid(uid text) RETURNS TABLE(tag_id integer, policy_action smallint)
+    LANGUAGE sql
+    AS $_$
+
+  SELECT p.resource_id AS tag_id, p.action AS policy_action
+    FROM policy p
+    WHERE p.uid = $1 AND
+      p.resource_type = 'TAG' AND
+      (p.expires_at IS NULL OR p.expires_at >= NOW())
+
+$_$;
+
+
+ALTER FUNCTION public.tag_policies_for_uid(uid text) OWNER TO developer;
 
 SET default_tablespace = '';
 
@@ -88,7 +128,7 @@ CREATE TABLE public.chart (
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone,
     created_by character varying(180) NOT NULL,
-    scope character varying(180) NOT NULL
+    _scope character varying(180)
 );
 
 
@@ -223,6 +263,133 @@ ALTER SEQUENCE public.extension_id_seq OWNED BY public.extension.id;
 
 
 --
+-- Name: invitation_data; Type: TABLE; Schema: public; Owner: developer
+--
+
+CREATE TABLE public.invitation_data (
+    id integer NOT NULL,
+    resource_type character varying(180) NOT NULL,
+    resource_id integer NOT NULL,
+    action smallint DEFAULT 1 NOT NULL,
+    expires_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_by character varying(180) NOT NULL,
+    deleted_at timestamp with time zone,
+    deleted boolean DEFAULT false NOT NULL
+)
+PARTITION BY LIST (deleted);
+
+
+ALTER TABLE public.invitation_data OWNER TO developer;
+
+--
+-- Name: invitation; Type: TABLE; Schema: public; Owner: developer
+--
+
+CREATE TABLE public.invitation PARTITION OF public.invitation_data
+FOR VALUES IN (false);
+
+
+ALTER TABLE public.invitation OWNER TO developer;
+
+--
+-- Name: invitation_data_id_seq; Type: SEQUENCE; Schema: public; Owner: developer
+--
+
+CREATE SEQUENCE public.invitation_data_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.invitation_data_id_seq OWNER TO developer;
+
+--
+-- Name: invitation_data_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: developer
+--
+
+ALTER SEQUENCE public.invitation_data_id_seq OWNED BY public.invitation_data.id;
+
+
+--
+-- Name: invitation_deleted; Type: TABLE; Schema: public; Owner: developer
+--
+
+CREATE TABLE public.invitation_deleted PARTITION OF public.invitation_data
+FOR VALUES IN (true);
+
+
+ALTER TABLE public.invitation_deleted OWNER TO developer;
+
+--
+-- Name: policy_data; Type: TABLE; Schema: public; Owner: developer
+--
+
+CREATE TABLE public.policy_data (
+    id integer NOT NULL,
+    resource_type character varying(180) NOT NULL,
+    resource_id integer NOT NULL,
+    uid character varying(180) NOT NULL,
+    invitation_id integer,
+    action smallint DEFAULT 1 NOT NULL,
+    invite_id integer,
+    expires_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_by character varying(180) NOT NULL,
+    deleted_at timestamp with time zone,
+    deleted boolean DEFAULT false NOT NULL
+)
+PARTITION BY LIST (deleted);
+
+
+ALTER TABLE public.policy_data OWNER TO developer;
+
+--
+-- Name: policy; Type: TABLE; Schema: public; Owner: developer
+--
+
+CREATE TABLE public.policy PARTITION OF public.policy_data
+FOR VALUES IN (false);
+
+
+ALTER TABLE public.policy OWNER TO developer;
+
+--
+-- Name: policy_data_id_seq; Type: SEQUENCE; Schema: public; Owner: developer
+--
+
+CREATE SEQUENCE public.policy_data_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.policy_data_id_seq OWNER TO developer;
+
+--
+-- Name: policy_data_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: developer
+--
+
+ALTER SEQUENCE public.policy_data_id_seq OWNED BY public.policy_data.id;
+
+
+--
+-- Name: policy_deleted; Type: TABLE; Schema: public; Owner: developer
+--
+
+CREATE TABLE public.policy_deleted PARTITION OF public.policy_data
+FOR VALUES IN (true);
+
+
+ALTER TABLE public.policy_deleted OWNER TO developer;
+
+--
 -- Name: reaction; Type: TABLE; Schema: public; Owner: developer
 --
 
@@ -270,7 +437,7 @@ CREATE TABLE public.tag (
     tag_type character varying(180) NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     created_by character varying(180) NOT NULL,
-    scope character varying(180) NOT NULL,
+    _scope character varying(180),
     password character varying(180)
 );
 
@@ -297,7 +464,6 @@ ALTER TABLE public.tag_id_seq OWNER TO developer;
 --
 
 ALTER SEQUENCE public.tag_id_seq OWNED BY public.tag.id;
-
 
 --
 -- Name: userr; Type: TABLE; Schema: public; Owner: developer
@@ -339,6 +505,132 @@ ALTER TABLE ONLY public.chart_tag ALTER COLUMN id SET DEFAULT nextval('public.ch
 --
 
 ALTER TABLE ONLY public.extension ALTER COLUMN id SET DEFAULT nextval('public.extension_id_seq'::regclass);
+
+
+--
+-- Name: invitation id; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation ALTER COLUMN id SET DEFAULT nextval('public.invitation_data_id_seq'::regclass);
+
+
+--
+-- Name: invitation action; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation ALTER COLUMN action SET DEFAULT 1;
+
+
+--
+-- Name: invitation created_at; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation ALTER COLUMN created_at SET DEFAULT now();
+
+
+--
+-- Name: invitation deleted; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation ALTER COLUMN deleted SET DEFAULT false;
+
+
+--
+-- Name: invitation_data id; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation_data ALTER COLUMN id SET DEFAULT nextval('public.invitation_data_id_seq'::regclass);
+
+
+--
+-- Name: invitation_deleted id; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation_deleted ALTER COLUMN id SET DEFAULT nextval('public.invitation_data_id_seq'::regclass);
+
+
+--
+-- Name: invitation_deleted action; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation_deleted ALTER COLUMN action SET DEFAULT 1;
+
+
+--
+-- Name: invitation_deleted created_at; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation_deleted ALTER COLUMN created_at SET DEFAULT now();
+
+
+--
+-- Name: invitation_deleted deleted; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation_deleted ALTER COLUMN deleted SET DEFAULT false;
+
+
+--
+-- Name: policy id; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy ALTER COLUMN id SET DEFAULT nextval('public.policy_data_id_seq'::regclass);
+
+
+--
+-- Name: policy action; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy ALTER COLUMN action SET DEFAULT 1;
+
+
+--
+-- Name: policy created_at; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy ALTER COLUMN created_at SET DEFAULT now();
+
+
+--
+-- Name: policy deleted; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy ALTER COLUMN deleted SET DEFAULT false;
+
+
+--
+-- Name: policy_data id; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy_data ALTER COLUMN id SET DEFAULT nextval('public.policy_data_id_seq'::regclass);
+
+
+--
+-- Name: policy_deleted id; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy_deleted ALTER COLUMN id SET DEFAULT nextval('public.policy_data_id_seq'::regclass);
+
+
+--
+-- Name: policy_deleted action; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy_deleted ALTER COLUMN action SET DEFAULT 1;
+
+
+--
+-- Name: policy_deleted created_at; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy_deleted ALTER COLUMN created_at SET DEFAULT now();
+
+
+--
+-- Name: policy_deleted deleted; Type: DEFAULT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy_deleted ALTER COLUMN deleted SET DEFAULT false;
 
 
 --
@@ -412,6 +704,54 @@ ALTER TABLE ONLY public.extension
 
 
 --
+-- Name: invitation_data invitation_data_pkey; Type: CONSTRAINT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation_data
+    ADD CONSTRAINT invitation_data_pkey PRIMARY KEY (id, deleted);
+
+
+--
+-- Name: invitation_deleted invitation_deleted_pkey; Type: CONSTRAINT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation_deleted
+    ADD CONSTRAINT invitation_deleted_pkey PRIMARY KEY (id, deleted);
+
+
+--
+-- Name: invitation invitation_pkey; Type: CONSTRAINT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.invitation
+    ADD CONSTRAINT invitation_pkey PRIMARY KEY (id, deleted);
+
+
+--
+-- Name: policy_data policy_data_pkey; Type: CONSTRAINT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy_data
+    ADD CONSTRAINT policy_data_pkey PRIMARY KEY (id, deleted);
+
+
+--
+-- Name: policy_deleted policy_deleted_pkey; Type: CONSTRAINT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy_deleted
+    ADD CONSTRAINT policy_deleted_pkey PRIMARY KEY (id, deleted);
+
+
+--
+-- Name: policy policy_pkey; Type: CONSTRAINT; Schema: public; Owner: developer
+--
+
+ALTER TABLE ONLY public.policy
+    ADD CONSTRAINT policy_pkey PRIMARY KEY (id, deleted);
+
+
+--
 -- Name: reaction reaction_pkey; Type: CONSTRAINT; Schema: public; Owner: developer
 --
 
@@ -425,22 +765,6 @@ ALTER TABLE ONLY public.reaction
 
 ALTER TABLE ONLY public.reaction
     ADD CONSTRAINT reaction_unique UNIQUE (created_by, chart_id);
-
-
---
--- Name: tag tag_display_name_unique; Type: CONSTRAINT; Schema: public; Owner: developer
---
-
-ALTER TABLE ONLY public.tag
-    ADD CONSTRAINT tag_display_name_unique UNIQUE (display_name, scope);
-
-
---
--- Name: tag tag_munge_unique; Type: CONSTRAINT; Schema: public; Owner: developer
---
-
-ALTER TABLE ONLY public.tag
-    ADD CONSTRAINT tag_munge_unique UNIQUE (munge, scope);
 
 
 --
@@ -468,24 +792,24 @@ ALTER TABLE ONLY public.userr
 
 
 --
+-- Name: chart_created_by_created_at_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_created_by_created_at_idx ON public.chart USING btree (created_by, created_at);
+
+
+--
+-- Name: chart_created_by_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX chart_created_by_idx ON public.chart USING btree (created_by);
+
+
+--
 -- Name: chart_extension_chart_id_idx; Type: INDEX; Schema: public; Owner: developer
 --
 
 CREATE INDEX chart_extension_chart_id_idx ON public.chart_extension USING btree (chart_id);
-
-
---
--- Name: chart_scope_created_at_idx; Type: INDEX; Schema: public; Owner: developer
---
-
-CREATE INDEX chart_scope_created_at_idx ON public.chart USING btree (scope, created_at);
-
-
---
--- Name: chart_scope_idx; Type: INDEX; Schema: public; Owner: developer
---
-
-CREATE INDEX chart_scope_idx ON public.chart USING btree (scope);
 
 
 --
@@ -503,6 +827,13 @@ CREATE INDEX chart_tag_tag_id_idx ON public.chart_tag USING btree (tag_id);
 
 
 --
+-- Name: policy_uid_resource_type_expires_at_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE INDEX policy_uid_resource_type_expires_at_idx ON public.policy USING btree (uid, resource_type, expires_at);
+
+
+--
 -- Name: reaction_chart_id_idx; Type: INDEX; Schema: public; Owner: developer
 --
 
@@ -517,17 +848,52 @@ CREATE INDEX reaction_chart_id_reaction_type_idx ON public.reaction USING btree 
 
 
 --
--- Name: tag_scope_display_name_idx; Type: INDEX; Schema: public; Owner: developer
+-- Name: tag_created_by_display_name_idx; Type: INDEX; Schema: public; Owner: developer
 --
 
-CREATE INDEX tag_scope_display_name_idx ON public.tag USING btree (scope, display_name);
+CREATE UNIQUE INDEX tag_created_by_display_name_idx ON public.tag USING btree (created_by, display_name);
 
 
 --
--- Name: tag_scope_idx; Type: INDEX; Schema: public; Owner: developer
+-- Name: tag_created_by_idx; Type: INDEX; Schema: public; Owner: developer
 --
 
-CREATE INDEX tag_scope_idx ON public.tag USING btree (scope);
+CREATE INDEX tag_created_by_idx ON public.tag USING btree (created_by);
+
+
+--
+-- Name: tag_created_by_munge_idx; Type: INDEX; Schema: public; Owner: developer
+--
+
+CREATE UNIQUE INDEX tag_created_by_munge_idx ON public.tag USING btree (created_by, munge);
+
+
+--
+-- Name: invitation_deleted_pkey; Type: INDEX ATTACH; Schema: public; Owner:
+--
+
+ALTER INDEX public.invitation_data_pkey ATTACH PARTITION public.invitation_deleted_pkey;
+
+
+--
+-- Name: invitation_pkey; Type: INDEX ATTACH; Schema: public; Owner:
+--
+
+ALTER INDEX public.invitation_data_pkey ATTACH PARTITION public.invitation_pkey;
+
+
+--
+-- Name: policy_deleted_pkey; Type: INDEX ATTACH; Schema: public; Owner:
+--
+
+ALTER INDEX public.policy_data_pkey ATTACH PARTITION public.policy_deleted_pkey;
+
+
+--
+-- Name: policy_pkey; Type: INDEX ATTACH; Schema: public; Owner:
+--
+
+ALTER INDEX public.policy_data_pkey ATTACH PARTITION public.policy_pkey;
 
 
 --

@@ -23,7 +23,7 @@ export const makeLoaders = (
     extensionsByChartID:
       new DataLoader((chartIDs) => findExtensionsForCharts(chartIDs, queryable)),
     tagsByChartID:
-      new DataLoader((chartIDs) => findTagsForCharts(chartIDs, uid, queryable)),
+      new DataLoader((chartIDs) => findTagsForCharts(chartIDs, queryable)),
     reactionCountsByChartID:
       new DataLoader((chartIDs) => countReactions(chartIDs, queryable)),
     reactionByChartID:

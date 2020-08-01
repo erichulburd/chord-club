@@ -2,12 +2,13 @@ import React from 'react';
 import {TagNew, Tag} from '../types';
 import {View, StyleSheet} from 'react-native';
 import {TagLabel, TagLabelNavigable} from './Tag';
-import {getTagKey} from '../util/forms';
+import {getTagMunge} from '../util/forms';
+import { ThemedIcon } from './FontAwesomeIcons';
 
 interface Props {
   tags: (Tag | TagNew)[];
   navigable?: boolean;
-  onDelete?: ((tag: Tag | TagNew) => void) | ((tag: Tag) => void);
+  onDelete?: ((tag: Tag | TagNew) => void);
 }
 
 export const TagCollection = ({tags, onDelete, navigable=false}: Props) => {
@@ -16,14 +17,14 @@ export const TagCollection = ({tags, onDelete, navigable=false}: Props) => {
       {tags.map((t) => (
         navigable ?
           (<TagLabelNavigable
-            key={getTagKey(t)}
+            key={getTagMunge(t.displayName)}
             tag={t}
-            onDelete={onDelete && (() => onDelete(t))}
           />) :
           (<TagLabel
-            key={getTagKey(t)}
+            key={getTagMunge(t.displayName)}
             tag={t}
-            onDelete={onDelete && (() => onDelete(t))}
+            accessory={ThemedIcon('times')}
+            onPress={onDelete && (() => onDelete(t))}
           />)
       ))}
     </View>

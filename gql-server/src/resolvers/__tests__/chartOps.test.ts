@@ -5,7 +5,7 @@ import supertest from 'supertest';
 import { getTestKey, signWithTestKey } from '../../../tests/testingKeys';
 import { makeChartNew, makeExtension, makeTagNew } from '../../../tests/factories';
 import express from 'express';
-import { ChartUpdate, Extension, ExtensionType, BaseScopes, Tag } from '../../types';
+import { ChartUpdate, Extension, ExtensionType, Tag } from '../../types';
 import { findChartByID, insertNewChart } from '../../repositories/chart';
 import { insertExtensions, findExtensionsForCharts } from '../../repositories/extensions';
 import { insertNewTags } from '../../repositories/tag';
@@ -201,13 +201,13 @@ describe('chart ops', () => {
     ];
     const chartNew = makeChartNew({
       tags: tagNews,
-      scope: BaseScopes.Public,
+      // scope: BaseScopes.Public,
     });
     const res1 = await graphql().send({
       query: `
         mutation ($chartNew: ChartNew!) {
           createChart(chartNew: $chartNew) {
-            id quality abc root bassNote tags { id displayName munge scope }
+            id quality abc root bassNote tags { id displayName munge }
           }
         }
       `,
@@ -229,7 +229,7 @@ describe('chart ops', () => {
       query: `
         mutation ($chartID: Int!, $tags: [TagNew!]!) {
           addTags(chartID: $chartID, tags: $tags) {
-            tags { id displayName munge scope }
+            tags { id displayName munge }
           }
         }
       `,
@@ -249,7 +249,7 @@ describe('chart ops', () => {
       query: `
         mutation ($chartID: Int!, $tagIDs: [Int!]!) {
           unTag(chartID: $chartID, tagIDs: $tagIDs) {
-            tags { id displayName munge scope }
+            tags { id displayName munge }
           }
         }
       `,

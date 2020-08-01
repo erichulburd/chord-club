@@ -4,20 +4,16 @@ import { ErrorType, TagBase } from '../types';
 export const unauthenticatedError = new AuthenticationError(
     'We couldn\'t verify your identity. Your authentication credential is missing or invalid.');
 
+export const notFoundError = <T extends object>(data: T) => new ApolloError(
+    'We couldn\'t find the requested resource.',
+    ErrorType.NotFound, data);
+
 export const chartNotFoundError = (chartID: number) => new ApolloError(
     'We couldn\'t find the chart you requested.',
     ErrorType.ChartNotFound,
     {
       chartID,
     });
-
-export const invalidTagQueryScopeError = (scope: string) => new ApolloError(
-  ErrorType.InvalidTagQueryScopeError,
-  'You cannot query tags for this scope.', { scope });
-
-export const invalidNewTagsScopeError = (tag: TagBase) => new ApolloError(
-  ErrorType.InvalidTagScopeError,
-  'You cannot query for this tag.', { tag });
 
 export const invalidChartTagError = (chartID: number, tag: TagBase) => new ApolloError(
   ErrorType.InvalidChartTagError,
@@ -26,10 +22,6 @@ export const invalidChartTagError = (chartID: number, tag: TagBase) => new Apoll
 export const invalidTagPositionUpdate = () => new ApolloError(
   ErrorType.InvalidChartTagError,
   'Must have a single tag position for each chart.', {});
-
-export const invalidChartScope = (scope: string) => new ApolloError(
-  ErrorType.InvalidChartScope,
-  'This scope is invalid for the chart.', { scope });
 
 export const pgReactionUniqueError = /duplicate key value violates unique constraint "reaction_unique"/i;
 
@@ -43,6 +35,9 @@ export const forbiddenResourceOpError = (data: any = {}) => new ApolloError(
 
 export const usernameUniqueError = () => new ApolloError(
   'This username has already been taken.', ErrorType.DuplicateUsername);
+
+export const invalidInvitationTokenError = (err: any) => new ApolloError(
+  'The provided sharing token is not valid.', ErrorType.InvalidInvitationToken, { err });
 
 export const coerceUnhandledError = (err: Error) => {
   if (err instanceof ApolloError) {

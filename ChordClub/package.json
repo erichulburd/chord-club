@@ -33,6 +33,7 @@
     "lodash": "^4.17.15",
     "mime": "^2.4.4",
     "moment": "^2.25.1",
+    "qs": "^6.9.4",
     "react": "16.11.0",
     "react-apollo": "^3.1.5",
     "react-native": "0.62.2",
@@ -48,7 +49,7 @@
     "react-native-screens": "^2.5.0",
     "react-native-svg": "^12.1.0",
     "react-native-uuid": "^1.4.9",
-    "react-native-vector-icons": "^6.6.0",
+    "react-native-vector-icons": "^7.0.0",
     "zen-observable": "^0.8.15"
   },
   "devDependencies": {
@@ -58,6 +59,7 @@
     "@types/jest": "^24.0.24",
     "@types/lodash": "^4.14.150",
     "@types/mime": "^2.0.1",
+    "@types/qs": "^6.9.3",
     "@types/react-native": "^0.62.0",
     "@types/react-native-auth0": "^2.0.1",
     "@types/react-native-uuid": "^1.4.0",

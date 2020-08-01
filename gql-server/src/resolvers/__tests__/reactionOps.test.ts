@@ -45,11 +45,9 @@ describe('reaction ops', () => {
     await insertUserNew(makeUserNew(), 'uid2', client);
     const charts = await Promise.all(
       ['uid', 'uid1', 'uid2'].map(async (uid) => {
-        const c1 = await insertNewChart(makeChartNew({
-          scope: uid,
-        }), uid, client);
-        const c2 = await insertNewChart(makeChartNew({ scope: uid }), uid, client);
-        const c3 = await insertNewChart(makeChartNew({ scope: uid }), uid, client);
+        const c1 = await insertNewChart(makeChartNew(), uid, client);
+        const c2 = await insertNewChart(makeChartNew(), uid, client);
+        const c3 = await insertNewChart(makeChartNew(), uid, client);
         return [c1, c2, c3];
       })
     );
@@ -118,11 +116,9 @@ describe('reaction ops', () => {
   test('toggle reaction', async () => {
     const uid = 'uid';
     await insertUserNew(makeUserNew(), uid, client);
-    const c1 = await insertNewChart(makeChartNew({
-      scope: uid,
-    }), uid, client);
-    const c2 = await insertNewChart(makeChartNew({ scope: uid }), uid, client);
-    const c3 = await insertNewChart(makeChartNew({ scope: uid }), uid, client);
+    const c1 = await insertNewChart(makeChartNew(), uid, client);
+    const c2 = await insertNewChart(makeChartNew(), uid, client);
+    const c3 = await insertNewChart(makeChartNew(), uid, client);
     const charts = [c1, c2, c3];
 
     const reaction: ReactionNew = {

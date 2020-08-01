@@ -40,7 +40,7 @@ const ChartReactions = ({chart, userCtx}: Props) => {
   const starCount: number =
     reaction.data?.react.reactionCounts?.stars || chart.reactionCounts.stars;
   return (
-    <View style={styles.reactions}>
+    <>
       <Button
         size="small"
         status="warning"
@@ -62,16 +62,9 @@ const ChartReactions = ({chart, userCtx}: Props) => {
           solid: userReactionType === ReactionType.Flag,
         })}
       />
-    </View>
+    </>
   );
 };
 
-const styles = StyleSheet.create({
-  reactions: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-});
 
 export default withUser<ManualProps>(ChartReactions);

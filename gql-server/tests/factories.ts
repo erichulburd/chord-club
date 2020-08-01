@@ -1,4 +1,4 @@
-import { ChartNew, ChartType, Note, ChartQuality, BaseScopes, TagNew, TagType, UserNew, Extension, ExtensionType, ExtensionNew } from '../src/types';
+import { ChartNew, ChartType, Note, ChartQuality, TagNew, TagType, UserNew, ExtensionType, ExtensionNew } from '../src/types';
 import * as faker from 'faker';
 import { sample } from 'lodash';
 
@@ -10,7 +10,7 @@ export const makeChartNew = (overrides: Partial<ChartNew> = {}): ChartNew => ({
   name: faker.lorem.words(1),
   description: faker.lorem.words(3),
   abc: faker.lorem.words(3),
-  scope: BaseScopes.Public,
+  // scope: BaseScopes.Public,
   chartType: (sample(ChartType) || ChartType.Chord),
   bassNote: sample(Note) || Note.C,
   root: sample(Note) || Note.C,
@@ -25,7 +25,7 @@ export const makeTagNew = (overrides: Partial<TagNew> = {}): TagNew => {
   return {
     displayName,
     tagType: sample(TagType) || TagType.Descriptor,
-    scope: BaseScopes.Public,
+    // scope: BaseScopes.Public,
     ...overrides
   };
 };

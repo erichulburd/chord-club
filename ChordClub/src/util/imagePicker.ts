@@ -65,7 +65,6 @@ export class ResizableImage {
   }
 
   static async newFromURL(url: string): Promise<ResizableImage> {
-    console.log('newFromURL', url);
     return new Promise((resolve, reject) => {
       Image.getSize(
         url,

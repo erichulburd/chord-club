@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {useQuery, useMutation} from '@apollo/react-hooks';
 import {ChartQuery, Chart, ChartType} from '../types';
-import last from 'lodash/last';
 import {
   CHARTS_QUERY,
   ChartsQueryResponse,
@@ -25,7 +24,7 @@ const CreateChordLink = () => {
       appearance="outline"
       status="info"
       onPress={() =>
-        navigation.navigate(Screens.CreateAChart, {
+        navigation.navigate(Screens.RecordAProgression, {
           chartType: ChartType.Chord,
         })
       }>

@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {View, RefreshControl, StyleSheet} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
+import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
 import {ChartQuery, Chart, ChartType} from '../types';
 import {
   ChartsQueryResponse,
@@ -10,37 +10,37 @@ import {
   DeleteChartMutationVariables,
 } from '../gql/chart';
 import {useQuery, useMutation} from 'react-apollo';
-import last from 'lodash/last';
 import {ModalContextProps, withModalContext} from './ModalProvider';
-import {Spinner, Text, Button} from '@ui-kitten/components';
+import {Spinner, Text, Card} from '@ui-kitten/components';
 import {ChordClubShim} from 'types/ChordClubShim';
 import ProgressionItem from './ProgressionItem';
-import {useNavigation} from '@react-navigation/native';
-import {Screens} from './AppScreen';
+import { useNavigation } from '@react-navigation/native';
+import { Screens } from './AppScreen';
+import { AuthContext } from './UserContext';
+import ChartQueryEditor from './ChartQueryEditor';
+import { AudioPlayer } from './AudioPlayer';
+import { Audioable } from '../util/audio';
+import { AudioContext } from './AudioContextProvider';
 
-const CreateProgressionLink = () => {
+
+const ListEmptyComponent = () => {
   const navigation = useNavigation();
   return (
-    <Button
-      appearance="outline"
-      status="info"
-      onPress={() =>
-        navigation.navigate(Screens.CreateAChart, {
-          chartType: ChartType.Progression,
-        })
-      }>
-      Create new progression!
-    </Button>
+    <View style={styles.emptyList}>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate(Screens.RecordAProgression, {
+            chartType: ChartType.Progression,
+          })
+        }
+      >
+      <Text category="h4" status="primary">
+        Click to get started by recording a progression and adding tags.
+      </Text>
+      </TouchableOpacity>
+    </View>
   );
-};
-
-const ListEmptyComponent = () => (
-  <View style={styles.emptyList}>
-    <Text category="h6" status="warning">
-      No progressions found.
-    </Text>
-  </View>
-);
+}
 
 interface ManualProps {
   query: ChartQuery;
@@ -68,6 +68,17 @@ export const ProgressionList = ({
   useEffect(() => {
     maybeDoRefetch();
   }, [mountID]);
+  const authCtx = useContext(AuthContext);
+  const [currentAudio, setCurrentAudio] = useState<[Audioable, number]>([{
+    audioURL: '',
+    audioLength: 0,
+  }, 0]);
+  const audioCtx = useContext(AudioContext);
+  useEffect(() => {
+    if (currentAudio[0].audioURL) {
+      audioCtx.startPlay(currentAudio[0]);
+    }
+  }, [currentAudio[0], currentAudio[1]]);
   /*
   const loadMore = () =>
     fetchMore({
@@ -112,14 +123,23 @@ export const ProgressionList = ({
     );
   }
   let flatList: ChordClubShim.FlatList<Chart> | null = null;
-  const next = (i: number) => {
-    if (flatList === null || i === charts.length - 1) {
-      return;
-    }
-    flatList.scrollToIndex({index: i + 1});
-  };
   return (
-    <View style={styles.container}>
+    <View>
+      <Card
+        disabled
+        status="basic"
+        style={styles.controls}
+      >
+        <AudioPlayer
+          displayAudioNameAndCreator
+          audio={currentAudio[0]}
+        />
+        <ChartQueryEditor
+          initialQuery={query}
+          save={(q) => authCtx.updateChartQuery('progressions', {...query, ...q})}
+        />
+      </Card>
+
       <FlatList
         onRefresh={maybeDoRefetch}
         refreshing={loading}
@@ -133,11 +153,11 @@ export const ProgressionList = ({
         data={charts}
         keyExtractor={(chart) => chart.id.toString()}
         ListEmptyComponent={ListEmptyComponent}
-        ListFooterComponent={<CreateProgressionLink />}
         renderItem={(item) => (
           <ProgressionItem
             compact={compact}
-            next={() => next(item.index)}
+            isPlaying={audioCtx.focusedAudioURL === item.item.audioURL}
+            onPlay={() => setCurrentAudio([item.item, currentAudio[1] + 1])}
             chart={item.item}
             editChart={editChart}
             onDeleteChart={onDeleteChart}
@@ -149,8 +169,8 @@ export const ProgressionList = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 0,
+  controls: {
+    marginBottom: 10,
   },
   emptyList: {
     padding: 20,

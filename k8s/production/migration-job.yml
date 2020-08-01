@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
       - name: migrations
-        image: gcr.io/chord-club/migrations:r2020-12-05.r03
+        image: gcr.io/chord-club/migrations:r2020-05-07.r01
         command: ["node", "migrate.js", "migrate"]
         env:
           - name: SECRET_PATH
