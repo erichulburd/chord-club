@@ -49,19 +49,20 @@ interface Props extends NavigableProps {
 export const TagLabel = ({tag, onPress, accessory, size = 'tiny'}: Props) => {
   const userCtx = useContext(AuthContext);
   let displayName = tag.displayName;
-  if (has(tag, 'createdBy') && (tag as Tag).createdBy !== userCtx.getUID()) {
-    displayName += ` (${(tag as Tag).creator?.username}`;
+  const isOwner = !has(tag, 'createdBy') || (tag as Tag).createdBy === userCtx.getUID();
+  if (!isOwner) {
+    displayName = `${(tag as Tag).creator?.username}::${tag.displayName}`;
   }
   return (
     <View style={styles.container}>
       <Button
         size={size}
         appearance="outline"
-        status={'info'}
+        status={isOwner ? 'info' : 'warning'}
         onPress={onPress}
         accessoryRight={accessory}
       >
-        {tag.displayName}
+        {displayName}
       </Button>
     </View>
   );

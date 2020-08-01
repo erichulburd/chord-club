@@ -19,6 +19,7 @@ import {ApolloError} from 'apollo-client';
 import {WithApolloClient, withApollo} from 'react-apollo';
 import {GraphQLError} from 'graphql';
 import logger from '../util/logger';
+import { has } from 'lodash';
 
 interface ManualProps {
   placeholder?: string;
@@ -95,7 +96,7 @@ export class TagAutocomplete extends React.Component<Props> {
   ) => {
     const {query, displayName} = this.state;
     const {userCtx, allowNewTags = true} = this.props;
-    const {uid} = userCtx.authState;
+    const uid = userCtx.getUID();
     let error;
     if (errors && errors.length > 0) {
       error = new ApolloError({graphQLErrors: errors});
@@ -141,7 +142,7 @@ export class TagAutocomplete extends React.Component<Props> {
   };
 
   public render() {
-    const {placeholder = 'Add tag', containerStyle = {}} = this.props;
+    const {userCtx, placeholder = 'Add tag', containerStyle = {}} = this.props;
     const {query, error, options, loading, displayName} = this.state;
 
     const renderCloseIcon = (props: IconProps) =>
@@ -171,14 +172,21 @@ export class TagAutocomplete extends React.Component<Props> {
           {data.map((tag) => (
             <AutocompleteItem
               key={getTagMunge(tag)}
-              title={tag.displayName}
-              accessoryLeft={ThemedIcon('user')}
+              title={displayTagName(tag, userCtx.getUID())}
             />
           ))}
         </Autocomplete>
       </View>
     );
   }
+}
+
+const displayTagName = (tag: Tag | TagNew, uid: string) => {
+  const isOwner = !has(tag, 'createdBy') || (tag as Tag).createdBy === uid;
+  if (isOwner) {
+    return tag.displayName;
+  }
+  return `${(tag as Tag).creator?.username}::${tag.displayName}`;
 }
 
 export default withApollo<ManualProps>(
