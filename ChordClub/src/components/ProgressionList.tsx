@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {View, RefreshControl, StyleSheet} from 'react-native';
 import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
-import {ChartQuery, Chart, ChartType} from '../types';
+import {ChartQuery, Chart, ChartType, ChartQueryOrder} from '../types';
 import {
   ChartsQueryResponse,
   ChartsQueryVariables,
@@ -11,7 +11,7 @@ import {
 } from '../gql/chart';
 import {useQuery, useMutation} from 'react-apollo';
 import {ModalContextProps, withModalContext} from './ModalProvider';
-import {Spinner, Text, Card} from '@ui-kitten/components';
+import {Spinner, Text, Card, Button} from '@ui-kitten/components';
 import {ChordClubShim} from 'types/ChordClubShim';
 import ProgressionItem from './ProgressionItem';
 import { useNavigation } from '@react-navigation/native';
@@ -21,6 +21,7 @@ import ChartQueryEditor from './ChartQueryEditor';
 import { AudioPlayer } from './AudioPlayer';
 import { Audioable } from '../util/audio';
 import { AudioContext } from './AudioContextProvider';
+import { last } from 'lodash';
 
 
 const ListEmptyComponent = () => {
@@ -79,7 +80,7 @@ export const ProgressionList = ({
       audioCtx.startPlay(currentAudio[0]);
     }
   }, [currentAudio[0], currentAudio[1]]);
-  /*
+  const [isListExhausted, setIsListExhausted] = useState(false);
   const loadMore = () =>
     fetchMore({
       variables: {
@@ -87,14 +88,25 @@ export const ProgressionList = ({
       },
       updateQuery: (prev, {fetchMoreResult}) => {
         if (!fetchMoreResult) {
+          setIsListExhausted(true);
           return prev;
         }
+        const moreCharts = fetchMoreResult?.charts || [];
+        setIsListExhausted(moreCharts.length > 0);
         return {
-          charts: [...prev.charts, ...(fetchMoreResult?.charts || [])],
+          charts: [...prev.charts, ...(moreCharts)],
         };
       },
     });
-    */
+  const LoadMore = () => {
+    return (
+      <Button
+        appearance="outline"
+        disabled={loading}
+        onPress={loadMore}
+      >Load more</Button>
+    );
+  };
   const [deleted, setDeleted] = useState<Set<number>>(new Set());
   const [deleteChart, {}] = useMutation<{}, DeleteChartMutationVariables>(
     DELETE_CHART_MUTATION,
@@ -153,6 +165,7 @@ export const ProgressionList = ({
         data={charts}
         keyExtractor={(chart) => chart.id.toString()}
         ListEmptyComponent={ListEmptyComponent}
+        ListFooterComponent={(!isListExhausted && query.order !== ChartQueryOrder.Random) ? LoadMore : undefined}
         renderItem={(item) => (
           <ProgressionItem
             compact={compact}
