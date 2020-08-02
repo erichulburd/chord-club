@@ -52,6 +52,8 @@ interface ManualProps {
 
 interface Props extends ModalContextProps, ManualProps {}
 
+const defaultChartListLimit = 50;
+
 export const ProgressionList = ({
   query,
   mountID,
@@ -67,14 +69,6 @@ export const ProgressionList = ({
     refetch && refetch().catch(err => console.warn(err));
   };
   useEffect(() => {
-    const chartsLength = data?.charts?.length || 0;
-    if (chartsLength < (query.limit || 50)) {
-      setIsListExhausted(true);
-    } else {
-      setIsListExhausted(false);
-    }
-  }, [data?.charts]);
-  useEffect(() => {
     maybeDoRefetch();
   }, [mountID]);
   const authCtx = useContext(AuthContext);
@@ -89,6 +83,15 @@ export const ProgressionList = ({
     }
   }, [currentAudio[0], currentAudio[1]]);
   const [isListExhausted, setIsListExhausted] = useState(false);
+  useEffect(() => {
+    const chartsLength = data?.charts?.length || 0;
+    if (chartsLength < (query.limit || defaultChartListLimit)) {
+      setIsListExhausted(true);
+    }
+  }, [data?.charts]);
+  useEffect(() => {
+    setIsListExhausted(false);
+  }, [query]);
   const loadMore = () =>
     fetchMore({
       variables: {
@@ -100,7 +103,7 @@ export const ProgressionList = ({
           return prev;
         }
         const moreCharts = fetchMoreResult?.charts || [];
-        setIsListExhausted(moreCharts.length > 0);
+        setIsListExhausted(moreCharts.length < (query.limit || defaultChartListLimit));
         return {
           charts: [...prev.charts, ...(moreCharts)],
         };
