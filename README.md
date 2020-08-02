@@ -42,3 +42,8 @@ For creation of Google managed certs and ConfigConnector, see below links:
 npm i
 npx react-native run-ios # or run-android
 ```
+
+# Adding app icons
+
+See:
+https://medium.com/better-programming/react-native-add-app-icons-and-launch-screens-onto-ios-and-android-apps-3bfbc20b7d4c

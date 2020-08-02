@@ -64,21 +64,18 @@ const findRandomCharts = async (chartTypes: ChartType[], uid: string, limit: num
   const result = await queryable.query(`
   WITH selection AS (
     SELECT
-    ${selectFields},
+    ${selectFields}
     FROM chart c
       LEFT OUTER JOIN chart_policies_for_uid($2) cp ON c.id = cp.chart_id
       WHERE c.chart_type = ANY ($1) AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
   ),
-  selection_ct AS (
-    SELECT COUNT(*) AS ct FROM selection
-  ),
   selection_with_rnd_idx AS (
     SELECT
       *,
-      TRUNC(RANDOM() * (SELECT ct FROM selection_ct))::integer AS rnd_idx
+      TRUNC(RANDOM()::NUMERIC, 3) AS rnd_idx
     FROM selection
   )
-  SELECT ${selectFields} FROM selection_with_rnd_idx c ORDER BY rnd_idx LIMIT $3
+  SELECT ${selectFields}, c.rnd_idx FROM selection_with_rnd_idx c ORDER BY rnd_idx LIMIT $3
   `, [chartTypes, uid, limit]);
   const charts = result.rows.map(dbDataToChart) as Chart[];
   return charts;
@@ -94,15 +91,11 @@ const findRandomChartsByTagIDs = async (tagIDs: number[], chartTypes: ChartType[
       INNER JOIN chart c ON ct.chart_id = c.id
       INNER JOIN tag t ON ct.tag_id = t.id
     WHERE t.id = ANY ($1) AND c.chart_type = ANY ($4) AND (c.created_by = $2 OR cp.policy_action IS NOT NULL)
-    LIMIT $3
-  ),
-  selection_ct AS (
-    SELECT COUNT(*) AS ct FROM selection
   ),
   selection_with_rnd_idx AS (
     SELECT
       *,
-      TRUNC(RANDOM() * (SELECT ct FROM selection_ct))::integer AS rnd_idx
+      TRUNC(RANDOM()::NUMERIC, 3) AS rnd_idx
     FROM selection
   )
   SELECT ${selectFields} FROM selection_with_rnd_idx c ORDER BY rnd_idx LIMIT $3

@@ -7,7 +7,7 @@
  *
  * @format
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'react-native-gesture-handler';
 import {ApolloProvider} from '@apollo/react-hooks';
 import {ApplicationProvider, IconRegistry} from '@ui-kitten/components';

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {
   createDrawerNavigator,
@@ -6,7 +6,6 @@ import {
   DrawerContentOptions,
   DrawerNavigationProp,
 } from '@react-navigation/drawer';
-import ChordListScreen from './ChordListScreen';
 import ProgressionListScreen from './ProgressionListScreen';
 import {
   Drawer,
@@ -17,7 +16,7 @@ import {
   withStyles,
   ThemedComponentProps,
 } from '@ui-kitten/components';
-import {SafeAreaView, View, ViewProps, StyleSheet} from 'react-native';
+import {SafeAreaView, View, ViewProps, StyleSheet, Platform} from 'react-native';
 import {ChartCreatorScreen} from './ChartCreatorScreen';
 import {Screens, ScreenProps} from './AppScreen';
 import {ThemedIcon} from './FontAwesomeIcons';
@@ -27,7 +26,7 @@ import {TagListScreen} from './TagListScreen';
 import { BlankScreen } from './BlankScreen';
 import { LogoutScreen } from './LogoutScreen';
 import LoginScreen from './LoginScreen';
-import { LinkHandler } from './LinkHandler';
+import SplashScreen from 'react-native-splash-screen';
 
 const {Navigator, Screen} = createDrawerNavigator();
 
@@ -111,20 +110,27 @@ const routes: [Screens, React.FunctionComponent<ScreenProps> | React.ComponentCl
   [Screens.Blank, BlankScreen],
 ]
 
-export const AppNavigator = ({}: Props) => (
-  <NavigationContainer>
-    <Navigator
-      drawerContent={(props) => (
-        <DrawerContent {...props} />
-      )}
-      initialRouteName={Screens.Progressions}
-    >
-      {routes.map(([screenName, screen]) => (
-        <Screen key={screenName} name={screenName} component={screen} />
-      ))}
-    </Navigator>
-  </NavigationContainer>
-);
+export const AppNavigator = ({}: Props) => {
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      SplashScreen.hide();
+    }
+  })
+  return (
+    <NavigationContainer>
+      <Navigator
+        drawerContent={(props) => (
+          <DrawerContent {...props} />
+        )}
+        initialRouteName={Screens.Progressions}
+      >
+        {routes.map(([screenName, screen]) => (
+          <Screen key={screenName} name={screenName} component={screen} />
+        ))}
+      </Navigator>
+    </NavigationContainer>
+  );
+};
 
 const styles = StyleSheet.create({
   header: {
