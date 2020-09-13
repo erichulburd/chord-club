@@ -128,3 +128,11 @@ button{
 		background-color: lighten(lightgrey, 15%);
 	}
 }
+
+.download-app-img-container {
+	height: 6rem;
+	display: inline-block;
+	img {
+		height: 100%;
+	}
+}
