@@ -7,6 +7,7 @@ import {
 } from 'react-native-audio-recorder-player';
 import {Platform} from 'react-native';
 import {v4} from 'react-native-uuid';
+import * as rnfs from 'react-native-fs';
 import { User } from '../types';
 
 export interface Audioable {
@@ -27,8 +28,8 @@ export const audioSet: AudioSet = {
 export const makeFileName = () => {
   const uuid = v4();
   return Platform.select({
-    ios: `${uuid}.m4a`,
-    android: `sdcard/${uuid}.mp4`,
-    default: `${uuid}.m4a`,
+    ios: `${rnfs.DocumentDirectoryPath}/${uuid}.m4a`,
+    android: `${rnfs.DocumentDirectoryPath}/${uuid}.mp4`,
+    default: `${rnfs.DocumentDirectoryPath}/${uuid}.m4a`,
   });
 };

@@ -47,7 +47,6 @@ export class TagAutocomplete extends React.Component<Props> {
     displayName: '',
     query: {
       tagTypes: [TagType.List],
-      limit: 5,
     },
     loading: false,
     options: [],

@@ -94,6 +94,10 @@ export const TagList = ({}: Props) => {
     />
   );
   const tags = data.tags.filter(t => !deleted[t.id]);
+  console.log(query);
+  console.log(data.tags.map(t => t.displayName))
+  console.log(tags.map(t => t.displayName))
+
   return (
     <View>
       <FlatList
