@@ -21,18 +21,18 @@
 		9D9A7BBF24B2B17300A4AB52 /* FontAwesome5_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9D9A7BBB24B2B17300A4AB52 /* FontAwesome5_Regular.ttf */; };
 		9D9A7BC024B2B17300A4AB52 /* FontAwesome5_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9D9A7BBC24B2B17300A4AB52 /* FontAwesome5_Solid.ttf */; };
 		9D9A7BC124B2B17300A4AB52 /* FontAwesome5_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9D9A7BBD24B2B17300A4AB52 /* FontAwesome5_Brands.ttf */; };
-		9DB524B5244E10160029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524B6244E10160029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524B7244E10160029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524B8244E10160029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524BA244E10680029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524BB244E10680029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524BC244E10680029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524BD244E10680029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524BF244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524C0244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524C1244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		9DB524C2244E107A0029E856 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		9DB524B5244E10160029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524B6244E10160029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524B7244E10160029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524B8244E10160029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524BA244E10680029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524BB244E10680029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524BC244E10680029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524BD244E10680029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524BF244E107A0029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524C0244E107A0029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524C1244E107A0029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		9DB524C2244E107A0029E856 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		9DDB456D246CBCE1006C5F4C /* chordclubapp-transparent1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9DDB456C246CBCE1006C5F4C /* chordclubapp-transparent1.png */; };
 		C05CEA4AF3B309AC55AADCD4 /* libPods-ChordClub-ChordClubTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 61087637ED0B660C7BABC6E4 /* libPods-ChordClub-ChordClubTests.a */; };
 		E8B140FAF1033E59E8AFFAC7 /* libPods-ChordClub-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DEAB50BDA47AE006B10FD24 /* libPods-ChordClub-tvOSTests.a */; };
@@ -386,9 +386,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DB524C0244E107A0029E856 /* (null) in Resources */,
-				9DB524BB244E10680029E856 /* (null) in Resources */,
-				9DB524B6244E10160029E856 /* (null) in Resources */,
+				9DB524C0244E107A0029E856 /* BuildFile in Resources */,
+				9DB524BB244E10680029E856 /* BuildFile in Resources */,
+				9DB524B6244E10160029E856 /* BuildFile in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,14 +396,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DB524B5244E10160029E856 /* (null) in Resources */,
+				9DB524B5244E10160029E856 /* BuildFile in Resources */,
 				9D9A7BBE24B2B17300A4AB52 /* FontAwesome.ttf in Resources */,
 				9D9A7BBF24B2B17300A4AB52 /* FontAwesome5_Regular.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				9DB524BA244E10680029E856 /* (null) in Resources */,
+				9DB524BA244E10680029E856 /* BuildFile in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				9D9A7BC024B2B17300A4AB52 /* FontAwesome5_Solid.ttf in Resources */,
-				9DB524BF244E107A0029E856 /* (null) in Resources */,
+				9DB524BF244E107A0029E856 /* BuildFile in Resources */,
 				9DDB456D246CBCE1006C5F4C /* chordclubapp-transparent1.png in Resources */,
 				9D9A7BC124B2B17300A4AB52 /* FontAwesome5_Brands.ttf in Resources */,
 			);
@@ -413,9 +413,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DB524BC244E10680029E856 /* (null) in Resources */,
-				9DB524C1244E107A0029E856 /* (null) in Resources */,
-				9DB524B7244E10160029E856 /* (null) in Resources */,
+				9DB524BC244E10680029E856 /* BuildFile in Resources */,
+				9DB524C1244E107A0029E856 /* BuildFile in Resources */,
+				9DB524B7244E10160029E856 /* BuildFile in Resources */,
 				2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -424,9 +424,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DB524C2244E107A0029E856 /* (null) in Resources */,
-				9DB524BD244E10680029E856 /* (null) in Resources */,
-				9DB524B8244E10160029E856 /* (null) in Resources */,
+				9DB524C2244E107A0029E856 /* BuildFile in Resources */,
+				9DB524BD244E10680029E856 /* BuildFile in Resources */,
+				9DB524B8244E10160029E856 /* BuildFile in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -517,6 +517,10 @@
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Feather.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Foundation.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf",
@@ -534,6 +538,10 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Entypo.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EvilIcons.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Feather.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Brands.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Regular.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Solid.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Fontisto.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Foundation.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Ionicons.ttf",
@@ -605,6 +613,10 @@
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Feather.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Foundation.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf",
@@ -622,6 +634,10 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Entypo.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EvilIcons.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Feather.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Brands.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Regular.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Solid.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Fontisto.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Foundation.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Ionicons.ttf",
@@ -790,7 +806,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ChordClub/ChordClub.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = XQ6523A64X;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -820,7 +836,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ChordClub/ChordClub.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = XQ6523A64X;
 				INFOPLIST_FILE = ChordClub/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
