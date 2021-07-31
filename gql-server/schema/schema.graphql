@@ -27,12 +27,7 @@ enum TagType {
   LIST,
 }
 
-interface TagBase {
-  displayName: String!
-  tagType: TagType!
-}
-
-type Tag implements TagBase {
+type Tag {
   id: Int!
   munge: String!
   displayName: String!
@@ -88,27 +83,13 @@ enum ChartType {
   PROGRESSION,
 }
 
-interface ChartBase {
-  audioURL: String!
-  audioLength: Int!
-  hint: String
-  name: String
-  description: String
-  abc: String!
-  tags: [Tag!]!
-  chartType: ChartType!
-  bassNote: Note
-  root: Note
-  quality: ChartQuality!
-  extensions: [Extension!]
-}
 
 type ReactionCounts {
   stars: Int!
   flags: Int!
 }
 
-type Chart implements ChartBase {
+type Chart {
   id: Int!
   audioURL: String!
   audioLength: Int!
@@ -212,11 +193,7 @@ input ChartQuery {
   limit: Int
 }
 
-interface UserBase {
-  username: String!
-}
-
-type User implements UserBase {
+type User {
   uid: String!
   username: String!
   createdAt: String!

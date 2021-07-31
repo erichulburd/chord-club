@@ -4,6 +4,3 @@ generates:
     plugins:
       - typescript
       - typescript-operations
-  ./src/fragmentTypes.json:
-    plugins:
-      - fragment-matcher

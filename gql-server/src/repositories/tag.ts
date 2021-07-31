@@ -30,6 +30,7 @@ const searchForTag = async (displayName: string, uid: string, query: BaseTagQuer
       WHERE LOWER(t.display_name) LIKE $1
         AND t.tag_type = ANY ($4)
         AND ${authorizationFilter}
+      ORDER BY display_name ASC, id ASC
   `, [`${displayName.toLowerCase()}%`, uid, createdBy, query.tagTypes]);
   return result.rows.map(dbDataToTag) as Tag[];
 };
@@ -42,6 +43,7 @@ export const findTagsByID = async (ids: number[], uid: string, queryable: Querya
         LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
       WHERE t.id = ANY ($1)
         AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
+      ORDER BY display_name ASC, id ASC
   `, [ids, uid]);
   return result.rows.map(dbDataToTag);
 };
@@ -54,6 +56,7 @@ export const findTagByID = async (id: number, uid: string, queryable: Queryable)
         LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
       WHERE t.id = $1
         AND (t.created_by = $2 OR tp.policy_action IS NOT NULL)
+      ORDER BY display_name ASC, id ASC
   `, [id, uid]);
   if (result.rows.length < 1) {
     return undefined;
@@ -67,36 +70,36 @@ const findTags = async (query: BaseTagQuery, uid: string, queryable: Queryable) 
   SELECT
     ${selectFields}
   FROM tag t
-    LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
-  WHERE t.tag_type = ANY ($1)
+    LEFT OUTER JOIN tag_policies_for_uid($1) tp ON t.id = tp.tag_id
+  WHERE t.tag_type = ANY ($2)
     AND ${authorizationFilter}
-  ORDER BY $4, id ${query.direction}
-  LIMIT $5
-  `, [query.tagTypes, uid, createdBy, query.orderBy, query.limit]);
+  ORDER BY display_name ASC, id ASC
+  LIMIT 100
+  `, [uid, query.tagTypes, createdBy]);
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
 const findTagsAfter = async (query: BaseTagQueryAfter, uid: string, queryable: Queryable) => {
-  const [createdBy, authorizationFilter] = getAuthorizationFilter(uid, query.createdBy, 3);
+  const [createdBy, authorizationFilter] = getAuthorizationFilter(uid, query.createdBy, 5);
   const result = await queryable.query(`
   WITH ranks AS (
     SELECT
       ${selectFields},
       RANK() OVER (
-        ORDER BY $1, t.id ${query.direction}
+        ORDER BY t.display_name ASC, t.id ASC
       ) rank_number
     FROM tag t
-      LEFT OUTER JOIN tag_policies_for_uid($2) tp ON t.id = tp.tag_id
-    WHERE t.tag_type = ANY ($6)
+      LEFT OUTER JOIN tag_policies_for_uid($1) tp ON t.id = tp.tag_id
+    WHERE t.tag_type = ANY ($4)
       AND ${authorizationFilter}
   )
   SELECT
     *
   FROM ranks
-  WHERE rank_number > (SELECT rank_number FROM ranks WHERE id = $4)
-  ORDER BY $1, id ${query.direction}
-  LIMIT $5
-  `, [query.orderBy, uid, createdBy, query.after, query.limit, query.tagTypes]);
+  WHERE rank_number > (SELECT rank_number FROM ranks WHERE id = $2)
+  ORDER BY display_name ASC, id ${query.direction}
+  LIMIT $3
+  `, [uid, query.after, query.limit, query.tagTypes, createdBy]);
   return result.rows.map(dbDataToTag) as Tag[];
 };
 
@@ -119,6 +122,7 @@ export const findExistingTagsCreatedByUID =
   const result = await queryable.query(`
     SELECT ${selectFields} FROM tag t
       WHERE ${prep.join(' OR ')}
+      ORDER BY t.display_name ASC, t.id ASC
   `, values);
   return result.rows.map(dbDataToTag);
 };
@@ -196,6 +200,7 @@ export const findTagsForCharts = async (
         INNER JOIN chart_tag ct
         ON t.id = ct.tag_id
       WHERE ct.chart_id = ANY ($1)
+      ORDER BY t.display_name ASC, id ASC
   `, [chartIDs]);
   const tagDataByChartID = groupBy(result.rows, 'chart_id');
   // this is a little hack around inability to call map on readonly? array.
@@ -236,13 +241,11 @@ export const executeTagQuery = async (
   if (rawQuery.ids) {
     return findTagsByID(rawQuery.ids, uid, queryable);
   }
-  const order = (rawQuery.order || TagQueryOrder.DisplayName).toLowerCase();
-  const direction = (rawQuery.asc === undefined ? false : rawQuery.asc) ? 'ASC' : 'DESC';
-  const orderBy = `${order} ${direction}`;
-  const limit = Math.min(100, rawQuery.limit || 50);
+  const orderBy = 'display_name ASC';
+  const limit = 100;
 
   const query: BaseTagQuery = {
-    orderBy, direction, limit, tagTypes: rawQuery.tagTypes,
+    orderBy, direction: 'ASC', limit, tagTypes: rawQuery.tagTypes,
     createdBy: rawQuery.createdBy,
   };
   if (rawQuery.displayName) {

@@ -23,12 +23,7 @@ export enum TagType {
   List = 'LIST'
 }
 
-export type TagBase = {
-  displayName: Scalars['String'];
-  tagType: TagType;
-};
-
-export type Tag = TagBase & {
+export type Tag = {
    __typename?: 'Tag';
   id: Scalars['Int'];
   munge: Scalars['String'];
@@ -86,28 +81,13 @@ export enum ChartType {
   Progression = 'PROGRESSION'
 }
 
-export type ChartBase = {
-  audioURL: Scalars['String'];
-  audioLength: Scalars['Int'];
-  hint?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  description?: Maybe<Scalars['String']>;
-  abc: Scalars['String'];
-  tags: Array<Tag>;
-  chartType: ChartType;
-  bassNote?: Maybe<Note>;
-  root?: Maybe<Note>;
-  quality: ChartQuality;
-  extensions?: Maybe<Array<Extension>>;
-};
-
 export type ReactionCounts = {
    __typename?: 'ReactionCounts';
   stars: Scalars['Int'];
   flags: Scalars['Int'];
 };
 
-export type Chart = ChartBase & {
+export type Chart = {
    __typename?: 'Chart';
   id: Scalars['Int'];
   audioURL: Scalars['String'];
@@ -232,11 +212,7 @@ export type ChartQuery = {
   limit?: Maybe<Scalars['Int']>;
 };
 
-export type UserBase = {
-  username: Scalars['String'];
-};
-
-export type User = UserBase & {
+export type User = {
    __typename?: 'User';
   uid: Scalars['String'];
   username: Scalars['String'];

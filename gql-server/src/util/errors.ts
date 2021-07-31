@@ -1,5 +1,5 @@
 import { AuthenticationError, ApolloError } from 'apollo-server-express';
-import { ErrorType, TagBase } from '../types';
+import { ErrorType, Tag, TagNew } from '../types';
 
 export const unauthenticatedError = new AuthenticationError(
     'We couldn\'t verify your identity. Your authentication credential is missing or invalid.');
@@ -15,7 +15,7 @@ export const chartNotFoundError = (chartID: number) => new ApolloError(
       chartID,
     });
 
-export const invalidChartTagError = (chartID: number, tag: TagBase) => new ApolloError(
+export const invalidChartTagError = (chartID: number, tag: Tag | TagNew) => new ApolloError(
   ErrorType.InvalidChartTagError,
   'This tag is invalid for the chart.', { chartID, tag });
 
