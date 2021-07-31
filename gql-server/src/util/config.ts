@@ -23,8 +23,15 @@ const requiredConfig = [
   'PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'PGDATABASE',
   'AUTH0_DOMAIN', 'AUTH0_CLIENT_ID', 'AUTH0_AUDIENCE',
   'GC_PROJECT_ID', 'GC_STORAGE_KEYFILE', 'GC_STORAGE_BUCKET_NAME',
-  'JWKS_PATH', 'PRIVATE_SIGNING_KEY_PATH',
+  'JWKS_B64', 'PRIVATE_SIGNING_KEY_B64',
 ];
+
+const defaults: Partial<Config> = {
+  CHORD_CLUB_TOKEN_AUDIENCE: 'chordclub.app',
+  CHORD_CLUB_TOKEN_ISSUER: 'chordclub.app',
+  CHORD_CLUB_TOKEN_KID: '01',
+  PORT: '4000',
+}
 
 const validateConfig = (config: Partial<Config>) => {
   const missing = requiredConfig.filter((envVar) => !config[envVar]);
@@ -34,25 +41,14 @@ const validateConfig = (config: Partial<Config>) => {
 };
 
 const parseConfig = (): Config => {
-  const SECRET_PATH = process.env.SECRET_PATH;
-
-  if (SECRET_PATH === undefined) {
-    throw new Error('Must set SECRET_PATH.');
-  }
-  const data = readFileSync(SECRET_PATH, { encoding: 'utf-8' });
-  const secrets = JSON.parse(data);
-  const config: Config = {
-    PGHOST: process.env.PGHOST,
-    JWKS_PATH: process.env.JWKS_PATH,
-    PRIVATE_SIGNING_KEY_PATH: process.env.PRIVATE_SIGNING_KEY_PATH,
-    CHORD_CLUB_TOKEN_AUDIENCE: 'chordclub.app',
-    CHORD_CLUB_TOKEN_ISSUER: 'chordclub.app',
-    CHORD_CLUB_TOKEN_KID: '01',
-    PORT: '4000',
-    ...secrets,
-  };
-  validateConfig(config);
-  return config;
+  const configFromEnv: Config = requiredConfig.reduce((prev, envVar) => {
+    return {
+      ...prev,
+      [envVar]: process.env[envVar],
+    }
+  }, defaults) as Config;
+  validateConfig(configFromEnv);
+  return configFromEnv;
 };
 
 export const config = parseConfig();

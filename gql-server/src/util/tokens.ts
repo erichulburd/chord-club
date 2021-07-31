@@ -3,11 +3,11 @@ import jwksClient from 'jwks-rsa';
 import { readFileSync } from 'fs';
 import { config } from './config';
 
-const JWKS_PATH = config.JWKS_PATH || '';
-const PRIVATE_SIGNING_KEY_PATH = config.PRIVATE_SIGNING_KEY_PATH || '';
+const JWKS_B64 = config.JWKS_B64 || '';
+const PRIVATE_SIGNING_KEY_B64 = config.PRIVATE_SIGNING_KEY_B64 || '';
 
-export const jwks = JSON.parse(readFileSync(JWKS_PATH, { encoding: 'utf-8' }).toString());
-const privateKey = readFileSync(PRIVATE_SIGNING_KEY_PATH, { encoding: 'utf-8' }).toString();
+export const jwks = JSON.parse(Buffer.from(JWKS_B64, 'base64').toString('utf-8'));
+const privateKey = Buffer.from(PRIVATE_SIGNING_KEY_B64, 'base64').toString('utf-8').toString();
 
 
 var client = jwksClient({
