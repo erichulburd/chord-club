@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
-import { readFileSync } from 'fs';
 import { config } from './config';
 
 const JWKS_B64 = config.JWKS_B64 || '';
