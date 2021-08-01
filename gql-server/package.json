@@ -12,12 +12,13 @@
     "migrate": "node migrate.js",
     "eslint": "eslint",
     "exec:lint": "eslint ./src/**/*.ts --fix",
-    "jest": "jest"
+    "jest": "jest",
+    "start": "node ./build/index.js"
   },
   "author": "",
   "license": "ISC",
   "engines": {
-    "node": "12"
+    "node": "12.x"
   },
   "dependencies": {
     "@google-cloud/storage": "^4.7.0",
