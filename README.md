@@ -2,6 +2,8 @@
 
 # About
 
+[ChordClub](https://www.chordclub.app/) is available on [iTunes](http://itunes.com/apps/chordclub) and [Google Play](https://play.google.com/store/apps/details?id=app.chordclub&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1).
+
 Chord Club is a React Native app to aid musicians:
 * improve tone and chord identification
 * take audible notes and organize them for song writing.
